@@ -14,7 +14,7 @@ This repository serves as the central workspace for collaborative development, s
 - Richa Roy
 - Vemula Architha
 - Maanas Krishana
-- Karan Vir
+- Karamveer
 
 ## Getting Started
 
