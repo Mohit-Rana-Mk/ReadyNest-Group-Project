@@ -42,4 +42,7 @@ venv/
 healtrack-ml-service/venv/
 
 __pycache__/
+
+<<<<<<< HEAD
 *.pyc
+>>>>>>> origin/main
