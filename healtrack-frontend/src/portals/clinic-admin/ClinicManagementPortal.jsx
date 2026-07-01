@@ -8,6 +8,7 @@ import { DepartmentManager } from './components/DepartmentManager';
 import { OperationsOverview } from './components/OperationsOverview';
 import { ReportsAndLogs } from './components/ReportsAndLogs';
 import { ClinicSettings } from './components/ClinicSettings';
+import { io } from 'socket.io-client';
 
 export default function ClinicManagementPortal() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -46,6 +47,16 @@ export default function ClinicManagementPortal() {
 
   useEffect(() => {
     fetchPortalData();
+    
+    const socket = io('http://localhost:5001');
+    socket.on('QUEUE_UPDATE', () => {
+        console.log("Realtime event received: QUEUE_UPDATE");
+        fetchPortalData();
+    });
+
+    return () => {
+        socket.disconnect();
+    };
   }, [fetchPortalData]);
 
   const navigation = [

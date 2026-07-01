@@ -1,68 +1,86 @@
 import React from 'react';
-import { Clock } from 'lucide-react';
+import { FileText, Clock, Activity, Pill } from 'lucide-react';
 
-export function HistoryTimeline({ loadingHistory, patientHistory }) {
-    return (
-        <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex-1 flex flex-col min-h-0">
-            <div className="flex justify-between items-center mb-6 shrink-0">
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-slate-400" />
-                    Longitudinal History
-                </h4>
-                <button className="text-xs font-semibold text-slate-400 hover:text-slate-700 transition">Filter</button>
+export function HistoryTimeline({ patientHistory, loadingHistory }) {
+    if (loadingHistory) {
+        return (
+            <div className="flex-1 bg-white border border-[#e9ecef] rounded-2xl p-6 shadow-sm flex flex-col justify-center items-center h-full">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-700"></div>
+                <p className="mt-4 text-slate-500 text-sm">Loading patient history...</p>
             </div>
+        );
+    }
 
-            <div className="flex-1 overflow-y-auto pr-2 relative">
-                {loadingHistory ? (
-                    <div className="flex flex-col items-center justify-center h-48 space-y-2">
-                        <div className="w-6 h-6 border-2 border-emerald-700/20 border-t-emerald-700 rounded-full animate-spin"></div>
-                        <span className="text-xs text-slate-400">Loading timeline...</span>
-                    </div>
-                ) : !patientHistory || !patientHistory.prescriptions || patientHistory.prescriptions.length === 0 ? (
-                    <div className="text-center py-10 text-slate-400 text-xs">No history records found.</div>
-                ) : (
-                    <div className="relative border-l-2 border-[#e9ecef] ml-6 pl-8 space-y-6 pb-2">
-                        {patientHistory.prescriptions.map((pr, i) => {
-                            const date = new Date(pr.appointment_date);
-                            const month = date.toLocaleString('en-US', { month: 'short' });
-                            const year = date.getFullYear();
-                            const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+    if (!patientHistory || patientHistory.prescriptions.length === 0) {
+        return (
+            <div className="flex-1 bg-white border border-[#e9ecef] rounded-2xl p-6 shadow-sm flex flex-col justify-center items-center h-full text-slate-500">
+                <FileText className="w-12 h-12 mb-4 text-slate-300" />
+                <p className="font-medium text-sm">No historical records found for this patient.</p>
+            </div>
+        );
+    }
 
-                            return (
-                                <div key={pr.prescription_id} className="relative">
-                                    <span className="absolute -left-[54px] top-1.5 w-11 h-11 rounded-full bg-white border border-[#e9ecef] shadow-sm flex flex-col items-center justify-center leading-none text-slate-600">
-                                        <span className="text-[10px] font-bold">{month}</span>
-                                        <span className="text-[8px] text-slate-400 font-semibold mt-0.5">{year}</span>
-                                    </span>
-
-                                    <div className="bg-white border border-[#e9ecef] rounded-xl p-4 shadow-sm hover:border-[#ced4da] transition space-y-3">
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <h5 className="font-bold text-slate-800 text-sm leading-snug">{pr.diagnosis}</h5>
-                                                <span className="text-[10px] text-slate-400 font-medium">{formattedDate}</span>
-                                            </div>
-                                            <span className="text-[9px] font-bold text-slate-400 tracking-wider">DR. {pr.doctor_name.toUpperCase()}</span>
+    return (
+        <div className="flex-1 bg-white border border-[#e9ecef] rounded-2xl shadow-sm flex flex-col overflow-hidden">
+            <div className="p-5 border-b border-[#e9ecef] bg-slate-50 flex justify-between items-center shrink-0">
+                <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-emerald-600" />
+                    Clinical History Timeline
+                </h3>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6">
+                <div className="relative border-l-2 border-[#e9ecef] ml-3 space-y-8">
+                    {patientHistory.prescriptions.map((record, index) => (
+                        <div key={record.prescription_id || index} className="relative pl-6">
+                            <span className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-white border-2 border-emerald-500 ring-4 ring-white"></span>
+                            
+                            <div className="bg-white border border-[#e9ecef] rounded-xl p-4 shadow-sm">
+                                <div className="flex justify-between items-start mb-3 border-b border-slate-100 pb-3">
+                                    <div>
+                                        <h4 className="font-bold text-slate-800 text-sm">{record.diagnosis}</h4>
+                                        <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
+                                            <span>{new Date(record.created_at || record.appointment_date).toLocaleDateString()}</span>
+                                            <span>•</span>
+                                            <span>{record.doctor_name}</span>
                                         </div>
-
-                                        {pr.post_remarks && (
-                                            <p className="text-xs text-slate-500 leading-relaxed font-normal">{pr.post_remarks}</p>
-                                        )}
-
-                                        {pr.items && pr.items.length > 0 && (
-                                            <div className="flex flex-wrap gap-1.5 pt-1">
-                                                {pr.items.map((it, idx) => (
-                                                    <span key={idx} className="px-2 py-1 bg-[#f8f9fa] border border-[#e9ecef] rounded-lg text-[10px] text-slate-600 font-medium">
-                                                        {it.medicine_name} {it.dosage}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
-                            );
-                        })}
-                    </div>
-                )}
+
+                                {record.post_remarks && (
+                                    <div className="mb-4">
+                                        <h5 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Clinical Notes</h5>
+                                        <p className="text-sm text-slate-700 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                            {record.post_remarks}
+                                        </p>
+                                    </div>
+                                )}
+                                
+                                {record.items && record.items.length > 0 && (
+                                    <div>
+                                        <h5 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                            <Pill className="w-3.5 h-3.5" />
+                                            Prescribed Medications
+                                        </h5>
+                                        <div className="grid gap-2">
+                                            {record.items.map((item, i) => (
+                                                <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between text-sm bg-emerald-50/50 p-2.5 rounded-lg border border-emerald-100/50">
+                                                    <span className="font-medium text-slate-800">
+                                                        {item.medicine_name} <span className="text-emerald-700 ml-1">{item.dosage}</span>
+                                                    </span>
+                                                    <div className="flex items-center gap-3 text-slate-500 mt-1 sm:mt-0 text-xs">
+                                                        <span className="bg-white px-2 py-0.5 rounded shadow-sm border border-slate-100">{item.frequency}</span>
+                                                        <span>{item.duration}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );

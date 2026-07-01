@@ -57,6 +57,7 @@ exports.checkIn = async (req, res) => {
             `UPDATE appointments SET status = 'Checked-In' WHERE id = ? AND clinic_id = ?`,
             [appointmentId, clinicId]
         );
+        if (req.io) req.io.emit('QUEUE_UPDATE', { clinicId });
         res.status(200).json({ message: 'Patient Checked-In Successfully' });
     } catch (error) {
         console.error('checkIn Error:', error);
@@ -75,6 +76,7 @@ exports.updateStatus = async (req, res) => {
             `UPDATE appointments SET status = ? WHERE id = ? AND clinic_id = ?`,
             [status, appointmentId, clinicId]
         );
+        if (req.io) req.io.emit('QUEUE_UPDATE', { clinicId });
         res.status(200).json({ message: 'Status Updated Successfully' });
     } catch (error) {
         console.error('updateStatus Error:', error);
@@ -111,7 +113,7 @@ exports.lookupPatient = async (req, res) => {
 
 exports.registerWalkIn = async (req, res) => {
     const { clinicId } = req.params;
-    const { phone, doctor_id, patient_id, new_patient_name, dob } = req.body;
+    const { phone, doctor_id, patient_id, new_patient_name, dob, pre_remarks } = req.body;
     
     if (!doctor_id) {
         return res.status(400).json({ message: 'doctor_id is required' });
@@ -160,12 +162,21 @@ exports.registerWalkIn = async (req, res) => {
             finalPatientId = patientResult.insertId;
         }
 
-        // Book Appointment
+        const finalPreRemarks = pre_remarks || 'Walk-In Registration';
+
         await db.execute(
             `INSERT INTO appointments (clinic_id, patient_id, doctor_id, appointment_date, status, booking_source, pre_remarks) 
-             VALUES (?, ?, ?, NOW(), 'Checked-In', 'Walk-in', 'Walk-In Registration')`,
-            [clinicId, finalPatientId, doctor_id]
+             VALUES (?, ?, ?, NOW(), 'Checked-In', 'Walk-in', ?)`,
+            [clinicId, finalPatientId, doctor_id, finalPreRemarks]
         );
+
+        if (req.io) {
+            req.io.emit('QUEUE_UPDATE', {
+                clinicId,
+                doctorId: doctor_id,
+                message: 'A new walk-in patient has been registered'
+            });
+        }
 
         res.status(201).json({ message: 'Walk-In Registered Successfully' });
     } catch (error) {

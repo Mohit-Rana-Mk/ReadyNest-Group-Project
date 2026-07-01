@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '../../../components/ui/Card';
 import { TrendingUp, Users, AlertCircle } from 'lucide-react';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import axiosClient from '../../../api/axiosClient';
 
 export function AnalyticsDashboard({ data }) {
@@ -40,6 +40,9 @@ export function AnalyticsDashboard({ data }) {
   const noShowRate = noShow.total_appointments > 0 
     ? ((noShow.cancelled_appointments / noShow.total_appointments) * 100).toFixed(1) 
     : 0;
+
+  const { sources = [] } = analyticsData || data;
+  const PIE_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
   return (
     <div className="space-y-6">
@@ -122,6 +125,35 @@ export function AnalyticsDashboard({ data }) {
                 <Tooltip />
                 <Line type="monotone" dataKey="patients" stroke="#059669" strokeWidth={3} dot={{ r: 4 }} />
               </LineChart>
+            </ResponsiveContainer>
+          </div>
+          {loading && <div className="absolute inset-0 bg-white/50 flex items-center justify-center rounded-lg">...</div>}
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6">
+        <Card className="p-5 relative">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Booking Sources Breakdown</h3>
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={sources}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100}
+                  fill="#8884d8"
+                  dataKey="count"
+                  nameKey="booking_source"
+                  label={({ booking_source, percent }) => `${booking_source} ${(percent * 100).toFixed(0)}%`}
+                >
+                  {sources.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
             </ResponsiveContainer>
           </div>
           {loading && <div className="absolute inset-0 bg-white/50 flex items-center justify-center rounded-lg">...</div>}

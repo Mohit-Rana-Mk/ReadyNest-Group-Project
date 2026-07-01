@@ -9,6 +9,7 @@ export function WalkInModal({ isOpen, onClose, onRegister, doctors = [] }) {
   const [name, setName] = useState('');
   const [dob, setDob] = useState('');
   const [doctor_id, setDoctorId] = useState('');
+  const [preRemarks, setPreRemarks] = useState('');
   
   // Lookup states
   const [isLookingUp, setIsLookingUp] = useState(false);
@@ -21,6 +22,7 @@ export function WalkInModal({ isOpen, onClose, onRegister, doctors = [] }) {
     setName('');
     setDob('');
     setDoctorId('');
+    setPreRemarks('');
     setExistingPatients([]);
     setSelectedPatientId('');
     setIsLookingUp(false);
@@ -97,7 +99,8 @@ export function WalkInModal({ isOpen, onClose, onRegister, doctors = [] }) {
       doctor_id, 
       patient_id: selectedPatientId === 'new' ? null : selectedPatientId,
       new_patient_name: selectedPatientId === 'new' ? name : null,
-      dob: selectedPatientId === 'new' ? dob : null
+      dob: selectedPatientId === 'new' ? dob : null,
+      pre_remarks: preRemarks
     });
     
     resetForm();
@@ -180,6 +183,16 @@ export function WalkInModal({ isOpen, onClose, onRegister, doctors = [] }) {
               <option key={doc.id} value={doc.id}>{doc.name}</option>
             ))}
           </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Pre-Consultation Remarks</label>
+          <textarea 
+            value={preRemarks}
+            onChange={(e) => setPreRemarks(e.target.value)}
+            placeholder="e.g. Patient complaining of severe headache, BP taken by nurse is 120/80..."
+            className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white outline-none min-h-[60px] resize-y"
+          />
         </div>
 
         <div className="pt-4 flex justify-end space-x-3 border-t border-gray-200 mt-4">

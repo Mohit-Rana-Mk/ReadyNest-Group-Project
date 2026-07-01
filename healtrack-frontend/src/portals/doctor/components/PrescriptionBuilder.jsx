@@ -1,120 +1,153 @@
 import React from 'react';
-import { FileText, Trash2, Plus } from 'lucide-react';
+import { Plus, Trash2, Pill, MessageSquare } from 'lucide-react';
 
-export function PrescriptionBuilder({ prescriptionItems, handlePrescriptionChange, addPrescriptionRow, removePrescriptionRow, postRemarks, setPostRemarks, submitStatus }) {
+export function PrescriptionBuilder({ 
+    prescriptionItems, 
+    handlePrescriptionChange, 
+    addPrescriptionRow, 
+    removePrescriptionRow,
+    diagnosis,
+    setDiagnosis,
+    preRemarks,
+    setPreRemarks,
+    postRemarks,
+    setPostRemarks
+}) {
     return (
-        <div className="space-y-6 flex flex-col min-h-0">
-            {/* Prescription List Container */}
-            <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex flex-col min-h-0 max-h-[60vh]">
-                <div className="flex justify-between items-center mb-4 shrink-0">
-                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-slate-400" />
-                        Prescription Builder
-                    </h4>
-                    <button 
-                        type="button"
-                        onClick={addPrescriptionRow}
-                        className="w-6 h-6 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white flex items-center justify-center font-bold text-sm transition"
-                        title="Add Medication"
-                    >
-                        +
-                    </button>
+        <div className="bg-white border border-[#e9ecef] rounded-2xl shadow-sm flex flex-col h-full shrink-0">
+            <div className="p-5 border-b border-[#e9ecef] bg-slate-50">
+                <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                    <Pill className="w-4 h-4 text-emerald-600" />
+                    Clinical Notes & eRx
+                </h3>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-5 space-y-6">
+                {/* Diagnosis */}
+                <div>
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        Primary Diagnosis
+                    </label>
+                    <input 
+                        type="text"
+                        value={diagnosis}
+                        onChange={(e) => setDiagnosis(e.target.value)}
+                        placeholder="e.g. Viral Fever, Hypertension"
+                        className="w-full bg-[#f8f9fa] border border-[#e9ecef] rounded-xl p-3 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                    />
                 </div>
 
-                <div className="flex-1 overflow-y-auto space-y-4 pr-1">
-                    {prescriptionItems.map((item, index) => (
-                        <div key={index} className="bg-[#f8f9fa] border border-[#e9ecef] rounded-xl p-4 space-y-3 relative hover:border-[#ced4da] transition">
-                            <button 
-                                type="button"
-                                onClick={() => removePrescriptionRow(index)}
-                                className="absolute top-3.5 right-3.5 text-slate-400 hover:text-red-500 transition"
-                                title="Delete medication"
-                            >
-                                <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                {/* Pre-Consultation Remarks */}
+                <div>
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        Pre-Consultation Remarks
+                    </label>
+                    <textarea 
+                        value={preRemarks}
+                        onChange={(e) => setPreRemarks(e.target.value)}
+                        placeholder="Vitals summary, initial complaints, or notes from the receptionist..."
+                        className="w-full bg-[#f8f9fa] border border-[#e9ecef] rounded-xl p-3 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 min-h-[70px] resize-y"
+                    />
+                </div>
 
-                            <div>
-                                <input 
-                                    type="text"
-                                    value={item.medicine_name}
-                                    onChange={(e) => handlePrescriptionChange(index, 'medicine_name', e.target.value)}
-                                    className="font-bold text-slate-800 text-sm bg-transparent border-0 border-b border-transparent focus:border-slate-300 focus:ring-0 focus:outline-none w-[80%] p-0 placeholder-slate-400"
-                                    placeholder="Enter medication..."
-                                />
-                            </div>
+                {/* Post-Consultation Remarks */}
+                <div>
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        Post-Consultation Remarks
+                    </label>
+                    <textarea 
+                        value={postRemarks}
+                        onChange={(e) => setPostRemarks(e.target.value)}
+                        placeholder="Enter clinical observations, advice, and next steps here..."
+                        className="w-full bg-[#f8f9fa] border border-[#e9ecef] rounded-xl p-3 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 min-h-[100px] resize-y"
+                    />
+                </div>
 
-                            <div className="grid grid-cols-2 gap-3 text-xs">
-                                <div>
-                                    <label className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Dosage</label>
+                {/* Prescription Builder */}
+                <div>
+                    <div className="flex justify-between items-center mb-3">
+                        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                            Prescription
+                        </label>
+                        <button 
+                            onClick={addPrescriptionRow}
+                            className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md transition"
+                        >
+                            <Plus className="w-3 h-3" /> Add Med
+                        </button>
+                    </div>
+                    
+                    <div className="space-y-3">
+                        {prescriptionItems.map((item, index) => (
+                            <div key={index} className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm relative group">
+                                <button 
+                                    onClick={() => removePrescriptionRow(index)}
+                                    className="absolute -right-2 -top-2 bg-white text-rose-500 border border-slate-200 hover:bg-rose-50 rounded-full p-1 opacity-0 group-hover:opacity-100 transition shadow-sm"
+                                >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                                
+                                <div className="space-y-3">
                                     <input 
                                         type="text" 
-                                        value={item.dosage}
-                                        onChange={(e) => handlePrescriptionChange(index, 'dosage', e.target.value)}
-                                        className="w-full bg-white border border-[#e9ecef] rounded-lg px-2.5 py-1.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-slate-300 focus:ring-0 transition font-medium"
-                                        placeholder="e.g. 10mg"
+                                        placeholder="Medicine Name (e.g. Paracetamol)"
+                                        value={item.medicine_name}
+                                        onChange={(e) => handlePrescriptionChange(index, 'medicine_name', e.target.value)}
+                                        className="w-full font-bold text-slate-800 text-sm border-b border-slate-200 focus:border-emerald-500 focus:outline-none pb-1 bg-transparent placeholder-slate-300"
                                     />
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Frequency</label>
-                                    <select
-                                        value={item.frequency}
-                                        onChange={(e) => handlePrescriptionChange(index, 'frequency', e.target.value)}
-                                        className="w-full bg-white border border-[#e9ecef] rounded-lg px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:border-slate-300 focus:ring-0 transition font-semibold"
-                                    >
-                                        <option>Once Daily</option>
-                                        <option>Twice Daily</option>
-                                        <option>Thrice Daily</option>
-                                        <option>Four Times Daily</option>
-                                        <option>As Needed (PRN)</option>
-                                    </select>
+                                    
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <span className="text-[10px] text-slate-400 font-semibold block mb-1">Dosage</span>
+                                            <input 
+                                                type="text" 
+                                                placeholder="e.g. 500mg"
+                                                value={item.dosage}
+                                                onChange={(e) => handlePrescriptionChange(index, 'dosage', e.target.value)}
+                                                className="w-full text-xs text-slate-700 border border-slate-200 rounded p-1.5 focus:border-emerald-500 focus:outline-none bg-slate-50"
+                                            />
+                                        </div>
+                                        <div>
+                                            <span className="text-[10px] text-slate-400 font-semibold block mb-1">Frequency</span>
+                                            <select 
+                                                value={item.frequency}
+                                                onChange={(e) => handlePrescriptionChange(index, 'frequency', e.target.value)}
+                                                className="w-full text-xs text-slate-700 border border-slate-200 rounded p-1.5 focus:border-emerald-500 focus:outline-none bg-slate-50"
+                                            >
+                                                <option>1-0-1 (Morning/Night)</option>
+                                                <option>1-1-1 (TDS)</option>
+                                                <option>1-0-0 (Morning)</option>
+                                                <option>0-0-1 (Night)</option>
+                                                <option>SOS (As needed)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <span className="text-[10px] text-slate-400 font-semibold block mb-1">Duration / Instructions</span>
+                                        <input 
+                                            type="text" 
+                                            placeholder="e.g. 5 Days, after food"
+                                            value={item.duration}
+                                            onChange={(e) => handlePrescriptionChange(index, 'duration', e.target.value)}
+                                            className="w-full text-xs text-slate-700 border border-slate-200 rounded p-1.5 focus:border-emerald-500 focus:outline-none bg-slate-50"
+                                        />
+                                    </div>
                                 </div>
                             </div>
-
-                            <div>
-                                <label className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Duration / Notes</label>
-                                <input 
-                                    type="text" 
-                                    value={item.duration}
-                                    onChange={(e) => handlePrescriptionChange(index, 'duration', e.target.value)}
-                                    className="w-full bg-white border border-[#e9ecef] rounded-lg px-2.5 py-1.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-slate-300 focus:ring-0 transition font-medium"
-                                    placeholder="e.g. 30 Days. Take in morning."
-                                />
+                        ))}
+                        
+                        {prescriptionItems.length === 0 && (
+                            <div className="text-center p-4 border border-dashed border-slate-300 rounded-xl bg-slate-50">
+                                <p className="text-xs text-slate-500">No medications added.</p>
                             </div>
-                        </div>
-                    ))}
-
-                    <button 
-                        type="button"
-                        onClick={addPrescriptionRow}
-                        className="w-full border-2 border-dashed border-[#e9ecef] hover:border-emerald-700/50 rounded-xl p-4 flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-emerald-700 transition"
-                    >
-                        <Plus className="w-5 h-5" />
-                        <span className="text-xs font-bold">Add Medication</span>
-                    </button>
+                        )}
+                    </div>
                 </div>
             </div>
-
-            {/* Clinical Notes Card */}
-            <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex flex-col shrink-0">
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-2">Clinical Notes (Internal)</span>
-                <textarea 
-                    rows="3"
-                    value={postRemarks}
-                    onChange={(e) => setPostRemarks(e.target.value)}
-                    className="w-full bg-slate-50 border border-[#e9ecef] rounded-xl px-3 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-slate-300 focus:ring-0 transition font-medium"
-                    placeholder="Add consultation notes here..."
-                />
-            </div>
-
-            {submitStatus && submitStatus.message && (
-                <div className={`p-4 rounded-xl border text-xs font-bold flex items-center gap-3 transition shrink-0 ${
-                    submitStatus.type === 'success' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
-                    submitStatus.type === 'error' ? 'bg-red-50 text-red-800 border-red-200' : 'bg-indigo-50 text-indigo-800 border-indigo-200'
-                }`}>
-                    <div className="w-1.5 h-1.5 rounded-full bg-current animate-ping"></div>
-                    {submitStatus.message}
-                </div>
-            )}
         </div>
     );
 }

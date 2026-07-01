@@ -3,8 +3,9 @@ import { KpiBanner } from './components/KpiBanner';
 import { OpdQueueTable } from './components/OpdQueueTable';
 import { WalkInModal } from './components/WalkInModal';
 import { Button } from '../../components/ui/Button';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, Bell } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
+import { io } from 'socket.io-client';
 
 export default function ReceptionDesk() {
   const [queue, setQueue] = useState([]);
@@ -12,10 +13,12 @@ export default function ReceptionDesk() {
   const [stats, setStats] = useState({ totalWalkIns: 0, avgWaitTime: "0 mins", activeDoctors: 0 });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [notification, setNotification] = useState(null);
 
   const clinicId = 1; // Assuming hardcoded clinic ID for now
 
-  const fetchQueue = async () => {
+  const fetchQueue = async (isBackground = false) => {
+    if (!isBackground) setLoading(true);
     try {
       const res = await axiosClient.get(`/reception/${clinicId}/queue`);
       setQueue(res.data.queue);
@@ -34,6 +37,22 @@ export default function ReceptionDesk() {
 
   useEffect(() => {
     fetchQueue();
+
+    // Setup Socket.io connection
+    const socket = io('http://localhost:5001');
+    
+    socket.on('QUEUE_UPDATE', (data) => {
+        console.log("Realtime event received: QUEUE_UPDATE", data);
+        if (data.message) {
+            setNotification(`${data.message}`);
+            setTimeout(() => setNotification(null), 5000);
+        }
+        fetchQueue(true); // pass true to indicate it's a background refresh
+    });
+
+    return () => {
+        socket.disconnect();
+    };
   }, []);
 
   const handleStatusChange = async (id, newStatus) => {
@@ -70,6 +89,13 @@ export default function ReceptionDesk() {
             Register Walk-In
           </Button>
         </header>
+
+        {notification && (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 text-blue-800 rounded-xl flex items-center gap-3 shadow-sm animate-pulse">
+            <Bell className="w-5 h-5 text-blue-500" />
+            <span className="font-semibold">{notification}</span>
+          </div>
+        )}
 
         {loading ? (
           <div className="p-8 text-center text-gray-500">Loading Queue...</div>

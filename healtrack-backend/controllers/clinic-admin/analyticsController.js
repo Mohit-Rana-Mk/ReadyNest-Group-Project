@@ -38,7 +38,16 @@ exports.getAnalytics = async (req, res) => {
 
         const noShowData = noShowResult[0] || { total_appointments: 0, cancelled_appointments: 0 };
 
-        res.status(200).json({ footfall: footfallResult, revenue: revenueResult, noShow: noShowData });
+        // Booking Sources Distribution
+        const [sourceResult] = await db.query(
+            `SELECT booking_source, COUNT(*) as count 
+             FROM appointments 
+             WHERE clinic_id = ? AND appointment_date >= DATE_SUB(NOW(), INTERVAL ? MONTH)
+             GROUP BY booking_source`,
+             [clinicId, months]
+        );
+
+        res.status(200).json({ footfall: footfallResult, revenue: revenueResult, noShow: noShowData, sources: sourceResult });
     } catch (error) {
         console.error('Analytics Error:', error);
         res.status(500).json({ message: 'Internal Server Error' });

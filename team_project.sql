@@ -240,3 +240,13 @@ CREATE TABLE notifications (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SHOW TABLES;
+
+CREATE TABLE IF NOT EXISTS patient_reports (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    patient_id INT NOT NULL,
+    appointment_id INT,
+    doctor_id INT NOT NULL,
+    report_url VARCHAR(255) NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
