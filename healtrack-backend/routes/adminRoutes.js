@@ -4,7 +4,11 @@ const adminController = require('../controllers/adminController');
 const authMiddleware = require('../middleware/authMiddleware');
 
 router.use(authMiddleware);
+
 router.get('/pending-clinics', adminController.getPendingClinics);
-router.get('/outbreak-stats', adminController.getOutbreakStats);
+router.post('/verify-clinic', adminController.verifyClinic);
+router.get('/epidemiology', adminController.getEpidemiologyTrends);
+router.get('/ai-health', adminController.getAiSystemHealth);
+router.get('/ecosystem-kpis', adminController.getEcosystemKpis);
 
 module.exports = router;

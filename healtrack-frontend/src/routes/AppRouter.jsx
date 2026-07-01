@@ -6,6 +6,7 @@ import ClinicManagementPortal from '../portals/clinic-admin/ClinicManagementPort
 import DoctorWorkstation from '../portals/doctor/DoctorWorkstation';
 import PatientApp from '../portals/patient/PatientApp';
 import ReceptionDesk from '../portals/reception/ReceptionDesk';
+import AdminDashboard from '../portals/admin/AdminDashboard';
 import ProtectedRoute from './ProtectedRoute';
 
 export default function AppRouter() {
@@ -14,6 +15,11 @@ export default function AppRouter() {
             <Routes>
                 {/* Public / Landing Route (Placeholder) */}
                 <Route path="/" element={<div className="p-4">Welcome to HealTrack AI. Navigate to a portal route.</div>} />
+
+                {/* Super Admin Workstation Routes */}
+                <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']} />}>
+                    <Route index element={<AdminDashboard />} />
+                </Route>
 
                 {/* Clinic Admin Portal Routes */}
                 <Route path="/clinic" element={<ProtectedRoute allowedRoles={['admin']} />}>

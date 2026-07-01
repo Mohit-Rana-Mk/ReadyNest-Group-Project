@@ -3,6 +3,7 @@ USE team_project;
 
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS doctor_schedules;
+DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS preventive_recommendations;
 DROP TABLE IF EXISTS patient_vitals;
 DROP TABLE IF EXISTS ai_triage_logs;
@@ -225,5 +226,17 @@ CREATE TABLE doctor_schedules (
 
 -- Add foreign key for users (Doctors) -> services (Departments)
 ALTER TABLE users ADD CONSTRAINT fk_user_service FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE SET NULL;
+
+-- -------------------------------------------------------------------------
+-- 14. NOTIFICATIONS (Registry for Patient Push Alerts)
+-- -------------------------------------------------------------------------
+CREATE TABLE notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id INT NOT NULL,
+    message TEXT NOT NULL,
+    status ENUM('Unread', 'Read') DEFAULT 'Unread',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SHOW TABLES;
