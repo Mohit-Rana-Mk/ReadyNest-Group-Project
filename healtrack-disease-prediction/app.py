@@ -124,22 +124,26 @@ def build_feature_vector(symptoms: List[str]):
     silently swallowed, so a frontend can surface "we didn't recognise
     'feever'" instead of just getting a vaguer prediction.
     """
-    feature_vector = np.zeros(len(sym_list))
+    feature_vector = np.zeros(len(sym_list), dtype=float)
     recognized = []
     unrecognized = []
 
+    next_slot = 0
     for sym in symptoms:
         # Clean the symptom string to match training format
         sym_clean = sym.strip().lower().replace(' ', '_')
 
-        if sym_clean in sym_weights:
-            recognized.append(sym)
-            # Fill the next empty slot with the symptom's severity weight
-            if sym_clean in sym_weights and sym_clean in sym_list:
-                idx = sym_list.index(sym_clean)
-                feature_vector[idx] = sym_weights[sym_clean]
-        else:
+        if sym_clean not in sym_weights:
             unrecognized.append(sym)
+            continue
+
+        recognized.append(sym_clean)
+
+        # The model was trained on positional columns (Symptom_1..Symptom_17),
+        # so populate the next available slot for each recognised symptom.
+        if next_slot < len(feature_vector):
+            feature_vector[next_slot] = float(sym_weights[sym_clean])
+            next_slot += 1
 
     return feature_vector, recognized, unrecognized
 
