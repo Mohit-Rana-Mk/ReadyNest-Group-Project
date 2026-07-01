@@ -2,7 +2,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
-import AdminDashboard from '../portals/admin/AdminDashboard';
+import ClinicManagementPortal from '../portals/clinic-admin/ClinicManagementPortal';
 import DoctorWorkstation from '../portals/doctor/DoctorWorkstation';
 import PatientApp from '../portals/patient/PatientApp';
 import ReceptionDesk from '../portals/reception/ReceptionDesk';
@@ -15,9 +15,9 @@ export default function AppRouter() {
                 {/* Public / Landing Route (Placeholder) */}
                 <Route path="/" element={<div className="p-4">Welcome to HealTrack AI. Navigate to a portal route.</div>} />
 
-                {/* Admin Portal Routes */}
-                <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']} />}>
-                    <Route index element={<AdminDashboard />} />
+                {/* Clinic Admin Portal Routes */}
+                <Route path="/clinic" element={<ProtectedRoute allowedRoles={['admin']} />}>
+                    <Route index element={<ClinicManagementPortal />} />
                 </Route>
 
                 {/* Doctor Portal Routes */}

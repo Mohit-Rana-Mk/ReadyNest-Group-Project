@@ -28,6 +28,7 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     role ENUM('Patient', 'Doctor', 'Admin', 'ClinicStaff') NOT NULL,
     status ENUM('Active', 'Suspended') DEFAULT 'Active',
+    service_id INT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_user_role (role)
@@ -38,7 +39,9 @@ CREATE TABLE users (
 -- -------------------------------------------------------------------------
 CREATE TABLE patients (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL UNIQUE,
+    user_id INT NOT NULL,
+    mrn VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
     date_of_birth DATE NULL,
     gender ENUM('Male', 'Female', 'Other', 'Prefer Not to Say') NOT NULL,
     blood_group ENUM('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-') NULL,
@@ -61,6 +64,9 @@ CREATE TABLE clinics (
     longitude DECIMAL(11, 8) NULL,
     location POINT NOT NULL SRID 4326, 
     verification_status ENUM('Pending', 'Approved', 'Delisted') DEFAULT 'Pending',
+    opening_time TIME NULL,
+    closing_time TIME NULL,
+    operational_days VARCHAR(255) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     SPATIAL INDEX idx_clinic_location (location),
     INDEX idx_clinic_status (verification_status)
@@ -217,5 +223,7 @@ CREATE TABLE doctor_schedules (
     UNIQUE KEY unique_doctor_shift (doctor_id, clinic_id, day_of_week, start_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Add foreign key for users (Doctors) -> services (Departments)
+ALTER TABLE users ADD CONSTRAINT fk_user_service FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE SET NULL;
 
 SHOW TABLES;
