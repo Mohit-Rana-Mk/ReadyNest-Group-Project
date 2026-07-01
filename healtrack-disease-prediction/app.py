@@ -199,7 +199,7 @@ def predict(request: PredictRequest):
 
         POST http://localhost:8000/predict
         Content-Type: application/json
-        Body: { "symptoms": [...], "age": 30, "gender": "female" }
+        Body: { "symptoms": [...] }
     """
 
     # Validate input 
