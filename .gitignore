@@ -35,3 +35,11 @@ dist/
 build/
 __pycache__/
 *.pyc
+
+# Python
+venv/
+.venv/
+healtrack-ml-service/venv/
+
+__pycache__/
+*.pyc
