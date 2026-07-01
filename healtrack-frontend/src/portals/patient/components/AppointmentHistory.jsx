@@ -2,7 +2,7 @@ import React from 'react';
 import { Calendar, Clock, User, Building2, FileText } from 'lucide-react';
 
 const statusColors = {
-    'Scheduled':       'bg-blue-50 text-blue-700 border-blue-200',
+    'Scheduled':       'bg-indigo-50 text-indigo-700 border-indigo-200',
     'Checked-In':      'bg-indigo-50 text-indigo-700 border-indigo-200',
     'In Consultation': 'bg-violet-50 text-violet-700 border-violet-200',
     'Completed':       'bg-emerald-50 text-emerald-700 border-emerald-200',

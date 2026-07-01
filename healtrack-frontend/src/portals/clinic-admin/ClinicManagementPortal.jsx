@@ -84,10 +84,13 @@ export default function ClinicManagementPortal() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      <aside className="w-64 bg-blue-900 text-white flex-shrink-0 hidden md:flex flex-col">
+      <aside className="w-64 bg-indigo-900 text-white flex-shrink-0 hidden md:flex flex-col">
         <div className="p-6">
-          <h1 className="text-2xl font-bold text-white tracking-wide">HealTrack AI</h1>
-          <p className="text-blue-300 text-sm mt-1">Admin Portal</p>
+          <div className="flex items-center gap-3 mb-1">
+            <img src="/logo.png" alt="HealTrack Logo" className="w-8 h-8 object-contain" />
+            <h1 className="text-2xl font-bold text-white tracking-wide">HealTrack AI</h1>
+          </div>
+          <p className="text-indigo-300 text-sm pl-11 mt-1">Admin Portal</p>
         </div>
         <nav className="flex-1 px-4 space-y-2 mt-4">
           {navigation.map((item) => {
@@ -97,10 +100,10 @@ export default function ClinicManagementPortal() {
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive ? 'bg-blue-800 text-white' : 'text-blue-100 hover:bg-blue-800/50 hover:text-white'
+                  isActive ? 'bg-indigo-800 text-white' : 'text-indigo-100 hover:bg-indigo-800/50 hover:text-white'
                 }`}
               >
-                <item.icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-blue-300'}`} />
+                <item.icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-indigo-300'}`} />
                 <span className="font-medium">{item.name}</span>
               </button>
             );
@@ -109,7 +112,7 @@ export default function ClinicManagementPortal() {
       </aside>
 
       <main className="flex-1 overflow-y-auto">
-        <div className="md:hidden bg-blue-900 p-4 text-white flex justify-between items-center">
+        <div className="md:hidden bg-indigo-900 p-4 text-white flex justify-between items-center">
           <h1 className="text-xl font-bold">HealTrack Admin</h1>
         </div>
         <div className="p-6 md:p-8 max-w-7xl mx-auto">

@@ -176,10 +176,8 @@ export default function DoctorWorkstation() {
             {/* TOP BAR */}
             <header className="h-14 bg-white border-b border-[#e9ecef] px-6 flex justify-between items-center shrink-0">
                 <div className="flex items-center gap-2">
-                    <div className="bg-emerald-700 text-white p-1.5 rounded-lg">
-                        <Activity className="w-5 h-5 stroke-[2.5]" />
-                    </div>
-                    <h2 className="font-bold text-slate-800 text-base leading-none">HealTrack <span className="text-emerald-700">Doctor</span></h2>
+                    <img src="/logo.png" alt="HealTrack Logo" className="w-8 h-8 object-contain" />
+                    <h2 className="font-bold text-slate-800 text-base leading-none">HealTrack <span className="text-indigo-700">Doctor</span></h2>
                 </div>
 
                 <div className="flex items-center gap-4">
@@ -187,11 +185,11 @@ export default function DoctorWorkstation() {
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                             <Search className="w-4 h-4 stroke-[2.2]" />
                         </span>
-                        <input 
-                            type="text" 
-                            placeholder="Search patient..."
-                            className="w-full bg-[#f1f3f5] border-0 rounded-full pl-9 pr-4 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-700 transition"
-                        />
+                            <input 
+                                type="text" 
+                                placeholder="Search patient..."
+                                className="w-full bg-[#f1f3f5] border-0 rounded-full pl-9 pr-4 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-700 transition"
+                            />
                     </div>
                     <div className="h-6 w-px bg-[#e9ecef]"></div>
                     <div className="flex items-center gap-2">
@@ -216,7 +214,7 @@ export default function DoctorWorkstation() {
 
                 {loading ? (
                     <div className="flex-1 flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-700"></div>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-700"></div>
                     </div>
                 ) : !selectedAppointment ? (
                     <div className="flex-1 flex items-center justify-center text-slate-400 flex-col">
@@ -237,7 +235,7 @@ export default function DoctorWorkstation() {
                             <div className="flex items-center gap-3 text-sm font-semibold">
                                 <span className={`px-3 py-1 rounded-full border ${
                                     selectedAppointment.status === 'Completed' 
-                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                        ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
                                         : 'bg-amber-50 text-amber-700 border-amber-200'
                                 }`}>
                                     {selectedAppointment.status}

@@ -68,7 +68,7 @@ export function StaffManagement({ staff, refreshData }) {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-blue-900">Staff Management</h2>
+        <h2 className="text-2xl font-bold text-indigo-900">Staff Management</h2>
         <Button variant="primary" onClick={openAddModal}>Add New Staff</Button>
       </div>
       
@@ -89,7 +89,7 @@ export function StaffManagement({ staff, refreshData }) {
                 <tr key={member.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{member.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${member.role === 'Doctor' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${member.role === 'Doctor' ? 'bg-purple-100 text-purple-700' : 'bg-indigo-100 text-indigo-700'}`}>
                       {member.role}
                     </span>
                   </td>

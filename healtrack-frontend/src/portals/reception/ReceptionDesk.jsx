@@ -80,9 +80,12 @@ export default function ReceptionDesk() {
       <div className="max-w-7xl mx-auto">
         
         <header className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-blue-900">Reception Desk</h1>
-            <p className="text-gray-500 mt-1">Manage outpatient department queue and walk-ins.</p>
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="HealTrack Logo" className="w-10 h-10 object-contain" />
+            <div>
+              <h1 className="text-3xl font-bold text-indigo-900 leading-tight">Reception Desk</h1>
+              <p className="text-gray-500">Manage outpatient department queue and walk-ins.</p>
+            </div>
           </div>
           <Button variant="primary" onClick={() => setIsModalOpen(true)} className="gap-2 shrink-0">
             <UserPlus className="w-5 h-5" />
@@ -91,8 +94,8 @@ export default function ReceptionDesk() {
         </header>
 
         {notification && (
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 text-blue-800 rounded-xl flex items-center gap-3 shadow-sm animate-pulse">
-            <Bell className="w-5 h-5 text-blue-500" />
+          <div className="mb-6 p-4 bg-indigo-50 border border-indigo-200 text-indigo-800 rounded-xl flex items-center gap-3 shadow-sm animate-pulse">
+            <Bell className="w-5 h-5 text-indigo-500" />
             <span className="font-semibold">{notification}</span>
           </div>
         )}

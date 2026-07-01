@@ -80,7 +80,7 @@ export function DepartmentManager({ departments, refreshData }) {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-blue-900">Departments & Services</h2>
+        <h2 className="text-2xl font-bold text-indigo-900">Departments & Services</h2>
         <Button variant="primary" onClick={openAddModal}>Add Department</Button>
       </div>
       
@@ -90,11 +90,11 @@ export function DepartmentManager({ departments, refreshData }) {
           return (
             <Card key={dept.id} className="p-6 border-t-4 hover:shadow-md transition-shadow relative" style={{ borderTopColor: '#3b82f6' }}>
               <div className="flex justify-between items-start mb-4">
-                <div className="p-3 bg-blue-50 rounded-lg text-blue-600">
+                <div className="p-3 bg-indigo-50 rounded-lg text-indigo-600">
                   <Icon className="w-8 h-8" />
                 </div>
                 <div className="flex space-x-2">
-                  <button onClick={() => openEditModal(dept)} className="text-gray-400 hover:text-blue-600 transition-colors">
+                  <button onClick={() => openEditModal(dept)} className="text-gray-400 hover:text-indigo-600 transition-colors">
                     <Edit2 className="w-4 h-4" />
                   </button>
                   <button onClick={() => handleDelete(dept.id)} className="text-gray-400 hover:text-red-600 transition-colors">

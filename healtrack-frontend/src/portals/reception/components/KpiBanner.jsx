@@ -4,7 +4,7 @@ import { Users, Clock, Stethoscope } from 'lucide-react';
 
 export function KpiBanner({ totalWalkIns, avgWaitTime, activeDoctors }) {
   const kpis = [
-    { label: 'Total Patients (Today)', value: totalWalkIns, icon: Users, color: 'text-blue-600', bg: 'bg-blue-100' },
+    { label: 'Total Patients (Today)', value: totalWalkIns, icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-100' },
     { label: 'Avg. Wait Time', value: avgWaitTime, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-100' },
     { label: 'Active Doctors', value: activeDoctors, icon: Stethoscope, color: 'text-green-600', bg: 'bg-green-100' },
   ];

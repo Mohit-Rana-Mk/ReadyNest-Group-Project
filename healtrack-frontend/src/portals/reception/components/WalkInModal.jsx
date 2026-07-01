@@ -117,26 +117,26 @@ export function WalkInModal({ isOpen, onClose, onRegister, doctors = [] }) {
           <label className="block text-sm font-medium text-gray-700 mb-1">Account Phone Number</label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              {isLookingUp ? <Loader2 className="h-4 w-4 text-blue-500 animate-spin" /> : <Search className="h-4 w-4 text-gray-400" />}
+              {isLookingUp ? <Loader2 className="h-4 w-4 text-indigo-500 animate-spin" /> : <Search className="h-4 w-4 text-gray-400" />}
             </div>
             <input 
               type="tel" 
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="e.g. 9876543210 (Lookup Family)" 
-              className="pl-10 w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-blue-500 focus:border-blue-500 sm:text-sm outline-none"
+              className="pl-10 w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm outline-none"
             />
           </div>
           <p className="mt-1 text-xs text-gray-500">Enter phone to auto-fill existing family members.</p>
         </div>
 
         {existingPatients.length > 0 && (
-          <div className="p-3 bg-blue-50 rounded-md border border-blue-100">
-            <label className="block text-sm font-medium text-blue-900 mb-1">Select Family Member</label>
+          <div className="p-3 bg-indigo-50 rounded-md border border-indigo-100">
+            <label className="block text-sm font-medium text-indigo-900 mb-1">Select Family Member</label>
             <select 
               value={selectedPatientId}
               onChange={handlePatientSelect}
-              className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white outline-none"
+              className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white outline-none"
             >
               {existingPatients.map(p => (
                 <option key={p.id} value={p.id}>{p.name} {p.mrn ? `(${p.mrn})` : ''}</option>
@@ -155,7 +155,7 @@ export function WalkInModal({ isOpen, onClose, onRegister, doctors = [] }) {
               disabled={!isNewPatient}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-blue-500 focus:border-blue-500 sm:text-sm outline-none disabled:bg-gray-100 disabled:text-gray-500"
+              className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm outline-none disabled:bg-gray-100 disabled:text-gray-500"
             />
           </div>
           <div>
@@ -165,7 +165,7 @@ export function WalkInModal({ isOpen, onClose, onRegister, doctors = [] }) {
               disabled={!isNewPatient}
               value={dob}
               onChange={(e) => setDob(e.target.value)}
-              className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-blue-500 focus:border-blue-500 sm:text-sm outline-none disabled:bg-gray-100 disabled:text-gray-500"
+              className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm outline-none disabled:bg-gray-100 disabled:text-gray-500"
             />
           </div>
         </div>
@@ -176,7 +176,7 @@ export function WalkInModal({ isOpen, onClose, onRegister, doctors = [] }) {
             required
             value={doctor_id}
             onChange={(e) => setDoctorId(e.target.value)}
-            className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white outline-none"
+            className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white outline-none"
           >
             <option value="">Select a Doctor...</option>
             {doctors.map(doc => (
@@ -191,7 +191,7 @@ export function WalkInModal({ isOpen, onClose, onRegister, doctors = [] }) {
             value={preRemarks}
             onChange={(e) => setPreRemarks(e.target.value)}
             placeholder="e.g. Patient complaining of severe headache, BP taken by nurse is 120/80..."
-            className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white outline-none min-h-[60px] resize-y"
+            className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white outline-none min-h-[60px] resize-y"
           />
         </div>
 

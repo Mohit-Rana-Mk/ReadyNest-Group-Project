@@ -113,11 +113,11 @@ export function ReportUpload({ patientId, appointmentId, doctorId, onUploadSucce
                     <div className={`mt-3 p-3 rounded-lg flex items-start gap-2 text-sm ${
                         status.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
                         status.type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' :
-                        'bg-blue-50 text-blue-700 border border-blue-200'
+                        'bg-indigo-50 text-indigo-700 border border-indigo-200'
                     }`}>
                         {status.type === 'success' ? <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" /> :
                          status.type === 'error' ? <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" /> :
-                         <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent mt-0.5 shrink-0"></div>}
+                         <div className="animate-spin rounded-full h-4 w-4 border-2 border-indigo-500 border-t-transparent mt-0.5 shrink-0"></div>}
                         <span className="font-medium">{status.msg}</span>
                     </div>
                 )}

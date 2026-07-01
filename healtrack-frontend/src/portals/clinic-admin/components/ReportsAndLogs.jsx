@@ -60,12 +60,12 @@ export function ReportsAndLogs() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-blue-900">Reports & System Logs</h2>
+      <h2 className="text-2xl font-bold text-indigo-900">Reports & System Logs</h2>
       
       <div className="grid grid-cols-1 gap-6 mb-6">
-        <Card className="p-6 flex items-center justify-between bg-blue-50 border-blue-200">
+        <Card className="p-6 flex items-center justify-between bg-indigo-50 border-indigo-200">
           <div className="flex items-center space-x-4">
-            <FileText className="w-8 h-8 text-blue-600" />
+            <FileText className="w-8 h-8 text-indigo-600" />
             <div>
               <h4 className="font-semibold text-gray-900">Financial Ledger Export</h4>
               <p className="text-sm text-gray-500">Includes all completed consultation fees</p>

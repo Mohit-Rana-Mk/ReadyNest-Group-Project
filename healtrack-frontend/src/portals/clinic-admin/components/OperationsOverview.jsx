@@ -11,12 +11,12 @@ export function OperationsOverview({ operations }) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-blue-900">Operations Overview</h2>
+      <h2 className="text-2xl font-bold text-indigo-900">Operations Overview</h2>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="p-6">
           <div className="flex items-center space-x-3 mb-6">
-            <Activity className="text-blue-600 w-6 h-6" />
+            <Activity className="text-indigo-600 w-6 h-6" />
             <h3 className="text-lg font-semibold text-gray-900">Live OP Queue Pulse (Today)</h3>
           </div>
           <div className="space-y-4">
@@ -26,7 +26,7 @@ export function OperationsOverview({ operations }) {
             </div>
             <div className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
               <span className="text-gray-600">Currently Waiting</span>
-              <span className="font-bold text-xl text-blue-600">{waiting}</span>
+              <span className="font-bold text-xl text-indigo-600">{waiting}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
               <span className="text-gray-600">In Consultation</span>

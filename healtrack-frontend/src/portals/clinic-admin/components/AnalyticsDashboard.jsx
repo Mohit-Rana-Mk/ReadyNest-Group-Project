@@ -47,14 +47,14 @@ export function AnalyticsDashboard({ data }) {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-blue-900">Analytics Dashboard</h2>
+        <h2 className="text-2xl font-bold text-indigo-900">Analytics Dashboard</h2>
         
         <div className="flex items-center space-x-2">
           <label className="text-sm font-medium text-gray-700">Timeframe:</label>
           <select 
             value={timeframe} 
             onChange={(e) => setTimeframe(Number(e.target.value))}
-            className="border border-gray-300 rounded-md py-1.5 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+            className="border border-gray-300 rounded-md py-1.5 px-3 text-sm focus:ring-indigo-500 focus:border-indigo-500"
           >
             <option value={1}>Last 1 Month</option>
             <option value={3}>Last 3 Months</option>
@@ -66,7 +66,7 @@ export function AnalyticsDashboard({ data }) {
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="p-5 flex items-center space-x-4 relative">
-          <div className="p-3 bg-blue-100 rounded-full text-blue-700">
+          <div className="p-3 bg-indigo-100 rounded-full text-indigo-700">
             <TrendingUp className="w-6 h-6" />
           </div>
           <div>

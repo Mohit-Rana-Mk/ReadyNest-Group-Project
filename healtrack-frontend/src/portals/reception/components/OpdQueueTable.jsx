@@ -54,7 +54,7 @@ export function OpdQueueTable({ queue, onStatusChange }) {
                   {(appointment.status === 'Scheduled' || appointment.status === 'Checked-In') && (
                     <button
                       onClick={() => onStatusChange(appointment.id, 'In Consultation')}
-                      className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-1.5 px-3 rounded shadow-sm transition"
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-1.5 px-3 rounded shadow-sm transition"
                     >
                       Send In
                     </button>
@@ -62,7 +62,7 @@ export function OpdQueueTable({ queue, onStatusChange }) {
                   <select
                     value={appointment.status}
                     onChange={(e) => onStatusChange(appointment.id, e.target.value)}
-                    className="block rounded-md border-gray-300 py-1 pl-2 pr-6 text-xs focus:border-blue-500 focus:outline-none focus:ring-blue-500 bg-white border"
+                    className="block rounded-md border-gray-300 py-1 pl-2 pr-6 text-xs focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 bg-white border"
                   >
                     {statusOptions.map(opt => (
                       <option key={opt} value={opt}>{opt}</option>
@@ -101,7 +101,7 @@ export function OpdQueueTable({ queue, onStatusChange }) {
               placeholder="Search patients..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-white border border-gray-300 rounded-lg pl-9 pr-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500 transition"
+              className="w-full bg-white border border-gray-300 rounded-lg pl-9 pr-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
             />
           </div>
         </div>

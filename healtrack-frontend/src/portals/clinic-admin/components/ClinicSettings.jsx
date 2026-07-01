@@ -94,7 +94,7 @@ export function ClinicSettings() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-blue-900">Clinic Settings</h2>
+      <h2 className="text-2xl font-bold text-indigo-900">Clinic Settings</h2>
       
       <Card className="p-6 max-w-3xl">
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -103,7 +103,7 @@ export function ClinicSettings() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Clinic Name</label>
-                <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-blue-500 focus:border-blue-500" />
+                <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">License Number</label>
@@ -111,7 +111,7 @@ export function ClinicSettings() {
               </div>
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                <textarea required value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-blue-500 focus:border-blue-500" rows="2"></textarea>
+                <textarea required value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500" rows="2"></textarea>
               </div>
               
               {/* Geolocation Fields */}
@@ -124,10 +124,10 @@ export function ClinicSettings() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <input type="number" step="any" placeholder="Latitude" value={formData.latitude} onChange={e => setFormData({...formData, latitude: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500" />
+                    <input type="number" step="any" placeholder="Latitude" value={formData.latitude} onChange={e => setFormData({...formData, latitude: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
                   </div>
                   <div>
-                    <input type="number" step="any" placeholder="Longitude" value={formData.longitude} onChange={e => setFormData({...formData, longitude: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500" />
+                    <input type="number" step="any" placeholder="Longitude" value={formData.longitude} onChange={e => setFormData({...formData, longitude: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
                   </div>
                 </div>
               </div>
@@ -142,7 +142,7 @@ export function ClinicSettings() {
               <label className="block text-sm font-medium text-gray-700 mb-2">Operational Days</label>
               <div className="flex flex-wrap gap-2">
                 {DAYS_OF_WEEK.map((day) => (
-                  <label key={day} className={`px-3 py-1.5 rounded-full text-sm cursor-pointer border transition-colors ${formData.operational_days.includes(day) ? 'bg-blue-100 border-blue-500 text-blue-700' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}`}>
+                  <label key={day} className={`px-3 py-1.5 rounded-full text-sm cursor-pointer border transition-colors ${formData.operational_days.includes(day) ? 'bg-indigo-100 border-indigo-500 text-indigo-700' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}`}>
                     <input type="checkbox" className="hidden" checked={formData.operational_days.includes(day)} onChange={() => handleDayToggle(day)} />
                     {day}
                   </label>
@@ -153,11 +153,11 @@ export function ClinicSettings() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Opening Time</label>
-                <input required type="time" value={formData.opening_time} onChange={e => setFormData({...formData, opening_time: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-blue-500 focus:border-blue-500" />
+                <input required type="time" value={formData.opening_time} onChange={e => setFormData({...formData, opening_time: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Closing Time</label>
-                <input required type="time" value={formData.closing_time} onChange={e => setFormData({...formData, closing_time: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-blue-500 focus:border-blue-500" />
+                <input required type="time" value={formData.closing_time} onChange={e => setFormData({...formData, closing_time: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500" />
               </div>
             </div>
           </div>

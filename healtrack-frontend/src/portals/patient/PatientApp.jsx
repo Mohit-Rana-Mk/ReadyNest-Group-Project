@@ -58,13 +58,16 @@ export default function PatientApp() {
                 {/* Top bar (always visible) */}
                 <header className="sticky top-0 z-40 bg-gray-50/80 backdrop-blur-md pt-4 pb-3">
                     <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-xl font-extrabold text-gray-900 tracking-tight">
-                                HealTrack
-                            </h1>
-                            <p className="text-[10px] text-gray-400 -mt-0.5">Your Health Companion</p>
+                        <div className="flex items-center gap-2">
+                            <img src="/logo.png" alt="HealTrack Logo" className="w-8 h-8 object-contain" />
+                            <div>
+                                <h1 className="text-xl font-extrabold text-gray-900 tracking-tight leading-tight">
+                                    HealTrack
+                                </h1>
+                                <p className="text-[10px] text-gray-400">Your Health Companion</p>
+                            </div>
                         </div>
-                        <div className="p-2 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl shadow-md">
+                        <div className="p-2 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl shadow-md cursor-pointer hover:shadow-lg transition-all">
                             <Heart size={18} className="text-white" />
                         </div>
                     </div>
