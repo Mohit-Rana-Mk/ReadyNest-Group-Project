@@ -48,3 +48,39 @@ class PredictionResponse(BaseModel):
     risks: RiskScores
     recommendations: RecommendationResponse
     alerts: List[str]
+
+
+# -------------------------------
+# Symptom Disease Prediction
+# -------------------------------
+
+class DiseasePredictInput(BaseModel):
+    symptoms: List[str]
+
+
+# -------------------------------
+# Outbreak Prediction
+# -------------------------------
+
+class DiseaseCaseInput(BaseModel):
+    disease: str
+    recent_cases: int
+    prior_cases: int
+
+class OutbreakPredictInput(BaseModel):
+    disease_cases: List[DiseaseCaseInput]
+    season_index: int = Field(2, ge=1, le=4)
+    density_score: int = Field(5, ge=1, le=10)
+
+class OutbreakDiseaseResult(BaseModel):
+    disease: str
+    recent_cases: int
+    prior_cases: int
+    growth_rate: float
+    risk_tier: str
+    confidence: float
+    recommendation: str
+
+class OutbreakPredictResponse(BaseModel):
+    success: bool
+    results: List[OutbreakDiseaseResult]

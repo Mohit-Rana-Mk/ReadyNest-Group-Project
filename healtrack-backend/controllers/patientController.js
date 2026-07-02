@@ -133,51 +133,122 @@ exports.submitTriage = async (req, res) => {
     }
 
     try {
-        // ── Mock AI Engine ──────────────────────────────────
-        // In production this would call an ML microservice.
+        // 1. Fetch valid symptoms list from ML Service
+        let validSymptoms = [];
+        try {
+            const symResponse = await fetch('http://localhost:8000/api/v1/symptoms');
+            if (symResponse.ok) {
+                validSymptoms = await symResponse.json();
+            }
+        } catch (err) {
+            console.error('Error calling ML service for symptoms:', err.message);
+        }
+
+        // Fallback list of common symptoms if ML service is down
+        if (!validSymptoms || validSymptoms.length === 0) {
+            validSymptoms = [
+                'itching', 'skin_rash', 'continuous_sneezing', 'shivering', 'chills', 'joint_pain',
+                'stomach_pain', 'acidity', 'ulcers_on_tongue', 'muscle_wasting', 'vomiting',
+                'burning_micturition', 'spotting_urination', 'fatigue', 'weight_gain', 'anxiety',
+                'cold_hands_and_feets', 'mood_swings', 'weight_loss', 'restlessness', 'lethargy',
+                'patches_in_throat', 'irregular_sugar_level', 'cough', 'high_fever', 'sunken_eyes',
+                'breathlessness', 'sweating', 'dehydration', 'indigestion', 'headache', 'yellowish_skin',
+                'dark_urine', 'nausea', 'loss_of_appetite', 'pain_behind_the_eyes', 'back_pain',
+                'constipation', 'abdominal_pain', 'diarrhoea', 'mild_fever', 'yellow_urine',
+                'yellowing_of_eyes', 'acute_liver_failure', 'fluid_overload', 'swelling_of_stomach',
+                'swelled_lymph_nodes', 'malaise', 'blurred_and_distorted_vision', 'phlegm',
+                'throat_irritation', 'redness_of_eyes', 'sinus_pressure', 'runny_nose', 'congestion',
+                'chest_pain', 'weakness_in_limbs', 'fast_heart_rate', 'pain_during_bowel_movements',
+                'pain_in_anal_region', 'bloody_stool', 'irritation_in_anus', 'neck_pain', 'dizziness',
+                'cramps', 'bruising', 'obesity', 'swollen_legs', 'swollen_blood_vessels',
+                'puffy_face_and_eyes', 'enlarged_thyroid', 'brittle_nails', 'swollen_extremeties',
+                'excessive_hunger', 'extra_marital_contacts', 'drying_of_peels_and_cutis',
+                'internal_itching', 'toxic_look_(typhos)', 'depression', 'irritability', 'muscle_pain',
+                'altered_sensorium', 'red_spots_over_body', 'belly_pain', 'abnormal_menstruation',
+                'dischromic_patches', 'watering_from_eyes', 'increased_appetite', 'polyuria',
+                'family_history', 'mucoid_sputum', 'rusty_sputum', 'lack_of_concentration',
+                'visual_disturbances', 'receiving_blood_transfusion', 'receiving_unsterile_injection',
+                'coma', 'stomach_bleeding', 'distention_of_abdomen', 'history_of_alcohol_consumption',
+                'blood_in_sputum', 'prominent_veins_on_calf', 'palpitations', 'painful_walking',
+                'pus_filled_pimples', 'blackheads', 'scurring', 'skin_peeling', 'silver_like_dusting',
+                'small_dents_in_nails', 'inflammatory_nails', 'blister', 'red_sore_around_nose',
+                'yellow_crust_ooze'
+            ];
+        }
+
         const inputLower = user_input.toLowerCase();
-        const symptomMap = {
-            'headache': 'Headache', 'fever': 'Fever', 'cough': 'Cough',
-            'chest pain': 'Chest Pain', 'nausea': 'Nausea', 'fatigue': 'Fatigue',
-            'dizziness': 'Dizziness', 'sore throat': 'Sore Throat',
-            'shortness of breath': 'Shortness of Breath', 'body ache': 'Body Ache',
-            'cold': 'Cold', 'vomiting': 'Vomiting', 'back pain': 'Back Pain'
-        };
+        const matchedSymptoms = [];
 
-        const extractedSymptoms = Object.keys(symptomMap)
-            .filter(key => inputLower.includes(key))
-            .map(key => symptomMap[key]);
+        // Scan and match symptoms from free text
+        validSymptoms.forEach(sym => {
+            // Replace underscores with spaces for natural language matching
+            const readableSym = sym.replace(/_/g, ' ');
+            if (inputLower.includes(readableSym)) {
+                matchedSymptoms.push(sym);
+            }
+        });
 
-        // Fallback: if no known symptom matched, echo the raw input
-        if (extractedSymptoms.length === 0) {
-            extractedSymptoms.push(user_input.trim());
+        // Fallback to basic keywords if no matching symptom
+        if (matchedSymptoms.length === 0) {
+            if (inputLower.includes('fever') || inputLower.includes('hot')) matchedSymptoms.push('high_fever');
+            if (inputLower.includes('headache') || inputLower.includes('head pain')) matchedSymptoms.push('headache');
+            if (inputLower.includes('cough')) matchedSymptoms.push('cough');
+            if (inputLower.includes('vomit')) matchedSymptoms.push('vomiting');
+            if (inputLower.includes('tired') || inputLower.includes('weak')) matchedSymptoms.push('fatigue');
+            if (inputLower.includes('dizzy')) matchedSymptoms.push('dizziness');
+            if (inputLower.includes('nausea') || inputLower.includes('sick')) matchedSymptoms.push('nausea');
+            if (inputLower.includes('chest pain')) matchedSymptoms.push('chest_pain');
+            if (inputLower.includes('breath') || inputLower.includes('short of breath')) matchedSymptoms.push('breathlessness');
         }
 
-        // Risk scoring: High-risk keywords escalate the prediction
         let predictedRisk = 'Low';
-        const highRisk = ['chest pain', 'shortness of breath'];
-        const mediumRisk = ['fever', 'dizziness', 'nausea', 'vomiting'];
-
-        if (highRisk.some(s => inputLower.includes(s))) {
-            predictedRisk = 'High';
-        } else if (mediumRisk.some(s => inputLower.includes(s)) || extractedSymptoms.length >= 2) {
-            predictedRisk = 'Medium';
-        }
-
-        // ── Mock Disease Prediction ─────────────────────────
         let predictedDisease = 'Unknown / Needs Clinical Evaluation';
-        if (inputLower.includes('chest pain') || inputLower.includes('shortness of breath')) {
-            predictedDisease = 'Possible Cardiac Event or Severe Respiratory Infection';
-        } else if (inputLower.includes('fever') && inputLower.includes('cough')) {
-            predictedDisease = 'Viral Influenza or Upper Respiratory Infection';
-        } else if (inputLower.includes('fever') && inputLower.includes('body ache')) {
-            predictedDisease = 'Dengue or Viral Fever';
-        } else if (inputLower.includes('headache') && inputLower.includes('nausea')) {
-            predictedDisease = 'Migraine or Gastrointestinal Infection';
+        let recommendation = 'Monitor your symptoms. If they persist for more than 48 hours, consider a visit.';
+        let predictionsList = [];
+
+        if (matchedSymptoms.length > 0) {
+            // 2. Call ML Service disease prediction endpoint
+            try {
+                const mlResponse = await fetch('http://localhost:8000/api/v1/predict/disease', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symptoms: matchedSymptoms })
+                });
+
+                if (mlResponse.ok) {
+                    const mlData = await mlResponse.json();
+                    if (mlData.success && mlData.predictions && mlData.predictions.length > 0) {
+                        predictionsList = mlData.predictions;
+                        const topPrediction = mlData.predictions[0];
+                        predictedDisease = `${topPrediction.disease} (${topPrediction.confidence}% confidence)`;
+                        predictedRisk = topPrediction.risk_tier;
+
+                        if (predictedRisk === 'Urgent') {
+                            recommendation = 'Please visit a hospital immediately or call emergency services.';
+                        } else if (predictedRisk === 'High') {
+                            recommendation = 'We highly recommend booking an urgent consultation today.';
+                        } else if (predictedRisk === 'Moderate') {
+                            recommendation = 'We recommend booking a consultation within 24 to 48 hours.';
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('Error calling ML service for prediction:', err.message);
+                // Fallback to simple matching if ML service fails
+                if (inputLower.includes('chest pain') || inputLower.includes('shortness of breath')) {
+                    predictedRisk = 'High';
+                    predictedDisease = 'Possible Cardiac Event (Fallback)';
+                    recommendation = 'Please visit a hospital immediately or call emergency services.';
+                } else if (inputLower.includes('fever') && inputLower.includes('cough')) {
+                    predictedRisk = 'Medium';
+                    predictedDisease = 'Viral Influenza (Fallback)';
+                    recommendation = 'We recommend booking a consultation within 24 hours.';
+                }
+            }
         }
 
-        // ── Persist to database ─────────────────────────────
-        const symptomsJson = JSON.stringify(extractedSymptoms);
+        // 3. Persist to database
+        const symptomsJson = JSON.stringify(matchedSymptoms.map(s => s.replace(/_/g, ' ')));
 
         await db.execute(
             `INSERT INTO ai_triage_logs (patient_id, user_input, extracted_symptoms, predicted_risk)
@@ -185,16 +256,13 @@ exports.submitTriage = async (req, res) => {
             [patient_id, user_input, symptomsJson, predictedRisk]
         );
 
-        // ── Return AI response to client ────────────────────
+        // 4. Return AI response to client
         res.status(201).json({
             predicted_risk: predictedRisk,
-            extracted_symptoms: extractedSymptoms,
+            extracted_symptoms: matchedSymptoms.map(s => s.replace(/_/g, ' ')),
             predicted_disease: predictedDisease,
-            recommendation: predictedRisk === 'High'
-                ? 'Please visit a hospital immediately or call emergency services.'
-                : predictedRisk === 'Medium'
-                    ? 'We recommend booking a consultation within 24 hours.'
-                    : 'Monitor your symptoms. If they persist for more than 48 hours, consider a visit.'
+            recommendation: recommendation,
+            predictions: predictionsList
         });
     } catch (error) {
         console.error('Submit Triage Error:', error);

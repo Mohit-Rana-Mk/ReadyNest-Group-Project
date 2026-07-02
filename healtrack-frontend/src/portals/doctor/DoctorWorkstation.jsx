@@ -12,8 +12,10 @@ import { VitalsCard } from './components/VitalsCard';
 import { HistoryTimeline } from './components/HistoryTimeline';
 import { PrescriptionBuilder } from './components/PrescriptionBuilder';
 import { ReportUpload } from './components/ReportUpload';
+import { PatientAnalytics } from './components/PatientAnalytics';
 
 export default function DoctorWorkstation() {
+    const [currentTab, setCurrentTab] = useState('workspace'); // 'workspace' or 'analytics'
     const [appointments, setAppointments] = useState([]);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [patientHistory, setPatientHistory] = useState(null);
@@ -180,6 +182,30 @@ export default function DoctorWorkstation() {
                     <h2 className="font-bold text-slate-800 text-base leading-none">HealTrack <span className="text-indigo-700">Doctor</span></h2>
                 </div>
 
+                {/* Switcher Tabs */}
+                <div className="flex bg-[#f1f3f5] p-1 rounded-full text-xs">
+                    <button 
+                        onClick={() => setCurrentTab('workspace')}
+                        className={`px-4 py-1.5 rounded-full font-bold transition-all ${
+                            currentTab === 'workspace' 
+                                ? 'bg-indigo-700 text-white shadow-sm' 
+                                : 'text-slate-600 hover:text-slate-800'
+                        }`}
+                    >
+                        Workstation
+                    </button>
+                    <button 
+                        onClick={() => setCurrentTab('analytics')}
+                        className={`px-4 py-1.5 rounded-full font-bold transition-all ${
+                            currentTab === 'analytics' 
+                                ? 'bg-indigo-700 text-white shadow-sm' 
+                                : 'text-slate-600 hover:text-slate-800'
+                        }`}
+                    >
+                        Patient Analytics
+                    </button>
+                </div>
+
                 <div className="flex items-center gap-4">
                     <div className="w-64 relative hidden md:block">
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
@@ -203,101 +229,107 @@ export default function DoctorWorkstation() {
 
             {/* MAIN WORKSPACE */}
             <main className="flex-1 flex overflow-hidden">
-                {/* COLUMN 1: Daily Queue */}
-                <PatientQueue 
-                    appointments={appointments} 
-                    selectedAppointment={selectedAppointment}
-                    handleSelectAppointment={handleSelectAppointment}
-                    dateFilter={dateFilter}
-                    setDateFilter={setDateFilter}
-                />
-
-                {loading ? (
-                    <div className="flex-1 flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-700"></div>
-                    </div>
-                ) : !selectedAppointment ? (
-                    <div className="flex-1 flex items-center justify-center text-slate-400 flex-col">
-                        <Monitor className="w-12 h-12 mb-4 text-slate-300" />
-                        <p>Select a patient from the queue to start session.</p>
-                    </div>
+                {currentTab === 'analytics' ? (
+                    <PatientAnalytics />
                 ) : (
-                    <div className="flex-1 flex flex-col relative overflow-hidden">
-                        
-                        {/* Session Header */}
-                        <div className="bg-white border-b border-[#e9ecef] p-4 flex justify-between items-center shrink-0">
-                            <div>
-                                <h2 className="text-lg font-bold text-slate-800">{selectedAppointment.patient_name}</h2>
-                                <p className="text-xs text-slate-500">
-                                    {selectedAppointment.gender} • {new Date().getFullYear() - new Date(selectedAppointment.date_of_birth).getFullYear()} yrs • Blood: {selectedAppointment.blood_group}
-                                </p>
-                            </div>
-                            <div className="flex items-center gap-3 text-sm font-semibold">
-                                <span className={`px-3 py-1 rounded-full border ${
-                                    selectedAppointment.status === 'Completed' 
-                                        ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
-                                        : 'bg-amber-50 text-amber-700 border-amber-200'
-                                }`}>
-                                    {selectedAppointment.status}
-                                </span>
-                            </div>
-                        </div>
+                    <>
+                        {/* COLUMN 1: Daily Queue */}
+                        <PatientQueue 
+                            appointments={appointments} 
+                            selectedAppointment={selectedAppointment}
+                            handleSelectAppointment={handleSelectAppointment}
+                            dateFilter={dateFilter}
+                            setDateFilter={setDateFilter}
+                        />
 
-                        {/* Split Panes */}
-                        <div className="flex-1 flex gap-6 p-6 overflow-hidden">
-                            {/* Left Pane: History Timeline */}
-                            <div className="flex-1 min-w-0">
-                                <HistoryTimeline patientHistory={patientHistory} loadingHistory={loadingHistory} />
+                        {loading ? (
+                            <div className="flex-1 flex items-center justify-center">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-700"></div>
                             </div>
-                            
-                            {/* Right Pane: Vitals & Prescriptions */}
-                            <div className="w-[400px] shrink-0 flex flex-col gap-6 overflow-y-auto pr-2 pb-24">
-                                <VitalsCard vitals={vitals} handleVitalsChange={handleVitalsChange} />
+                        ) : !selectedAppointment ? (
+                            <div className="flex-1 flex items-center justify-center text-slate-400 flex-col">
+                                <Monitor className="w-12 h-12 mb-4 text-slate-300" />
+                                <p>Select a patient from the queue to start session.</p>
+                            </div>
+                        ) : (
+                            <div className="flex-1 flex flex-col relative overflow-hidden">
                                 
-                                <ReportUpload 
-                                    patientId={selectedAppointment.patient_id}
-                                    appointmentId={selectedAppointment.appointment_id}
-                                    doctorId={selectedAppointment.doctor_id}
-                                />
+                                {/* Session Header */}
+                                <div className="bg-white border-b border-[#e9ecef] p-4 flex justify-between items-center shrink-0">
+                                    <div>
+                                        <h2 className="text-lg font-bold text-slate-800">{selectedAppointment.patient_name}</h2>
+                                        <p className="text-xs text-slate-500">
+                                            {selectedAppointment.gender} • {new Date().getFullYear() - new Date(selectedAppointment.date_of_birth).getFullYear()} yrs • Blood: {selectedAppointment.blood_group}
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-3 text-sm font-semibold">
+                                        <span className={`px-3 py-1 rounded-full border ${
+                                            selectedAppointment.status === 'Completed' 
+                                                ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                                                : 'bg-amber-50 text-amber-700 border-amber-200'
+                                        }`}>
+                                            {selectedAppointment.status}
+                                        </span>
+                                    </div>
+                                </div>
 
-                                <PrescriptionBuilder 
-                                    prescriptionItems={prescriptionItems}
-                                    handlePrescriptionChange={handlePrescriptionChange}
-                                    addPrescriptionRow={addPrescriptionRow}
-                                    removePrescriptionRow={removePrescriptionRow}
-                                    diagnosis={diagnosis}
-                                    setDiagnosis={setDiagnosis}
-                                    preRemarks={preRemarks}
-                                    setPreRemarks={setPreRemarks}
-                                    postRemarks={postRemarks}
-                                    setPostRemarks={setPostRemarks}
-                                />
-                            </div>
-                        </div>
+                                {/* Split Panes */}
+                                <div className="flex-1 flex gap-6 p-6 overflow-hidden">
+                                    {/* Left Pane: History Timeline */}
+                                    <div className="flex-1 min-w-0">
+                                        <HistoryTimeline patientHistory={patientHistory} loadingHistory={loadingHistory} />
+                                    </div>
+                                    
+                                    {/* Right Pane: Vitals & Prescriptions */}
+                                    <div className="w-[400px] shrink-0 flex flex-col gap-6 overflow-y-auto pr-2 pb-24">
+                                        <VitalsCard vitals={vitals} handleVitalsChange={handleVitalsChange} />
+                                        
+                                        <ReportUpload 
+                                            patientId={selectedAppointment.patient_id}
+                                            appointmentId={selectedAppointment.appointment_id}
+                                            doctorId={selectedAppointment.doctor_id}
+                                        />
 
-                        {/* ATOMIC SIGN-OFF BAR */}
-                        <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-[#e9ecef] p-4 flex justify-between items-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-10">
-                            <div className="text-sm font-medium">
-                                {submitStatus.message && (
-                                    <span className={submitStatus.type === 'error' ? 'text-red-500' : 'text-emerald-600'}>
-                                        {submitStatus.message}
-                                    </span>
-                                )}
+                                        <PrescriptionBuilder 
+                                            prescriptionItems={prescriptionItems}
+                                            handlePrescriptionChange={handlePrescriptionChange}
+                                            addPrescriptionRow={addPrescriptionRow}
+                                            removePrescriptionRow={removePrescriptionRow}
+                                            diagnosis={diagnosis}
+                                            setDiagnosis={setDiagnosis}
+                                            preRemarks={preRemarks}
+                                            setPreRemarks={setPreRemarks}
+                                            postRemarks={postRemarks}
+                                            setPostRemarks={setPostRemarks}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* ATOMIC SIGN-OFF BAR */}
+                                <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-[#e9ecef] p-4 flex justify-between items-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-10">
+                                    <div className="text-sm font-medium">
+                                        {submitStatus.message && (
+                                            <span className={submitStatus.type === 'error' ? 'text-red-500' : 'text-emerald-600'}>
+                                                {submitStatus.message}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <button
+                                        onClick={handleSubmitConsultation}
+                                        disabled={selectedAppointment.status === 'Completed'}
+                                        className={`px-6 py-2.5 rounded-xl font-bold transition flex items-center gap-2 ${
+                                            selectedAppointment.status === 'Completed'
+                                                ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                                                : 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-md'
+                                        }`}
+                                    >
+                                        <CheckCircle2 className="w-5 h-5" />
+                                        {selectedAppointment.status === 'Completed' ? 'Consultation Completed' : 'Sign & Complete Consultation'}
+                                    </button>
+                                </div>
                             </div>
-                            <button
-                                onClick={handleSubmitConsultation}
-                                disabled={selectedAppointment.status === 'Completed'}
-                                className={`px-6 py-2.5 rounded-xl font-bold transition flex items-center gap-2 ${
-                                    selectedAppointment.status === 'Completed'
-                                        ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
-                                        : 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-md'
-                                }`}
-                            >
-                                <CheckCircle2 className="w-5 h-5" />
-                                {selectedAppointment.status === 'Completed' ? 'Consultation Completed' : 'Sign & Complete Consultation'}
-                            </button>
-                        </div>
-                    </div>
+                        )}
+                    </>
                 )}
             </main>
         </div>
