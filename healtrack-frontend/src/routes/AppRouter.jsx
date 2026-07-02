@@ -8,36 +8,40 @@ import PatientApp from '../portals/patient/PatientApp';
 import ReceptionDesk from '../portals/reception/ReceptionDesk';
 import AdminDashboard from '../portals/admin/AdminDashboard';
 import ProtectedRoute from './ProtectedRoute';
+import Login from '../pages/Login';
+import Signup from '../pages/Signup';
 
 export default function AppRouter() {
     return (
         <BrowserRouter>
             <Routes>
                 {/* Public / Landing Route (Placeholder) */}
-                <Route path="/" element={<div className="p-4">Welcome to HealTrack AI. Navigate to a portal route.</div>} />
+                <Route path="/" element={<Navigate to="/login" replace />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
 
                 {/* Super Admin Workstation Routes */}
-                <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']} />}>
+                <Route path="/admin" element={<ProtectedRoute allowedRoles={['SuperAdmin']} />}>
                     <Route index element={<AdminDashboard />} />
                 </Route>
 
                 {/* Clinic Admin Portal Routes */}
-                <Route path="/clinic" element={<ProtectedRoute allowedRoles={['admin']} />}>
+                <Route path="/clinic" element={<ProtectedRoute allowedRoles={['ClinicAdmin']} />}>
                     <Route index element={<ClinicManagementPortal />} />
                 </Route>
 
                 {/* Doctor Portal Routes */}
-                <Route path="/doctor" element={<ProtectedRoute allowedRoles={['doctor']} />}>
+                <Route path="/doctor" element={<ProtectedRoute allowedRoles={['Doctor']} />}>
                     <Route index element={<DoctorWorkstation />} />
                 </Route>
 
                 {/* Patient Portal Routes */}
-                <Route path="/patient" element={<ProtectedRoute allowedRoles={['patient']} />}>
+                <Route path="/patient" element={<ProtectedRoute allowedRoles={['Patient']} />}>
                     <Route index element={<PatientApp />} />
                 </Route>
 
                 {/* Reception Portal Routes */}
-                <Route path="/reception" element={<ProtectedRoute allowedRoles={['reception']} />}>
+                <Route path="/reception" element={<ProtectedRoute allowedRoles={['ClinicStaff']} />}>
                     <Route index element={<ReceptionDesk />} />
                 </Route>
                 

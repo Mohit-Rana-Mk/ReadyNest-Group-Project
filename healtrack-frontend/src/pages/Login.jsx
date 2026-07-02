@@ -1,0 +1,154 @@
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import axiosClient from '../api/axiosClient';
+import { LogIn, HeartPulse } from 'lucide-react';
+
+export default function Login() {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    
+    const { login } = useAuth();
+    const navigate = useNavigate();
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+
+        try {
+            const res = await axiosClient.post('/auth/login', { email, password });
+            if (res.data.success) {
+                login(res.data.data.user, res.data.data.token);
+                
+                // Route to appropriate portal
+                switch (res.data.data.user.role) {
+                    case 'SuperAdmin':
+                        navigate('/admin');
+                        break;
+                    case 'ClinicAdmin':
+                        navigate('/clinic');
+                        break;
+                    case 'Doctor':
+                        navigate('/doctor');
+                        break;
+                    case 'ClinicStaff':
+                        navigate('/reception');
+                        break;
+                    case 'Patient':
+                        navigate('/patient');
+                        break;
+                    default:
+                        navigate('/unauthorized');
+                }
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to login');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+            <div className="sm:mx-auto sm:w-full sm:max-w-md">
+                <div className="flex justify-center">
+                    <img src="/logo.png" alt="HealTrack Logo" className="w-16 h-16 object-contain" />
+                </div>
+                <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900">
+                    Sign in to HealTrack
+                </h2>
+                <p className="mt-2 text-center text-sm text-slate-600">
+                    Use your portal credentials
+                </p>
+            </div>
+
+            <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+                <div className="bg-white py-8 px-4 shadow-xl sm:rounded-2xl sm:px-10 border border-slate-100">
+                    <form className="space-y-6" onSubmit={handleSubmit}>
+                        {error && (
+                            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
+                                <p className="text-sm text-red-700">{error}</p>
+                            </div>
+                        )}
+                        
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700">Email address</label>
+                            <div className="mt-1">
+                                <input
+                                    type="email"
+                                    required
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="appearance-none block w-full px-3 py-2.5 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700">Password</label>
+                            <div className="mt-1">
+                                <input
+                                    type="password"
+                                    required
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="appearance-none block w-full px-3 py-2.5 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50"
+                            >
+                                {loading ? 'Signing in...' : 'Sign in'}
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div className="mt-6">
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <div className="w-full border-t border-slate-300" />
+                            </div>
+                            <div className="relative flex justify-center text-sm">
+                                <span className="px-2 bg-white text-slate-500">
+                                    New to HealTrack?
+                                </span>
+                            </div>
+                        </div>
+                        <div className="mt-6">
+                            <Link to="/signup" className="w-full flex justify-center py-2 px-4 border border-indigo-300 rounded-md shadow-sm text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition">
+                                Create an account
+                            </Link>
+                        </div>
+                    </div>
+
+                    <div className="mt-8 border-t border-gray-200 pt-6">
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <div className="w-full border-t border-slate-200" />
+                            </div>
+                            <div className="relative flex justify-center text-sm">
+                                <span className="px-2 bg-white text-slate-500">Demo Accounts (Pass: password123)</span>
+                            </div>
+                        </div>
+                        
+                        <div className="mt-6 grid grid-cols-2 gap-3 text-xs text-slate-500">
+                            <div>Super: <span className="font-mono bg-slate-100 p-0.5 rounded">superadmin@</span></div>
+                            <div>Clinic: <span className="font-mono bg-slate-100 p-0.5 rounded">admin@</span></div>
+                            <div>Doctor: <span className="font-mono bg-slate-100 p-0.5 rounded">vikram@</span></div>
+                            <div>Reception: <span className="font-mono bg-slate-100 p-0.5 rounded">rahul@</span></div>
+                            <div className="col-span-2 text-center">Patient: <span className="font-mono bg-slate-100 p-0.5 rounded">patient1@mail.com</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}

@@ -178,9 +178,9 @@ export function WalkInModal({ isOpen, onClose, onRegister, doctors = [] }) {
             onChange={(e) => setDoctorId(e.target.value)}
             className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white outline-none"
           >
-            <option value="">Select a Doctor...</option>
-            {doctors.map(doc => (
-              <option key={doc.id} value={doc.id}>{doc.name}</option>
+            <option value="">-- Select Doctor --</option>
+            {doctors.map(d => (
+              <option key={d.id} value={d.id}>{d.name} (Fee: ₹{d.consultation_fee || 500})</option>
             ))}
           </select>
         </div>

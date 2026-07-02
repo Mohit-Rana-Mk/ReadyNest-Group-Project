@@ -1,10 +1,33 @@
 // React Context for global user auth state & role
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null); // { id: 1, role: 'admin' | 'doctor' | 'patient' | 'reception' }
+    const [user, setUser] = useState(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(
+                    window.atob(base64).split('').map(function(c) {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join('')
+                );
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                console.error("Invalid token format in localStorage:", e);
+                localStorage.removeItem('token');
+                return null;
+            }
+        }
+        return null;
+    });
+
+    useEffect(() => {
+        // Kept for backward compatibility or future token refresh logic
+    }, []);
 
     const login = (userData, token) => {
         setUser(userData);

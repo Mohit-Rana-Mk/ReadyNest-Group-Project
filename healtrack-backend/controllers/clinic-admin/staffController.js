@@ -10,9 +10,9 @@ exports.getStaff = async (req, res) => {
              LEFT JOIN doctor_schedules ds ON u.id = ds.doctor_id
              LEFT JOIN services s ON u.service_id = s.id
              WHERE u.role IN ('Doctor', 'ClinicStaff') 
-             AND (ds.clinic_id = ? OR u.role = 'ClinicStaff')
+             AND (ds.clinic_id = ? OR (u.role = 'ClinicStaff' AND u.clinic_id = ?))
              GROUP BY u.id, u.name, u.role, u.status, s.name, u.service_id`,
-             [clinicId]
+             [clinicId, clinicId]
         );
         res.status(200).json(staff);
     } catch (error) {
@@ -23,16 +23,20 @@ exports.getStaff = async (req, res) => {
 
 exports.addStaff = async (req, res) => {
     const { clinicId } = req.params;
-    const { name, email, phone, role, service_id } = req.body;
+    const { name, email, phone, role, service_id, password } = req.body;
     
     if (!name || !email || !phone || !role || (role === 'Doctor' && !service_id)) {
         return res.status(400).json({ message: 'Missing required fields' });
     }
 
     try {
+        const bcrypt = require('bcrypt');
+        const generatedPassword = password || Math.random().toString(36).slice(-8); // Fallback generation if no password
+        const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+
         const [result] = await db.execute(
-            `INSERT INTO users (name, email, phone, password, role, status, service_id) VALUES (?, ?, ?, ?, ?, 'Active', ?)`,
-            [name, email, phone, 'password123', role, role === 'Doctor' ? service_id : null]
+            `INSERT INTO users (name, email, phone, password, role, status, service_id, clinic_id) VALUES (?, ?, ?, ?, ?, 'Active', ?, ?)`,
+            [name, email, phone, hashedPassword, role, role === 'Doctor' ? service_id : null, role === 'ClinicStaff' ? clinicId : null]
         );
         const newUserId = result.insertId;
 
@@ -43,7 +47,7 @@ exports.addStaff = async (req, res) => {
                 [newUserId, clinicId]
             );
         }
-        res.status(201).json({ message: 'Staff added successfully', id: newUserId });
+        res.status(201).json({ message: 'Staff added successfully', id: newUserId, credentials: { email, password: generatedPassword } });
     } catch (error) {
         console.error('Add Staff Error:', error);
         res.status(500).json({ message: 'Internal Server Error' });

@@ -3,6 +3,7 @@ import { Check, X, Plus, Send } from 'lucide-react';
 
 export function ClinicOnboarding({ pendingClinics, onVerify, onOnboardClinic }) {
     const [showModal, setShowModal] = useState(false);
+    const [expandedClinicId, setExpandedClinicId] = useState(null);
     const [formData, setFormData] = useState({
         name: '',
         license_number: '',
@@ -69,27 +70,48 @@ export function ClinicOnboarding({ pendingClinics, onVerify, onOnboardClinic }) 
                             </thead>
                             <tbody className="divide-y divide-[#e9ecef]">
                                 {pendingClinics.map(c => (
-                                    <tr key={c.id} className="hover:bg-slate-50 transition">
-                                        <td className="py-4 px-4 font-bold text-slate-800">{c.name}</td>
-                                        <td className="py-4 px-4 font-semibold text-indigo-700">{c.license_number}</td>
-                                        <td className="py-4 px-4 text-slate-500 font-medium">
-                                            {c.address}, {c.city} - {c.postal_code}
-                                        </td>
-                                        <td className="py-4 px-4 text-right space-x-2">
-                                            <button
-                                                onClick={() => onVerify(c.id, 'Approved')}
-                                                className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-100 rounded-lg font-bold transition inline-flex items-center gap-1"
-                                            >
-                                                <Check className="w-3 h-3" /> Approve
-                                            </button>
-                                            <button
-                                                onClick={() => onVerify(c.id, 'Delisted')}
-                                                className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-800 border border-red-100 rounded-lg font-bold transition inline-flex items-center gap-1"
-                                            >
-                                                <X className="w-3 h-3" /> Reject
-                                            </button>
-                                        </td>
-                                    </tr>
+                                    <React.Fragment key={c.id}>
+                                        <tr className="hover:bg-slate-50 transition cursor-pointer" onClick={() => setExpandedClinicId(expandedClinicId === c.id ? null : c.id)}>
+                                            <td className="py-4 px-4 font-bold text-slate-800">{c.name}</td>
+                                            <td className="py-4 px-4 font-semibold text-indigo-700">{c.license_number}</td>
+                                            <td className="py-4 px-4 text-slate-500 font-medium">
+                                                {c.address}, {c.city} - {c.postal_code}
+                                            </td>
+                                            <td className="py-4 px-4 text-right space-x-2" onClick={(e) => e.stopPropagation()}>
+                                                <button
+                                                    onClick={() => onVerify(c.id, 'Approved')}
+                                                    className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-100 rounded-lg font-bold transition inline-flex items-center gap-1"
+                                                >
+                                                    <Check className="w-3 h-3" /> Approve
+                                                </button>
+                                                <button
+                                                    onClick={() => onVerify(c.id, 'Delisted')}
+                                                    className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-800 border border-red-100 rounded-lg font-bold transition inline-flex items-center gap-1"
+                                                >
+                                                    <X className="w-3 h-3" /> Reject
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {expandedClinicId === c.id && (
+                                            <tr className="bg-slate-50/50">
+                                                <td colSpan="4" className="p-4 border-b border-[#e9ecef]">
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div className="space-y-2">
+                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Admin Contact</div>
+                                                            <div className="text-sm font-medium text-slate-700">Name: <span className="font-semibold text-slate-900">{c.admin_name || 'N/A'}</span></div>
+                                                            <div className="text-sm font-medium text-slate-700">Email: <span className="font-semibold text-slate-900">{c.admin_email || 'N/A'}</span></div>
+                                                            <div className="text-sm font-medium text-slate-700">Phone: <span className="font-semibold text-slate-900">{c.admin_phone || 'N/A'}</span></div>
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Geospatial Data</div>
+                                                            <div className="text-sm font-medium text-slate-700">Latitude: <span className="font-semibold text-slate-900 font-mono">{c.latitude || '0.0000'}</span></div>
+                                                            <div className="text-sm font-medium text-slate-700">Longitude: <span className="font-semibold text-slate-900 font-mono">{c.longitude || '0.0000'}</span></div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </React.Fragment>
                                 ))}
                             </tbody>
                         </table>

@@ -3,11 +3,13 @@ import { KpiBanner } from './components/KpiBanner';
 import { OpdQueueTable } from './components/OpdQueueTable';
 import { WalkInModal } from './components/WalkInModal';
 import { Button } from '../../components/ui/Button';
-import { UserPlus, Bell } from 'lucide-react';
+import { UserPlus, Bell, LogOut } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
 import { io } from 'socket.io-client';
+import { useAuth } from '../../context/AuthContext';
 
 export default function ReceptionDesk() {
+  const { user, logout } = useAuth();
   const [queue, setQueue] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [stats, setStats] = useState({ totalWalkIns: 0, avgWaitTime: "0 mins", activeDoctors: 0 });
@@ -85,12 +87,23 @@ export default function ReceptionDesk() {
             <div>
               <h1 className="text-3xl font-bold text-indigo-900 leading-tight">Reception Desk</h1>
               <p className="text-gray-500">Manage outpatient department queue and walk-ins.</p>
+              {user?.clinic_name && (
+                <div className="mt-2 inline-flex items-center px-3 py-1 bg-indigo-50 border border-indigo-100 rounded-lg">
+                  <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wide mr-2">Clinic:</span>
+                  <span className="text-sm font-bold text-indigo-800">{user.clinic_name}</span>
+                </div>
+              )}
             </div>
           </div>
-          <Button variant="primary" onClick={() => setIsModalOpen(true)} className="gap-2 shrink-0">
-            <UserPlus className="w-5 h-5" />
-            Register Walk-In
-          </Button>
+          <div className="flex items-center gap-3 shrink-0">
+            <Button variant="primary" onClick={() => setIsModalOpen(true)} className="gap-2">
+              <UserPlus className="w-5 h-5" />
+              Register Walk-In
+            </Button>
+            <button onClick={logout} className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition border border-transparent hover:border-red-100" title="Logout">
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
         </header>
 
         {notification && (

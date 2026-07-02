@@ -367,7 +367,7 @@ exports.getClinicDoctors = async (req, res) => {
     const { clinicId } = req.params;
     try {
         const [doctors] = await db.query(
-            `SELECT DISTINCT u.id, u.name, s.name as department, s.id as department_id
+            `SELECT DISTINCT u.id, u.name, u.consultation_fee, s.name as department, s.id as department_id
              FROM users u
              JOIN doctor_schedules ds ON u.id = ds.doctor_id
              LEFT JOIN services s ON u.service_id = s.id

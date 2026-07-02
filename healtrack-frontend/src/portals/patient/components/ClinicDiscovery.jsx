@@ -417,7 +417,7 @@ export default function ClinicDiscovery() {
                                 {clinicDoctors
                                     .filter(d => !bookingData.department_id || d.department_id?.toString() === bookingData.department_id?.toString())
                                     .map(doc => (
-                                        <option key={doc.id} value={doc.id}>Dr. {doc.name} {doc.department ? `(${doc.department})` : ''}</option>
+                                        <option key={doc.id} value={doc.id}>Dr. {doc.name} {doc.department ? `(${doc.department})` : ''} - ₹{doc.consultation_fee || 500}</option>
                                     ))}
                             </select>
                         </div>

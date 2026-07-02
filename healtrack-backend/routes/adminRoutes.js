@@ -3,7 +3,7 @@ const router = express.Router();
 const adminController = require('../controllers/adminController');
 const authMiddleware = require('../middleware/authMiddleware');
 
-router.use(authMiddleware);
+router.use(authMiddleware(['SuperAdmin']));
 
 router.get('/pending-clinics', adminController.getPendingClinics);
 router.post('/verify-clinic', adminController.verifyClinic);

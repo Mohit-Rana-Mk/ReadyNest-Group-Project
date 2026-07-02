@@ -11,7 +11,7 @@ const settingsController = require('../controllers/clinic-admin/settingsControll
 const reportsController = require('../controllers/clinic-admin/reportsController');
 
 // Mount auth middleware to protect all clinic admin routes
-// router.use(authMiddleware); // DISABLED FOR TESTING
+router.use(authMiddleware(['ClinicAdmin']));
 
 // A. Analytics & Financials
 router.get('/:clinicId/analytics', analyticsController.getAnalytics);

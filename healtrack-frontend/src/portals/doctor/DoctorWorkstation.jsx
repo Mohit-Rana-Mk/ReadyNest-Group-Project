@@ -3,7 +3,8 @@ import axiosClient from '../../api/axiosClient';
 import { ENDPOINTS } from '../../api/endpoints';
 
 // Import Icons from Lucide
-import { Activity, Search, Bell, Monitor, CheckCircle2 } from 'lucide-react';
+import { Activity, Search, Bell, Monitor, CheckCircle2, FileText, Pill, CheckCircle, LogOut } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import { io } from 'socket.io-client';
 
 // Import Subcomponents
@@ -14,12 +15,14 @@ import { PrescriptionBuilder } from './components/PrescriptionBuilder';
 import { ReportUpload } from './components/ReportUpload';
 
 export default function DoctorWorkstation() {
+    const { logout, user } = useAuth();
     const [appointments, setAppointments] = useState([]);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [patientHistory, setPatientHistory] = useState(null);
     const [loading, setLoading] = useState(false);
     const [loadingHistory, setLoadingHistory] = useState(false);
     const [dateFilter, setDateFilter] = useState('today');
+    const [searchQuery, setSearchQuery] = useState('');
 
     // Form fields
     const [diagnosis, setDiagnosis] = useState('');
@@ -175,9 +178,17 @@ export default function DoctorWorkstation() {
         <div className="h-screen bg-[#f8f9fa] text-slate-700 flex flex-col font-sans antialiased overflow-hidden">
             {/* TOP BAR */}
             <header className="h-14 bg-white border-b border-[#e9ecef] px-6 flex justify-between items-center shrink-0">
-                <div className="flex items-center gap-2">
-                    <img src="/logo.png" alt="HealTrack Logo" className="w-8 h-8 object-contain" />
-                    <h2 className="font-bold text-slate-800 text-base leading-none">HealTrack <span className="text-indigo-700">Doctor</span></h2>
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                        <img src="/logo.png" alt="HealTrack Logo" className="w-8 h-8 object-contain" />
+                        <h2 className="font-bold text-slate-800 text-base leading-none">HealTrack <span className="text-indigo-700">Doctor</span></h2>
+                    </div>
+                    {user?.clinic_name && (
+                        <div className="hidden md:flex items-center px-3 py-1 bg-indigo-50 border border-indigo-100 rounded-full">
+                            <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wide mr-2">Clinic:</span>
+                            <span className="text-xs font-bold text-indigo-800">{user.clinic_name}</span>
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-4">
@@ -188,6 +199,8 @@ export default function DoctorWorkstation() {
                             <input 
                                 type="text" 
                                 placeholder="Search patient..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 className="w-full bg-[#f1f3f5] border-0 rounded-full pl-9 pr-4 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-700 transition"
                             />
                     </div>
@@ -197,6 +210,9 @@ export default function DoctorWorkstation() {
                             DR
                         </div>
                         <span className="text-xs font-semibold text-slate-800 hidden sm:block">Doctor Portal</span>
+                        <button onClick={logout} className="ml-2 p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition" title="Logout">
+                            <LogOut className="w-4 h-4" />
+                        </button>
                     </div>
                 </div>
             </header>
@@ -205,7 +221,7 @@ export default function DoctorWorkstation() {
             <main className="flex-1 flex overflow-hidden">
                 {/* COLUMN 1: Daily Queue */}
                 <PatientQueue 
-                    appointments={appointments} 
+                    appointments={appointments.filter(appt => appt.patient_name?.toLowerCase().includes(searchQuery.toLowerCase()))} 
                     selectedAppointment={selectedAppointment}
                     handleSelectAppointment={handleSelectAppointment}
                     dateFilter={dateFilter}

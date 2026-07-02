@@ -17,7 +17,7 @@ exports.getQueue = async (req, res) => {
         );
 
         const [doctors] = await db.query(
-            `SELECT u.id, u.name 
+            `SELECT u.id, u.name, u.consultation_fee 
              FROM users u
              JOIN doctor_schedules ds ON u.id = ds.doctor_id
              WHERE ds.clinic_id = ? AND u.status = 'Active'

@@ -4,10 +4,12 @@ const db = require('../config/db');
 exports.getPendingClinics = async (req, res) => {
     try {
         const [clinics] = await db.query(
-            `SELECT id, name, license_number, address, city, postal_code, created_at 
-             FROM clinics 
-             WHERE verification_status = 'Pending' 
-             ORDER BY created_at DESC`
+            `SELECT c.id, c.name, c.license_number, c.address, c.city, c.postal_code, c.created_at, c.latitude, c.longitude,
+                    u.name as admin_name, u.email as admin_email, u.phone as admin_phone
+             FROM clinics c
+             LEFT JOIN users u ON c.id = u.clinic_id AND u.role = 'ClinicAdmin'
+             WHERE c.verification_status = 'Pending' 
+             ORDER BY c.created_at DESC`
         );
         res.json({ success: true, data: clinics });
     } catch (error) {
@@ -20,17 +22,34 @@ exports.verifyClinic = async (req, res) => {
     try {
         const { clinicId, status } = req.body;
         
-        if (!clinicId || !['Approved', 'Delisted'].includes(status)) {
+        if (!clinicId || !['Approved', 'Delisted', 'Suspended'].includes(status)) {
             return res.status(400).json({ success: false, message: "Invalid clinicId or status parameter" });
         }
+
+        await db.query('START TRANSACTION');
 
         await db.query(
             `UPDATE clinics SET verification_status = ? WHERE id = ?`,
             [status, clinicId]
         );
 
+        if (status === 'Approved') {
+            await db.query(
+                `UPDATE users SET status = 'Active' WHERE clinic_id = ?`,
+                [clinicId]
+            );
+        } else if (status === 'Delisted' || status === 'Suspended') {
+            await db.query(
+                `UPDATE users SET status = 'Suspended' WHERE clinic_id = ?`,
+                [clinicId]
+            );
+        }
+
+        await db.query('COMMIT');
+
         res.json({ success: true, message: `Clinic status successfully updated to ${status}!` });
     } catch (error) {
+        await db.query('ROLLBACK');
         console.error("Error updating clinic status:", error);
         res.status(500).json({ success: false, message: "Failed to update clinic status", error: error.message });
     }
@@ -144,10 +163,11 @@ exports.getEcosystemKpis = async (req, res) => {
 
         // Clinic performance reviews list
         const [reviews] = await db.query(
-            `SELECT c.id, c.name, AVG(cr.rating) as rating, COUNT(cr.id) as review_count 
+            `SELECT c.id, c.name, c.verification_status, AVG(cr.rating) as rating, COUNT(cr.id) as review_count 
              FROM clinics c
              LEFT JOIN clinic_reviews cr ON c.id = cr.clinic_id 
-             GROUP BY c.id
+             WHERE c.verification_status IN ('Approved', 'Suspended')
+             GROUP BY c.id, c.name, c.verification_status
              ORDER BY rating DESC`
         );
 

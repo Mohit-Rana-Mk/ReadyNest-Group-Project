@@ -4,7 +4,7 @@ const doctorController = require('../controllers/doctorController');
 const authMiddleware = require('../middleware/authMiddleware');
 
 // Mount auth middleware to protect all doctor routes
-// router.use(authMiddleware); // DISABLED FOR TESTING
+router.use(authMiddleware(['Doctor']));
 
 // A. Daily Patient Queue
 router.get('/appointments', doctorController.getAppointments);

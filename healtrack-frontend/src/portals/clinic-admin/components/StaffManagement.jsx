@@ -4,17 +4,18 @@ import { Button } from '../../../components/ui/Button';
 import axiosClient from '../../../api/axiosClient';
 import { Modal } from '../../../components/ui/Modal'; // Assuming Modal exists, if not, we build a simple one inline
 
-export function StaffManagement({ staff, refreshData }) {
+export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [departments, setDepartments] = useState([]);
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', role: 'Doctor', status: 'Active', service_id: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', role: 'Doctor', status: 'Active', service_id: '', password: '' });
+  const [createdCredentials, setCreatedCredentials] = useState(null);
 
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
-        const res = await axiosClient.get(`/clinic-admin/1/departments`);
+        const res = await axiosClient.get(`/clinic-admin/${clinicId}/departments`);
         setDepartments(res.data);
       } catch (e) {
         console.error("Failed to fetch departments", e);
@@ -25,7 +26,8 @@ export function StaffManagement({ staff, refreshData }) {
 
   const openAddModal = () => {
     setEditMode(false);
-    setFormData({ name: '', email: '', phone: '', role: 'Doctor', status: 'Active', service_id: '' });
+    setCreatedCredentials(null);
+    setFormData({ name: '', email: '', phone: '', role: 'Doctor', status: 'Active', service_id: '', password: '' });
     setIsModalOpen(true);
   };
 
@@ -46,7 +48,6 @@ export function StaffManagement({ staff, refreshData }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const clinicId = 1; // hardcoded
       if (editMode) {
         await axiosClient.put(`/clinic-admin/${clinicId}/staff/${selectedStaff.id}`, {
           name: formData.name,
@@ -54,10 +55,19 @@ export function StaffManagement({ staff, refreshData }) {
           status: formData.status,
           service_id: formData.role === 'Doctor' ? formData.service_id : null
         });
+        setIsModalOpen(false);
       } else {
-        await axiosClient.post(`/clinic-admin/${clinicId}/staff`, formData);
+        const payload = { ...formData };
+        if (formData.role !== 'Doctor') {
+          delete payload.service_id;
+        }
+        const res = await axiosClient.post(`/clinic-admin/${clinicId}/staff`, payload);
+        if (res.data.credentials) {
+            setCreatedCredentials(res.data.credentials);
+        } else {
+            setIsModalOpen(false);
+        }
       }
-      setIsModalOpen(false);
       if (refreshData) refreshData();
     } catch (err) {
       console.error("Error saving staff:", err);
@@ -111,66 +121,108 @@ export function StaffManagement({ staff, refreshData }) {
         </div>
       </Card>
 
-      {/* Simple Inline Modal if standard Modal isn't robust enough */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center">
           <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => setIsModalOpen(false)}></div>
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative z-10 mx-4">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">{editMode ? 'Edit Staff' : 'Add New Staff'}</h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3" />
-              </div>
-              
-              {!editMode && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                    <input required type="text" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3" />
-                  </div>
-                </>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3">
-                  <option value="Doctor">Doctor</option>
-                  <option value="ClinicStaff">ClinicStaff</option>
-                </select>
-              </div>
-
-              {formData.role === 'Doctor' && (
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md relative z-10 mx-4">
+            {!createdCredentials && (
+            <form onSubmit={handleSubmit} className="p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">{editMode ? 'Edit Staff' : 'Add New Staff'}</h3>
+              <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Department (Service)</label>
-                  <select required value={formData.service_id} onChange={e => setFormData({...formData, service_id: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3">
-                    <option value="">Select Department...</option>
-                    {departments.map(dept => (
-                      <option key={dept.id} value={dept.id}>{dept.name}</option>
-                    ))}
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                  <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3" />
+                </div>
+                
+                {!editMode && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                      <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                      <input required type="text" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3" />
+                    </div>
+                  </>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                  <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3">
+                    <option value="Doctor">Doctor</option>
+                    <option value="ClinicStaff">ClinicStaff</option>
                   </select>
                 </div>
-              )}
 
-              {editMode && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                  <select value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3">
-                    <option value="Active">Active</option>
-                    <option value="Suspended">Suspended</option>
-                  </select>
-                </div>
-              )}
+                {formData.role === 'Doctor' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Department (Service)</label>
+                    <select required value={formData.service_id} onChange={e => setFormData({...formData, service_id: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3">
+                      <option value="">Select Department...</option>
+                      {departments.map(dept => (
+                        <option key={dept.id} value={dept.id}>{dept.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
-              <div className="pt-4 flex justify-end space-x-3">
+                {editMode && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <select value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3">
+                      <option value="Active">Active</option>
+                      <option value="Suspended">Suspended</option>
+                    </select>
+                  </div>
+                )}
+
+                {!editMode && !createdCredentials && (
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Set Password</label>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                placeholder="Auto-generated if left blank"
+                                value={formData.password}
+                                onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                className="w-full bg-[#f8f9fa] border border-[#e9ecef] rounded-xl px-3 py-2 text-xs text-slate-700 focus:outline-none focus:border-indigo-700/50 focus:ring-1 focus:ring-indigo-700/10 transition"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setFormData({ ...formData, password: Math.random().toString(36).slice(-8) })}
+                                className="px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition whitespace-nowrap"
+                            >
+                                Auto-Gen
+                            </button>
+                        </div>
+                    </div>
+                )}
+              </div>
+              <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-slate-100">
                 <Button variant="outline" type="button" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                <Button variant="primary" type="submit">Save Staff</Button>
+                <Button type="submit">{editMode ? 'Save Changes' : 'Add Staff'}</Button>
               </div>
             </form>
+          )}
+
+          {createdCredentials && (
+            <div className="p-6">
+                <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 text-center space-y-3">
+                    <h4 className="text-emerald-800 font-bold text-sm">Staff Account Created!</h4>
+                    <p className="text-xs text-emerald-600">Please share these credentials securely with the new staff member.</p>
+                    <div className="bg-white rounded-lg p-3 inline-block text-left shadow-sm border border-emerald-100/50">
+                        <div className="text-xs text-slate-500 font-semibold mb-1">Email / Username:</div>
+                        <div className="text-sm font-bold text-slate-800 mb-2">{createdCredentials.email}</div>
+                        <div className="text-xs text-slate-500 font-semibold mb-1">Password:</div>
+                        <div className="text-sm font-bold text-slate-800 font-mono bg-slate-50 px-2 py-1 rounded inline-block">{createdCredentials.password}</div>
+                    </div>
+                </div>
+                <div className="mt-6 flex justify-end pt-4 border-t border-slate-100">
+                    <Button onClick={() => setIsModalOpen(false)}>Close</Button>
+                </div>
+            </div>
+          )}
           </div>
         </div>
       )}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Users, Grid, Activity, FileText, Settings } from 'lucide-react';
+import { LayoutDashboard, Users, Grid, Activity, FileText, Settings, LogOut } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import axiosClient from '../../api/axiosClient';
 
 import { AnalyticsDashboard } from './components/AnalyticsDashboard';
@@ -11,6 +12,8 @@ import { ClinicSettings } from './components/ClinicSettings';
 import { io } from 'socket.io-client';
 
 export default function ClinicManagementPortal() {
+  const { user, logout } = useAuth();
+  console.log("Current User in ClinicManagementPortal:", user);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [loading, setLoading] = useState(true);
   const [portalData, setPortalData] = useState({
@@ -20,7 +23,7 @@ export default function ClinicManagementPortal() {
     operations: []
   });
 
-  const clinicId = 1; // Hardcoded for this phase
+  const clinicId = user?.clinic_id || 1; // Dynamic with fallback for legacy test data
 
   const fetchPortalData = React.useCallback(async () => {
     try {
@@ -48,10 +51,11 @@ export default function ClinicManagementPortal() {
   useEffect(() => {
     fetchPortalData();
     
+    // Setup Socket.io connection
     const socket = io('http://localhost:5001');
-    socket.on('QUEUE_UPDATE', () => {
-        console.log("Realtime event received: QUEUE_UPDATE");
-        fetchPortalData();
+    socket.on('QUEUE_UPDATE', (data) => {
+        console.log("Realtime event received in Clinic Admin: QUEUE_UPDATE", data);
+        fetchPortalData(); // Refresh analytics when queue updates
     });
 
     return () => {
@@ -73,7 +77,7 @@ export default function ClinicManagementPortal() {
 
     switch (activeTab) {
       case 'dashboard': return <AnalyticsDashboard data={portalData.analytics} />;
-      case 'staff': return <StaffManagement staff={portalData.staff} refreshData={fetchPortalData} />;
+      case 'staff': return <StaffManagement staff={portalData.staff} refreshData={fetchPortalData} clinicId={clinicId} />;
       case 'departments': return <DepartmentManager departments={portalData.departments} refreshData={fetchPortalData} />;
       case 'operations': return <OperationsOverview operations={portalData.operations} />;
       case 'reports': return <ReportsAndLogs />;
@@ -91,6 +95,7 @@ export default function ClinicManagementPortal() {
             <h1 className="text-2xl font-bold text-white tracking-wide">HealTrack AI</h1>
           </div>
           <p className="text-indigo-300 text-sm pl-11 mt-1">Admin Portal</p>
+          {user?.clinic_name && <div className="mt-4 px-2 py-2 bg-indigo-800/50 rounded-xl border border-indigo-700/50"><div className="text-[10px] text-indigo-300 font-bold uppercase tracking-wider mb-1">Clinic</div><div className="text-white text-sm font-semibold">{user.clinic_name}</div></div>}
         </div>
         <nav className="flex-1 px-4 space-y-2 mt-4">
           {navigation.map((item) => {
@@ -109,6 +114,12 @@ export default function ClinicManagementPortal() {
             );
           })}
         </nav>
+        <div className="p-4 border-t border-indigo-800">
+          <button onClick={logout} className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-100 hover:bg-indigo-800/50 hover:text-white transition-colors">
+            <LogOut className="w-5 h-5" />
+            <span className="font-medium">Sign Out</span>
+          </button>
+        </div>
       </aside>
 
       <main className="flex-1 overflow-y-auto">

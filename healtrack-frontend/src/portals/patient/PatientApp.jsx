@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, Loader2 } from 'lucide-react';
+import { Heart, Loader2, LogOut } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import BottomNav from './components/BottomNav';
 import PreventiveAlertBanner from './components/PreventiveAlertBanner';
 import ClinicDiscovery from './components/ClinicDiscovery';
@@ -13,6 +14,7 @@ export default function PatientApp() {
     const [recommendations, setRecommendations] = useState([]);
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { logout } = useAuth();
 
     useEffect(() => {
         const loadData = async () => {
@@ -67,8 +69,13 @@ export default function PatientApp() {
                                 <p className="text-[10px] text-gray-400">Your Health Companion</p>
                             </div>
                         </div>
-                        <div className="p-2 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl shadow-md cursor-pointer hover:shadow-lg transition-all">
-                            <Heart size={18} className="text-white" />
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl shadow-md cursor-pointer hover:shadow-lg transition-all">
+                                <Heart size={18} className="text-white" />
+                            </div>
+                            <button onClick={logout} className="p-2 text-gray-400 hover:text-red-500 bg-gray-100 hover:bg-red-50 rounded-xl shadow-sm transition-colors">
+                                <LogOut size={18} />
+                            </button>
                         </div>
                     </div>
                 </header>

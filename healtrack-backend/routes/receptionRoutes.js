@@ -3,7 +3,7 @@ const router = express.Router();
 const receptionController = require('../controllers/receptionController');
 const authMiddleware = require('../middleware/authMiddleware');
 
-// router.use(authMiddleware); // Protect all routes (disabled for testing)
+router.use(authMiddleware(['ClinicStaff'])); // Protect all routes
 
 router.get('/:clinicId/lookup', receptionController.lookupPatient);
 

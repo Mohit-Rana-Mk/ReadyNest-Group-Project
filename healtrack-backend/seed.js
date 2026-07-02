@@ -1,5 +1,6 @@
 require('dotenv').config();
 const mysql = require('mysql2/promise');
+const bcrypt = require('bcrypt');
 
 async function seed() {
     const db = await mysql.createConnection({
@@ -13,27 +14,15 @@ async function seed() {
     console.log('Connected to DB. Seeding...');
 
     try {
+        // Truncate tables correctly
         await db.query('SET FOREIGN_KEY_CHECKS = 0');
+        const tables = ['users', 'patients', 'doctor_schedules', 'services', 'clinics', 'clinic_services', 'appointments', 'prescriptions', 'prescription_items', 'patient_vitals', 'clinic_reviews', 'preventive_recommendations', 'ai_triage_logs'];
+        for (const table of tables) {
+            await db.query(`TRUNCATE TABLE ${table}`);
+        }
+        await db.query('SET FOREIGN_KEY_CHECKS = 1');
 
-        // Truncate
-        await db.query('TRUNCATE TABLE appointments');
-        await db.query('TRUNCATE TABLE doctor_schedules');
-        await db.query('TRUNCATE TABLE patients');
-        await db.query('TRUNCATE TABLE clinic_services');
-        await db.query('TRUNCATE TABLE services');
-        await db.query('TRUNCATE TABLE clinics');
-        await db.query('TRUNCATE TABLE users');
-
-        // Users
-        // Users (Assign Dr. Vikram to Cardiology (1) and Dr. Anjali to General Medicine (2))
-        await db.query(`INSERT INTO users (id, name, email, phone, password, role, status, service_id) VALUES 
-            (1, 'Admin', 'admin@healtrack.com', '1000000001', 'hash', 'Admin', 'Active', NULL),
-            (2, 'Dr. Vikram Sharma', 'vikram@healtrack.com', '1000000002', 'hash', 'Doctor', 'Active', 1),
-            (3, 'Dr. Anjali Desai', 'anjali@healtrack.com', '1000000003', 'hash', 'Doctor', 'Active', 2),
-            (4, 'Rahul Verma', 'rahul@healtrack.com', '1000000004', 'hash', 'ClinicStaff', 'Active', NULL),
-            (5, 'Patient One', 'patient1@mail.com', '1000000005', 'hash', 'Patient', 'Active', NULL),
-            (6, 'Patient Two', 'patient2@mail.com', '1000000006', 'hash', 'Patient', 'Active', NULL)
-        `);
+        console.log("Seeding Database...");
 
         // Clinics
         await db.query(`INSERT INTO clinics (id, name, license_number, address, city, postal_code, latitude, longitude, location, verification_status) VALUES 
@@ -47,6 +36,20 @@ async function seed() {
             (3, 'Ophthalmology', 'Eye checkups'),
             (4, 'Orthopedics', 'Bone related checkups')
         `);
+
+        // Hash password
+        const passwordHash = await bcrypt.hash('password123', 10);
+
+        // Users
+        await db.query(`INSERT INTO users (id, name, email, phone, password, role, status, service_id) VALUES 
+            (1, 'Super Admin', 'superadmin@healtrack.com', '1000000001', ?, 'SuperAdmin', 'Active', NULL),
+            (2, 'Dr. Vikram Sharma', 'vikram@healtrack.com', '1000000002', ?, 'Doctor', 'Active', 1),
+            (3, 'Dr. Anjali Desai', 'anjali@healtrack.com', '1000000003', ?, 'Doctor', 'Active', 2),
+            (4, 'Rahul Verma', 'rahul@healtrack.com', '1000000004', ?, 'ClinicStaff', 'Active', NULL),
+            (5, 'Patient One', 'patient1@mail.com', '1000000005', ?, 'Patient', 'Active', NULL),
+            (6, 'Patient Two', 'patient2@mail.com', '1000000006', ?, 'Patient', 'Active', NULL),
+            (7, 'Clinic Admin', 'admin@healtrack.com', '1000000007', ?, 'ClinicAdmin', 'Active', NULL)
+        `, [passwordHash, passwordHash, passwordHash, passwordHash, passwordHash, passwordHash, passwordHash]);
 
         // Clinic Services
         await db.query(`INSERT INTO clinic_services (clinic_id, service_id, consultation_fee) VALUES 

@@ -27,9 +27,10 @@ CREATE TABLE users (
     email VARCHAR(255) NULL UNIQUE,
     phone VARCHAR(20) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    role ENUM('Patient', 'Doctor', 'Admin', 'ClinicStaff') NOT NULL,
+    role ENUM('Patient', 'Doctor', 'SuperAdmin', 'ClinicAdmin', 'ClinicStaff') NOT NULL,
     status ENUM('Active', 'Suspended') DEFAULT 'Active',
     service_id INT NULL,
+    clinic_id INT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_user_role (role)
@@ -64,7 +65,7 @@ CREATE TABLE clinics (
     latitude DECIMAL(10, 8) NULL,
     longitude DECIMAL(11, 8) NULL,
     location POINT NOT NULL SRID 4326, 
-    verification_status ENUM('Pending', 'Approved', 'Delisted') DEFAULT 'Pending',
+    verification_status ENUM('Pending', 'Approved', 'Delisted', 'Suspended') DEFAULT 'Pending',
     opening_time TIME NULL,
     closing_time TIME NULL,
     operational_days VARCHAR(255) NULL,
@@ -226,6 +227,9 @@ CREATE TABLE doctor_schedules (
 
 -- Add foreign key for users (Doctors) -> services (Departments)
 ALTER TABLE users ADD CONSTRAINT fk_user_service FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE SET NULL;
+
+-- Add foreign key for users (ClinicAdmins) -> clinics
+ALTER TABLE users ADD CONSTRAINT fk_user_clinic FOREIGN KEY (clinic_id) REFERENCES clinics(id) ON DELETE CASCADE;
 
 -- -------------------------------------------------------------------------
 -- 14. NOTIFICATIONS (Registry for Patient Push Alerts)

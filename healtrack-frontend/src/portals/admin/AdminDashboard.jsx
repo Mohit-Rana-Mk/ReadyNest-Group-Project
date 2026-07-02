@@ -8,8 +8,10 @@ import {
     Activity, 
     PieChart, 
     Globe, 
-    RefreshCw 
+    RefreshCw,
+    LogOut
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 // Import Child Components
 import { ClinicOnboarding } from './components/ClinicOnboarding';
@@ -27,6 +29,7 @@ import {
 } from './mockData';
 
 export default function AdminDashboard() {
+    const { logout } = useAuth();
     const [activeTab, setActiveTab] = useState('onboarding');
     const [isDemoMode, setIsDemoMode] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -131,7 +134,7 @@ export default function AdminDashboard() {
             case 'ai-health':
                 return <AiHealthLogs aiHealthStats={aiHealthStats} />;
             case 'analytics':
-                return <EcosystemAnalytics ecosystemStats={ecosystemStats} />;
+                return <EcosystemAnalytics ecosystemStats={ecosystemStats} onVerify={handleVerifyClinic} />;
             default:
                 return <ClinicOnboarding pendingClinics={pendingClinics} onVerify={handleVerifyClinic} onOnboardClinic={handleOnboardClinic} />;
         }
@@ -195,6 +198,9 @@ export default function AdminDashboard() {
                             SA
                         </div>
                         <span className="text-xs font-semibold text-slate-800 hidden md:block">Platform Owner</span>
+                        <button onClick={logout} className="ml-2 p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition" title="Logout">
+                            <LogOut className="w-4 h-4" />
+                        </button>
                     </div>
                 </header>
 

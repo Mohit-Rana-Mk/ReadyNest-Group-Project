@@ -4,7 +4,7 @@ const patientController = require('../controllers/patientController');
 const authMiddleware = require('../middleware/authMiddleware');
 
 // Mount auth middleware to protect all patient routes
-// router.use(authMiddleware); // DISABLED FOR TESTING
+router.use(authMiddleware(['Patient']));
 
 // A. Home & Preventive Analytics
 router.get('/:patientId/recommendations', patientController.getRecommendations);
