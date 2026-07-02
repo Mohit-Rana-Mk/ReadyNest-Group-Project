@@ -3,11 +3,20 @@ from fastapi import APIRouter, HTTPException, status
 from app.validation.schemas import (
     PatientInput,
     PredictionResponse,
+    DiseasePredictInput,
+    OutbreakPredictInput,
+    OutbreakPredictResponse,
 )
 
 from app.services.triage_engine import run_triage
 from app.database.prediction_repository import save_prediction
 from app.utils.audit_logger import log_prediction
+from app.services.disease_prediction import (
+    predict_disease_from_symptoms,
+    get_all_symptoms,
+    get_all_diseases,
+)
+from app.services.outbreak_prediction import predict_outbreak_risk
 
 router = APIRouter(
     prefix="/api/v1",
@@ -56,3 +65,72 @@ def predict(patient: PatientInput):
             status_code=500,
             detail="Internal Server Error: Prediction Engine Failed",
         )
+
+
+@router.post(
+    "/predict/disease",
+    status_code=status.HTTP_200_OK,
+    summary="Predict Disease from Symptoms",
+)
+def predict_disease(input_data: DiseasePredictInput):
+    try:
+        result = predict_disease_from_symptoms(input_data.symptoms)
+        return result
+    except Exception as error:
+        log_prediction(f"Disease Prediction Failed: {error}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal Server Error: Disease prediction failed: {str(error)}",
+        )
+
+
+@router.get(
+    "/symptoms",
+    status_code=status.HTTP_200_OK,
+    summary="Get List of All Symptoms",
+)
+def get_symptoms():
+    try:
+        return get_all_symptoms()
+    except Exception as error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal Server Error: Failed to load symptoms: {str(error)}",
+        )
+
+
+@router.get(
+    "/diseases",
+    status_code=status.HTTP_200_OK,
+    summary="Get List of All Diseases",
+)
+def get_diseases():
+    try:
+        return get_all_diseases()
+    except Exception as error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal Server Error: Failed to load diseases: {str(error)}",
+        )
+
+
+@router.post(
+    "/predict/outbreak",
+    response_model=OutbreakPredictResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Predict Disease Outbreak Risk",
+)
+def predict_outbreak(input_data: OutbreakPredictInput):
+    try:
+        raw_cases = [{"disease": c.disease, "recent_cases": c.recent_cases, "prior_cases": c.prior_cases} for c in input_data.disease_cases]
+        results = predict_outbreak_risk(raw_cases, input_data.season_index, input_data.density_score)
+        return {
+            "success": True,
+            "results": results
+        }
+    except Exception as error:
+        log_prediction(f"Outbreak Prediction Failed: {error}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal Server Error: Outbreak prediction engine failed: {str(error)}",
+        )

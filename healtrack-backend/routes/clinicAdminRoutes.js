@@ -15,6 +15,7 @@ router.use(authMiddleware(['ClinicAdmin']));
 
 // A. Analytics & Financials
 router.get('/:clinicId/analytics', analyticsController.getAnalytics);
+router.get('/:clinicId/operational-dashboard', analyticsController.getOperationalDashboard);
 
 // B. Staff Management
 router.get('/:clinicId/staff', staffController.getStaff);

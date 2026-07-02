@@ -55,6 +55,7 @@ app.use('/api/upload', uploadRoutes);
 app.get('/health', (req, res) => res.send('Server is running'));
 
 const db = require('./config/db');
+const { initOutbreakScheduler } = require('./services/outbreakScheduler');
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, async () => {
@@ -62,6 +63,8 @@ server.listen(PORT, async () => {
     try {
         await db.query('SELECT 1');
         console.log('✅ Successfully connected to the database.');
+        // Initialize Outbreak Monitoring Scheduler (Runs every 20 minutes)
+        initOutbreakScheduler(io);
     } catch (error) {
         console.error('❌ Database connection failed:', error.message || error);
     }

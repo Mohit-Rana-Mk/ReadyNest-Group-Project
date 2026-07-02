@@ -1,0 +1,1924 @@
+/* Scoped Glassmorphic Cyber-Hospital Styling for AuraCare Dashboard */
+
+.auracare-dashboard {
+  --bg-obsidian: hsl(240, 20%, 97%);
+  --bg-panel: hsla(240, 20%, 100%, 0.85);
+  --bg-panel-hover: hsla(240, 20%, 94%, 0.9);
+  --bg-input: hsla(240, 20%, 92%, 0.85);
+  
+  --border-light: hsla(240, 10%, 85%, 0.5);
+  --border-light-hover: hsla(240, 10%, 75%, 0.7);
+  --border-glow: hsla(180, 100%, 40%, 0.08);
+  
+  /* Accent Colors - tuned for high readability in light mode */
+  --accent-cyan: hsl(190, 100%, 38%);
+  --accent-cyan-dim: hsl(190, 100%, 30%);
+  --accent-cyan-rgb: 0, 150, 190;
+  
+  --accent-purple: hsl(275, 90%, 45%);
+  --accent-purple-dim: hsl(275, 90%, 35%);
+  --accent-purple-rgb: 140, 0, 210;
+  
+  --accent-amber: hsl(35, 95%, 42%);
+  --accent-amber-rgb: 215, 115, 0;
+  
+  --accent-red: hsl(345, 90%, 45%);
+  --accent-red-rgb: 215, 15, 70;
+  
+  --accent-green: hsl(145, 80%, 35%);
+  --accent-green-rgb: 0, 165, 75;
+  
+  --text-primary: hsl(240, 15%, 15%);
+  --text-secondary: hsl(240, 10%, 38%);
+  --text-muted: hsl(240, 8%, 52%);
+  
+  /* Shadows & Glows */
+  --glow-cyan: 0 4px 15px hsla(190, 100%, 35%, 0.12);
+  --glow-purple: 0 4px 15px hsla(275, 100%, 35%, 0.12);
+  --glow-red: 0 4px 15px hsla(345, 100%, 35%, 0.12);
+  --shadow-glass: 0 8px 32px 0 rgba(148, 163, 184, 0.12);
+  
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-pill: 9999px;
+  
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  background-color: var(--bg-obsidian);
+  color: var(--text-primary);
+  min-height: 100vh;
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  position: relative;
+  background-image: 
+    radial-gradient(circle at 10% 20%, hsla(275, 100%, 50%, 0.015) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, hsla(190, 100%, 50%, 0.015) 0%, transparent 40%);
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 20px 50px rgba(148, 163, 184, 0.15);
+}
+
+.auracare-dashboard * {
+  box-sizing: border-box;
+}
+
+/* Header */
+.auracare-dashboard .dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.auracare-dashboard .brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auracare-dashboard .brand-icon {
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--glow-purple);
+}
+
+.auracare-dashboard .brand-icon svg {
+  color: white;
+  width: 22px;
+  height: 22px;
+}
+
+.auracare-dashboard .title-area h1 {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  background: linear-gradient(to right, var(--text-primary), var(--accent-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.auracare-dashboard .title-area p {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.auracare-dashboard .system-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: hsla(145, 100%, 45%, 0.08);
+  border: 1px solid rgba(0, 229, 115, 0.2);
+  color: var(--accent-green);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+.auracare-dashboard .system-status.processing {
+  background: hsla(285, 100%, 50%, 0.08);
+  border-color: rgba(189, 0, 255, 0.2);
+  color: var(--accent-purple);
+}
+
+.auracare-dashboard .system-status .status-dot {
+  width: 6px;
+  height: 6px;
+  background-color: currentColor;
+  border-radius: 50%;
+  box-shadow: 0 0 8px currentColor;
+  animation: pulse-dot 1.5s infinite;
+}
+
+@keyframes pulse-dot {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
+
+/* Control Panel */
+.auracare-dashboard .control-panel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auracare-dashboard .select-wrapper {
+  position: relative;
+}
+
+.auracare-dashboard .select-wrapper select {
+  appearance: none;
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  padding: 10px 36px 10px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: var(--transition-fast);
+}
+
+.auracare-dashboard .select-wrapper select:hover {
+  border-color: var(--border-light-hover);
+  background-color: var(--bg-panel-hover);
+}
+
+.auracare-dashboard .select-wrapper select:focus {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.15);
+}
+
+.auracare-dashboard .select-wrapper::after {
+  content: "▼";
+  font-size: 9px;
+  color: var(--text-secondary);
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+/* Glass Buttons */
+.auracare-dashboard .btn-glass {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: var(--transition-fast);
+  outline: none;
+}
+
+.auracare-dashboard .btn-glass:hover {
+  background: var(--bg-panel-hover);
+  border-color: var(--border-light-hover);
+}
+
+.auracare-dashboard .btn-glass.active {
+  background: rgba(0, 240, 255, 0.08);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.auracare-dashboard .btn-primary-gradient {
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--glow-purple);
+  transition: var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.auracare-dashboard .btn-primary-gradient:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(189, 0, 255, 0.5), 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+.auracare-dashboard .btn-primary-gradient:active {
+  transform: translateY(0);
+}
+
+/* Glass Panels */
+.auracare-dashboard .glass-panel {
+  background: var(--bg-panel);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-glass);
+  padding: 24px;
+  transition: var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.auracare-dashboard .glass-panel:hover {
+  border-color: var(--border-light-hover);
+  box-shadow: 0 10px 40px 0 rgba(148, 163, 184, 0.12), var(--border-glow);
+}
+
+.auracare-dashboard .panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.auracare-dashboard .panel-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.auracare-dashboard .panel-title svg {
+  width: 20px;
+  height: 20px;
+  color: var(--accent-cyan);
+}
+
+.auracare-dashboard .panel-title h2 {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.auracare-dashboard .panel-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.auracare-dashboard .tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  transition: var(--transition-fast);
+}
+
+.auracare-dashboard .tab-btn:hover {
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.auracare-dashboard .tab-btn.active {
+  color: var(--accent-cyan);
+  background: rgba(0, 240, 255, 0.08);
+}
+
+/* KPI Cards Layout */
+.auracare-dashboard .kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.auracare-dashboard .kpi-card {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 130px;
+}
+
+.auracare-dashboard .kpi-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.auracare-dashboard .kpi-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.02);
+  color: var(--text-secondary);
+  transition: var(--transition-fast);
+}
+
+.auracare-dashboard .kpi-value {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.auracare-dashboard .kpi-bottom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.auracare-dashboard .trend-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.auracare-dashboard .trend-badge.up {
+  background: hsla(145, 100%, 45%, 0.1);
+  color: var(--accent-green);
+}
+
+.auracare-dashboard .trend-badge.down {
+  background: hsla(340, 100%, 55%, 0.1);
+  color: var(--accent-red);
+}
+
+.auracare-dashboard .trend-badge.neutral {
+  background: hsla(240, 6%, 60%, 0.1);
+  color: var(--text-secondary);
+}
+
+.auracare-dashboard .kpi-meta {
+  color: var(--text-muted);
+}
+
+/* Rows Layout */
+.auracare-dashboard .dashboard-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.auracare-dashboard .full-width {
+  grid-column: span 2;
+}
+
+@media (max-width: 1100px) {
+  .auracare-dashboard .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  .auracare-dashboard .full-width {
+    grid-column: span 1;
+  }
+}
+
+/* Chart container styling */
+.auracare-dashboard .chart-container {
+  position: relative;
+  width: 100%;
+  height: 280px;
+}
+
+/* No Show Queue / Risk list */
+.auracare-dashboard .no-show-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auracare-dashboard .risk-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.auracare-dashboard .patient-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: hsla(240, 20%, 95%, 0.5);
+  border: 1px solid var(--border-light);
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  transition: var(--transition-fast);
+}
+
+.auracare-dashboard .patient-row:hover {
+  background: hsla(240, 20%, 92%, 0.7);
+  border-color: var(--border-light-hover);
+  transform: translateX(2px);
+}
+
+.auracare-dashboard .patient-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.auracare-dashboard .patient-name {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.auracare-dashboard .patient-meta {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.auracare-dashboard .risk-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.auracare-dashboard .risk-badge.high,
+.auracare-dashboard .risk-badge.urgent {
+  background: hsla(340, 100%, 55%, 0.12);
+  color: var(--accent-red);
+  border: 1px solid rgba(255, 42, 109, 0.2);
+}
+
+.auracare-dashboard .risk-badge.medium {
+  background: hsla(40, 100%, 50%, 0.12);
+  color: var(--accent-amber);
+  border: 1px solid rgba(255, 176, 0, 0.2);
+}
+
+.auracare-dashboard .risk-badge.low {
+  background: hsla(145, 100%, 45%, 0.12);
+  color: var(--accent-green);
+  border: 1px solid rgba(0, 229, 115, 0.2);
+}
+
+.auracare-dashboard .patient-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.auracare-dashboard .action-btn {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.auracare-dashboard .action-btn:hover {
+  background: rgba(0, 240, 255, 0.1);
+  color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+}
+
+/* Disease Grid with Heatmap */
+.auracare-dashboard .disease-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auracare-dashboard .heatmap-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  max-height: 280px;
+}
+
+.auracare-dashboard .heatmap-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 12px;
+}
+
+.auracare-dashboard .heatmap-table th {
+  background: rgba(0, 0, 0, 0.03);
+  padding: 10px 12px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.auracare-dashboard .heatmap-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-primary);
+}
+
+.auracare-dashboard .heatmap-table tr:last-child td {
+  border-bottom: none;
+}
+
+.auracare-dashboard .heatmap-cell {
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  text-align: center;
+  padding: 4px;
+}
+
+.auracare-dashboard .level-low {
+  background-color: rgba(0, 229, 115, 0.1);
+  color: var(--accent-green);
+}
+.auracare-dashboard .level-med {
+  background-color: rgba(255, 176, 0, 0.15);
+  color: var(--accent-amber);
+}
+.auracare-dashboard .level-high {
+  background-color: rgba(255, 42, 109, 0.15);
+  color: var(--accent-red);
+}
+.auracare-dashboard .level-critical {
+  background-color: rgba(255, 42, 109, 0.3);
+  color: #ff528c;
+  box-shadow: 0 0 10px rgba(255, 42, 109, 0.15);
+}
+
+/* Medicine Demand Area */
+.auracare-dashboard .stock-alerts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.auracare-dashboard .stock-alert-card {
+  background: hsla(240, 20%, 95%, 0.5);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: var(--transition-fast);
+}
+
+.auracare-dashboard .stock-alert-card:hover {
+  background: hsla(240, 20%, 92%, 0.7);
+  border-color: rgba(255, 176, 0, 0.3);
+}
+
+.auracare-dashboard .stock-alert-card.critical:hover {
+  border-color: rgba(255, 42, 109, 0.3);
+}
+
+.auracare-dashboard .stock-details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.auracare-dashboard .stock-name {
+  font-weight: 600;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-primary);
+}
+
+.auracare-dashboard .stock-qty {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.auracare-dashboard .btn-action-small {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.auracare-dashboard .btn-action-small:hover {
+  background: rgba(0, 240, 255, 0.08);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+/* Performance Gauges */
+.auracare-dashboard .performance-container {
+  display: grid;
+  grid-template-columns: 1.2fr 1.8fr;
+  gap: 20px;
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .auracare-dashboard .performance-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.auracare-dashboard .gauge-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  height: 240px;
+}
+
+.auracare-dashboard .gauge-center-text {
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.auracare-dashboard .gauge-score {
+  font-size: 38px;
+  font-weight: 900;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+}
+
+.auracare-dashboard .gauge-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 4px;
+}
+
+.auracare-dashboard .kpi-breakdown {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.auracare-dashboard .kpi-breakdown-card {
+  background: rgba(0,0,0,0.02);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.auracare-dashboard .kpi-breakdown-title {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.auracare-dashboard .kpi-breakdown-val-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 4px;
+}
+
+.auracare-dashboard .kpi-breakdown-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.auracare-dashboard .kpi-breakdown-rating {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* Department ranking */
+.auracare-dashboard .ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auracare-dashboard .ranking-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.auracare-dashboard .ranking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.auracare-dashboard .ranking-name {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+}
+
+.auracare-dashboard .ranking-index {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.auracare-dashboard .ranking-score {
+  font-weight: 700;
+  color: var(--accent-cyan);
+}
+
+.auracare-dashboard .ranking-bar-bg {
+  height: 6px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  position: relative;
+}
+
+.auracare-dashboard .ranking-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(to right, var(--accent-cyan-dim), var(--accent-cyan));
+  width: 0%;
+  transition: width 1s ease-out;
+}
+
+.auracare-dashboard .ranking-item:nth-child(even) .ranking-bar-fill {
+  background: linear-gradient(to right, var(--accent-purple-dim), var(--accent-purple));
+}
+
+.auracare-dashboard .ranking-item:nth-child(even) .ranking-score {
+  color: var(--accent-purple);
+}
+
+/* Bottom Section - AI Insights terminal */
+.auracare-dashboard .ai-insights-panel {
+  background: var(--bg-panel);
+  border-color: rgba(189, 0, 255, 0.2);
+}
+
+.auracare-dashboard .ai-insights-panel:hover {
+  border-color: rgba(189, 0, 255, 0.4);
+  box-shadow: 0 10px 40px 0 rgba(148, 163, 184, 0.15), 0 0 20px rgba(189, 0, 255, 0.08);
+}
+
+.auracare-dashboard .terminal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.auracare-dashboard .terminal-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.auracare-dashboard .terminal-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--text-muted);
+}
+
+.auracare-dashboard .terminal-dot.red { background-color: var(--accent-red); }
+.auracare-dashboard .terminal-dot.yellow { background-color: var(--accent-amber); }
+.auracare-dashboard .terminal-dot.green { background-color: var(--accent-green); }
+
+.auracare-dashboard .terminal-prompt {
+  font-size: 11px;
+  color: var(--accent-purple);
+  font-weight: 600;
+}
+
+.auracare-dashboard .insights-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.auracare-dashboard .insight-card {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  transition: var(--transition-fast);
+}
+
+.auracare-dashboard .insight-card:hover {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(189, 0, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.auracare-dashboard .insight-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.auracare-dashboard .insight-icon-wrapper {
+  background: rgba(189, 0, 255, 0.08);
+  border: 1px solid rgba(189, 0, 255, 0.2);
+  color: var(--accent-purple);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.auracare-dashboard .insight-icon-wrapper.warning {
+  background: rgba(255, 176, 0, 0.08);
+  border-color: rgba(255, 176, 0, 0.2);
+  color: var(--accent-amber);
+}
+
+.auracare-dashboard .insight-icon-wrapper.danger {
+  background: rgba(255, 42, 109, 0.08);
+  border-color: rgba(255, 42, 109, 0.2);
+  color: var(--accent-red);
+}
+
+.auracare-dashboard .insight-content h3 {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--text-primary);
+}
+
+.auracare-dashboard .insight-content p {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.auracare-dashboard .insight-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.auracare-dashboard .insight-confidence {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.auracare-dashboard .btn-insight-action {
+  background: transparent;
+  border: 1px solid rgba(189, 0, 255, 0.3);
+  color: var(--accent-purple);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.auracare-dashboard .btn-insight-action:hover {
+  background: rgba(189, 0, 255, 0.1);
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 10px rgba(189, 0, 255, 0.2);
+}
+
+.auracare-dashboard .btn-insight-action.warning {
+  border-color: rgba(255, 176, 0, 0.3);
+  color: var(--accent-amber);
+}
+.auracare-dashboard .btn-insight-action.warning:hover {
+  background: rgba(255, 176, 0, 0.1);
+  border-color: var(--accent-amber);
+  box-shadow: 0 0 10px rgba(255, 176, 0, 0.2);
+}
+
+.auracare-dashboard .btn-insight-action.danger {
+  border-color: rgba(255, 42, 109, 0.3);
+  color: var(--accent-red);
+}
+.auracare-dashboard .btn-insight-action.danger:hover {
+  background: rgba(255, 42, 109, 0.1);
+  border-color: var(--accent-red);
+  box-shadow: 0 0 10px rgba(255, 42, 109, 0.2);
+}
+
+/* Modal Styling */
+.auracare-dashboard .modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-normal);
+}
+
+.auracare-dashboard .modal-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.auracare-dashboard .modal-content {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-light-hover);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 15px 50px rgba(148, 163, 184, 0.25), var(--glow-cyan);
+  width: 90%;
+  max-width: 550px;
+  max-height: 85vh;
+  overflow-y: auto;
+  transform: scale(0.9);
+  transition: transform var(--transition-normal);
+}
+
+.auracare-dashboard .modal-overlay.active .modal-content {
+  transform: scale(1);
+}
+
+.auracare-dashboard .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.auracare-dashboard .modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.auracare-dashboard .modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--transition-fast);
+}
+
+.auracare-dashboard .modal-close:hover {
+  background: rgba(255,255,255,0.05);
+  color: var(--text-primary);
+}
+
+.auracare-dashboard .modal-body {
+  padding: 24px;
+  color: var(--text-primary);
+}
+
+.auracare-dashboard .modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Toast styling */
+.auracare-toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 9999;
+}
+
+.auracare-toast {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 12px 20px;
+  color: var(--text-primary);
+  box-shadow: 0 10px 30px rgba(148, 163, 184, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 250px;
+  font-size: 13px;
+  animation: slide-in 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+}
+
+.auracare-toast.success {
+  border-color: rgba(0, 229, 115, 0.3);
+  box-shadow: 0 0 15px rgba(0, 229, 115, 0.1), 0 10px 30px rgba(148, 163, 184, 0.15);
+}
+
+.auracare-toast.warning {
+  border-color: rgba(255, 176, 0, 0.3);
+  box-shadow: 0 0 15px rgba(255, 176, 0, 0.1), 0 10px 30px rgba(148, 163, 184, 0.15);
+}
+
+.auracare-toast.danger {
+  border-color: rgba(255, 42, 109, 0.3);
+  box-shadow: 0 0 15px rgba(255, 42, 109, 0.1), 0 10px 30px rgba(148, 163, 184, 0.15);
+}
+
+.auracare-toast-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.auracare-toast.success .auracare-toast-icon { color: var(--accent-green); }
+.auracare-toast.warning .auracare-toast-icon { color: var(--accent-amber); }
+.auracare-toast.danger .auracare-toast-icon { color: var(--accent-red); }
+
+@keyframes slide-in {
+  from {
+    transform: translateY(20px) scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Terminal Console Panel styling */
+.auracare-dashboard .terminal-body {
+  font-family: 'Fira Code', 'Courier New', Courier, monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  background: #f8fafc;
+  border-radius: var(--radius-md);
+  padding: 16px;
+  border: 1px solid var(--border-light);
+  max-height: 220px;
+  overflow-y: auto;
+  color: #334155;
+}
+
+.auracare-dashboard .terminal-line {
+  margin-bottom: 4px;
+}
+
+.auracare-dashboard .terminal-line.cmd {
+  color: var(--accent-cyan);
+  font-weight: bold;
+}
+
+.auracare-dashboard .terminal-line.success {
+  color: var(--accent-green);
+}
+
+.auracare-dashboard .terminal-line.error {
+  color: var(--accent-red);
+}
+
+.auracare-dashboard .terminal-line.warn {
+  color: var(--accent-amber);
+}
+
+.auracare-dashboard .terminal-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 15px;
+  background: var(--accent-cyan);
+  animation: blink-cursor 1s infinite;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
+@keyframes blink-cursor {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+.auracare-dashboard .ml-spinner-sm {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0, 240, 255, 0.1);
+  border-left-color: var(--accent-cyan);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Disease Outbreak Prediction & Awareness Center */
+.auracare-dashboard .disease-awareness-center {
+  margin-top: 24px;
+  margin-bottom: 24px;
+}
+
+.auracare-dashboard .section-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.auracare-dashboard .ai-badge-pulse {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-purple);
+  background-color: hsla(275, 100%, 50%, 0.08);
+  border: 1px solid hsla(275, 100%, 50%, 0.15);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .6; }
+}
+
+.auracare-dashboard .disease-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.auracare-dashboard .disease-card {
+  background: white;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.auracare-dashboard .disease-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(148, 163, 184, 0.08);
+  border-color: var(--border-light-hover);
+}
+
+.auracare-dashboard .disease-card .card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.auracare-dashboard .disease-card .disease-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.auracare-dashboard .disease-card .risk-badge-status {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+}
+
+.auracare-dashboard .disease-card .risk-badge-status.urgent {
+  background-color: hsla(345, 100%, 50%, 0.1);
+  color: var(--accent-red);
+  border: 1px solid hsla(345, 100%, 50%, 0.2);
+}
+
+.auracare-dashboard .disease-card .risk-badge-status.high {
+  background-color: hsla(35, 100%, 50%, 0.1);
+  color: var(--accent-amber);
+  border: 1px solid hsla(35, 100%, 50%, 0.2);
+}
+
+.auracare-dashboard .disease-card .risk-badge-status.medium {
+  background-color: hsla(190, 100%, 40%, 0.1);
+  color: var(--accent-cyan);
+  border: 1px solid hsla(190, 100%, 40%, 0.2);
+}
+
+.auracare-dashboard .disease-card .metrics-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--border-light);
+}
+
+.auracare-dashboard .disease-card .metric-box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.auracare-dashboard .disease-card .metric-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.auracare-dashboard .disease-card .metric-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.auracare-dashboard .disease-card .metric-val.up {
+  color: var(--accent-red);
+}
+
+.auracare-dashboard .disease-card .metric-val.down {
+  color: var(--accent-green);
+}
+
+.auracare-dashboard .disease-card .precautions-box {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  background-color: var(--bg-input);
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+  flex-grow: 1;
+}
+
+.auracare-dashboard .disease-card .broadcast-btn {
+  width: 100%;
+  padding: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: 1px solid var(--accent-purple);
+  background: var(--accent-purple);
+  color: white;
+}
+
+.auracare-dashboard .disease-card .broadcast-btn:hover:not(:disabled) {
+  background: var(--accent-purple-dim);
+  border-color: var(--accent-purple-dim);
+  box-shadow: var(--glow-purple);
+}
+
+.auracare-dashboard .disease-card .broadcast-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.auracare-dashboard .disease-card .broadcast-btn.sent {
+  background: hsla(145, 80%, 35%, 0.1);
+  color: var(--accent-green);
+  border-color: hsla(145, 80%, 35%, 0.25);
+  cursor: default;
+}
+
+.auracare-dashboard .disease-card .broadcast-btn .spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Auto-Send Scheduler Bar */
+.auracare-dashboard .auto-send-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 12px 18px;
+  margin-bottom: 20px;
+}
+
+.auracare-dashboard .auto-send-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.auracare-dashboard .auto-send-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.auracare-dashboard .auto-send-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auracare-dashboard .interval-options {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.auracare-dashboard .interval-btn {
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+  background: white;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.auracare-dashboard .interval-btn:hover:not(:disabled) {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  background: hsla(190, 100%, 40%, 0.06);
+}
+
+.auracare-dashboard .interval-btn.active {
+  background: var(--accent-cyan);
+  color: white;
+  border-color: var(--accent-cyan);
+}
+
+.auracare-dashboard .interval-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.auracare-dashboard .custom-mins-input {
+  width: 70px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+  background: white;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.auracare-dashboard .custom-mins-input:focus {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 3px hsla(190, 100%, 40%, 0.1);
+}
+
+.auracare-dashboard .custom-mins-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.auracare-dashboard .countdown-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-green);
+  background: hsla(145, 80%, 35%, 0.08);
+  border: 1px solid hsla(145, 80%, 35%, 0.2);
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  font-variant-numeric: tabular-nums;
+}
+
+.auracare-dashboard .countdown-dot {
+  width: 7px;
+  height: 7px;
+  background: var(--accent-green);
+  border-radius: 50%;
+  animation: pulse 1.2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.auracare-dashboard .auto-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 18px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.auracare-dashboard .auto-toggle-btn.start {
+  background: var(--accent-cyan);
+  color: white;
+  border-color: var(--accent-cyan);
+}
+
+.auracare-dashboard .auto-toggle-btn.start:hover {
+  background: var(--accent-cyan-dim);
+  border-color: var(--accent-cyan-dim);
+  box-shadow: var(--glow-cyan);
+}
+
+.auracare-dashboard .auto-toggle-btn.stop {
+  background: hsla(345, 90%, 45%, 0.08);
+  color: var(--accent-red);
+  border-color: hsla(345, 90%, 45%, 0.3);
+}
+
+.auracare-dashboard .auto-toggle-btn.stop:hover {
+  background: hsla(345, 90%, 45%, 0.14);
+  box-shadow: var(--glow-red);
+}
+
+/* ── Research Meta Bar ──────────────────────────────────────────────────────── */
+.auracare-dashboard .research-meta-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 9px 14px;
+  background: hsla(275, 100%, 50%, 0.04);
+  border: 1px solid hsla(275, 100%, 50%, 0.12);
+  border-radius: var(--radius-sm);
+  margin-bottom: 18px;
+}
+
+.auracare-dashboard .meta-left,
+.auracare-dashboard .meta-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.auracare-dashboard .meta-sources {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.auracare-dashboard .meta-time {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.auracare-dashboard .meta-cached-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: hsla(145, 80%, 35%, 0.1);
+  color: var(--accent-green);
+  border: 1px solid hsla(145, 80%, 35%, 0.2);
+  text-transform: uppercase;
+}
+
+.auracare-dashboard .meta-refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+  background: white;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.auracare-dashboard .meta-refresh-btn:hover:not(:disabled) {
+  border-color: var(--accent-purple);
+  color: var(--accent-purple);
+  background: hsla(275, 100%, 50%, 0.05);
+}
+
+.auracare-dashboard .meta-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Per-card News Section ──────────────────────────────────────────────────── */
+.auracare-dashboard .news-section {
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.auracare-dashboard .news-section-title {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.auracare-dashboard .news-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+}
+
+.auracare-dashboard .news-source-badge {
+  flex-shrink: 0;
+  font-size: 8px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 2px;
+}
+
+.auracare-dashboard .news-source-badge.src-who {
+  background: hsla(215, 90%, 50%, 0.1);
+  color: hsl(215, 90%, 45%);
+  border: 1px solid hsla(215, 90%, 50%, 0.2);
+}
+
+.auracare-dashboard .news-source-badge.src-cdc {
+  background: hsla(145, 80%, 35%, 0.1);
+  color: var(--accent-green);
+  border: 1px solid hsla(145, 80%, 35%, 0.2);
+}
+
+.auracare-dashboard .news-source-badge.src-reliefweb {
+  background: hsla(35, 95%, 42%, 0.1);
+  color: var(--accent-amber);
+  border: 1px solid hsla(35, 95%, 42%, 0.2);
+}
+
+.auracare-dashboard .news-headline {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.auracare-dashboard .news-headline:hover {
+  color: var(--accent-purple);
+  text-decoration: underline;
+}
+
+.auracare-dashboard .no-news-text {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ── COVID Global Mini Stats ────────────────────────────────────────────────── */
+.auracare-dashboard .covid-mini-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  background: hsla(345, 90%, 45%, 0.04);
+  border: 1px solid hsla(345, 90%, 45%, 0.12);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.auracare-dashboard .covid-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: center;
+}
+
+.auracare-dashboard .covid-stat-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.auracare-dashboard .covid-stat-val {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.auracare-dashboard .covid-stat-val.up   { color: var(--accent-red);   }
+.auracare-dashboard .covid-stat-val.down { color: var(--accent-green); }
+
+/* ── Outbreak Disease Analytics Charts Panel ────────────────────────────────── */
+.auracare-dashboard .ob-charts-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.auracare-dashboard .ob-charts-header {
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.auracare-dashboard .ob-charts-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.auracare-dashboard .ob-charts-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.auracare-dashboard .ob-row-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .auracare-dashboard .ob-row-two {
+    grid-template-columns: 1fr;
+  }
+}
+
+.auracare-dashboard .ob-chart-box {
+  background: var(--bg-input);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auracare-dashboard .ob-chart-full {
+  width: 100%;
+}
+
+.auracare-dashboard .ob-chart-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.auracare-dashboard .ob-chart-canvas-wrap {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Disease Card Telemetry Stats Row ── */
+.auracare-dashboard .ob-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  margin-top: 12px;
+}
+
+.auracare-dashboard .ob-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 2px;
+  border-right: 1px solid var(--border-light);
+}
+
+.auracare-dashboard .ob-stat-item:last-child {
+  border-right: none;
+}
+
+.auracare-dashboard .ob-stat-lbl {
+  font-size: 9px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.auracare-dashboard .ob-stat-val {
+  font-size: 11px;
+  color: var(--text-primary);
+}
+
+/* ── Recommended Doctor Referrals ── */
+.auracare-dashboard .recommended-docs-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.auracare-dashboard .rec-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.auracare-dashboard .rec-docs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.auracare-dashboard .rec-doc-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: hsla(0, 0%, 100%, 0.5);
+  border: 1px dashed var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.auracare-dashboard .rec-doc-card:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent-cyan);
+}
+
+.auracare-dashboard .doc-card-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.auracare-dashboard .doc-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.auracare-dashboard .doc-avatar.virtual {
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+}
+
+.auracare-dashboard .doc-avatar.active {
+  background: var(--accent-green);
+}
+
+.auracare-dashboard .doc-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.auracare-dashboard .doc-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.auracare-dashboard .doc-specialty {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.auracare-dashboard .virtual-doc-badge {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  background: hsla(190, 90%, 40%, 0.1);
+  padding: 2px 6px;
+  border-radius: 10px;
+  border: 1px solid hsla(190, 90%, 40%, 0.15);
+}
+
