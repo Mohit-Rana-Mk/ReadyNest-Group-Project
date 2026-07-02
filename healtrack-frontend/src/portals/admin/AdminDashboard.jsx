@@ -96,6 +96,25 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleOnboardClinic = async (formData) => {
+        try {
+            if (isDemoMode) {
+                setActionMessage("Successfully onboarded clinic as Approved (Simulated)!");
+                setTimeout(() => setActionMessage(''), 3000);
+            } else {
+                const res = await axiosClient.post('/admin/create-clinic', formData);
+                if (res.data.success) {
+                    setActionMessage(res.data.message);
+                    loadDashboardData();
+                    setTimeout(() => setActionMessage(''), 3000);
+                }
+            }
+        } catch (error) {
+            console.error("Direct onboarding failed:", error);
+            alert("Failed to onboard clinic.");
+        }
+    };
+
     const navigation = [
         { id: 'onboarding', name: 'Onboarding & Queue', icon: ShieldCheck },
         { id: 'epidemiology', name: 'Epidemiology Map', icon: Map },
@@ -106,7 +125,7 @@ export default function AdminDashboard() {
     const renderContent = () => {
         switch (activeTab) {
             case 'onboarding':
-                return <ClinicOnboarding pendingClinics={pendingClinics} onVerify={handleVerifyClinic} />;
+                return <ClinicOnboarding pendingClinics={pendingClinics} onVerify={handleVerifyClinic} onOnboardClinic={handleOnboardClinic} />;
             case 'epidemiology':
                 return <EpidemiologyMap outbreakStats={outbreakStats} />;
             case 'ai-health':
@@ -114,7 +133,7 @@ export default function AdminDashboard() {
             case 'analytics':
                 return <EcosystemAnalytics ecosystemStats={ecosystemStats} />;
             default:
-                return <ClinicOnboarding pendingClinics={pendingClinics} onVerify={handleVerifyClinic} />;
+                return <ClinicOnboarding pendingClinics={pendingClinics} onVerify={handleVerifyClinic} onOnboardClinic={handleOnboardClinic} />;
         }
     };
 

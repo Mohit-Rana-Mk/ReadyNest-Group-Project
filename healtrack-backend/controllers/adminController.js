@@ -36,6 +36,30 @@ exports.verifyClinic = async (req, res) => {
     }
 };
 
+exports.createClinic = async (req, res) => {
+    try {
+        const { name, license_number, address, city, postal_code, latitude, longitude } = req.body;
+
+        if (!name || !license_number || !address || !city || !postal_code) {
+            return res.status(400).json({ success: false, message: "Missing required clinic information." });
+        }
+
+        const latVal = latitude ? parseFloat(latitude) : 0.0;
+        const lngVal = longitude ? parseFloat(longitude) : 0.0;
+
+        await db.query(
+            `INSERT INTO clinics (name, license_number, address, city, postal_code, latitude, longitude, location, verification_status) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ST_GeomFromText(?, 4326), 'Approved')`,
+            [name, license_number, address, city, postal_code, latVal, lngVal, `POINT(${lngVal} ${latVal})`]
+        );
+
+        res.json({ success: true, message: "Clinic successfully onboarded and set to Approved!" });
+    } catch (error) {
+        console.error("Error creating clinic:", error);
+        res.status(500).json({ success: false, message: "Failed to onboard clinic", error: error.message });
+    }
+};
+
 // 2. Epidemiological Intelligence
 exports.getEpidemiologyTrends = async (req, res) => {
     try {
