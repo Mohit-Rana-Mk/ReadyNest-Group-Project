@@ -4,11 +4,10 @@ import { Button } from '../../../components/ui/Button';
 import { FileText, Download, Loader2 } from 'lucide-react';
 import axiosClient from '../../../api/axiosClient';
 
-export function ReportsAndLogs() {
+export function ReportsAndLogs({ clinicId }) {
   const [logs, setLogs] = useState([]);
   const [loadingLogs, setLoadingLogs] = useState(true);
   const [downloading, setDownloading] = useState(false);
-  const clinicId = 1;
 
   useEffect(() => {
     const fetchLogs = async () => {
