@@ -3,7 +3,7 @@ import numpy as np
 import joblib
 from pathlib import Path
 from typing import List, Dict, Any
-from app.services.risk_tiers import get_risk_tier
+from app.services.risk_tiers import get_risk_tier, HIGH_SEVERITY_DISEASES
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 TRAINED_MODELS_DIR = BASE_DIR / "trained_models"
@@ -72,12 +72,16 @@ def predict_disease_from_symptoms(symptoms: List[str]) -> Dict[str, Any]:
     top_indices = np.argsort(proba)[::-1][:3]
 
     predictions = []
-    for rank, idx in enumerate(top_indices):
+    for idx in top_indices:
         disease = encoder.classes_[idx]
         confidence = round(float(proba[idx]) * 100, 2)
 
+        # Skip high-severity diseases if they have low confidence (under 45%) to avoid unnecessary panic
+        if disease in HIGH_SEVERITY_DISEASES and confidence < 45:
+            continue
+
         predictions.append({
-            "rank": rank + 1,
+            "rank": len(predictions) + 1,
             "disease": disease,
             "confidence": confidence,
             "risk_tier": get_risk_tier(disease, confidence),

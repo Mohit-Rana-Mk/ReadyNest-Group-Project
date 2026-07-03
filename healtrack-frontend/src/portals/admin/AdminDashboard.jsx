@@ -11,7 +11,8 @@ import {
     RefreshCw,
     LogOut,
     Menu,
-    X
+    X,
+    Users
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -21,6 +22,7 @@ import { EpidemiologyMap } from './components/EpidemiologyMap';
 import { AiHealthLogs } from './components/AiHealthLogs';
 import { EcosystemAnalytics } from './components/EcosystemAnalytics';
 import { AuraCareDashboard } from './components/AuraCareDashboard';
+import { PatientAnalytics } from './components/PatientAnalytics';
 
 export default function AdminDashboard() {
     const { logout } = useAuth();
@@ -41,7 +43,7 @@ export default function AdminDashboard() {
     }, [activeTab, epiFilter]);
 
     const loadDashboardData = async () => {
-        if (activeTab === 'auracare') return;
+        if (activeTab === 'auracare' || activeTab === 'patient-analytics') return; // Handled internally by component
         setLoading(true);
         try {
             if (activeTab === 'onboarding') {
@@ -101,6 +103,7 @@ export default function AdminDashboard() {
         { id: 'epidemiology', name: 'Epidemiology Map', icon: Map },
         { id: 'ai-health', name: 'AI System Health', icon: Activity },
         { id: 'analytics', name: 'Ecosystem Analytics', icon: PieChart },
+        { id: 'patient-analytics', name: 'Patient Analytics', icon: Users },
         { id: 'auracare', name: 'AuraCare Predictive AI', icon: Globe }
     ];
 
@@ -119,6 +122,9 @@ export default function AdminDashboard() {
                 return <AiHealthLogs aiHealthStats={aiHealthStats} />;
             case 'analytics':
                 return <EcosystemAnalytics ecosystemStats={ecosystemStats} onVerify={handleVerifyClinic} />;
+            case 'patient-analytics':
+                return <PatientAnalytics />;
+
             case 'auracare':
                 return <AuraCareDashboard />;
             default:

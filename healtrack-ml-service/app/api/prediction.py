@@ -114,6 +114,54 @@ def get_diseases():
         )
 
 
+@router.get(
+    "/disease-info/{disease_name}",
+    status_code=status.HTTP_200_OK,
+    summary="Get description and precautions for a specific disease",
+)
+def get_disease_info(disease_name: str):
+    try:
+        from app.services.disease_prediction import load_artifacts
+        art = load_artifacts()
+        desc_lookup = art["disease_descriptions"]
+        prec_lookup = art["disease_precautions"]
+        encoder = art["encoder"]
+        
+        # Match case-insensitively
+        matched_disease = None
+        for cls in encoder.classes_:
+            if cls.lower().strip() == disease_name.lower().strip():
+                matched_disease = cls
+                break
+                
+        if not matched_disease:
+            # Try substring match
+            for cls in encoder.classes_:
+                if disease_name.lower().strip() in cls.lower().strip():
+                    matched_disease = cls
+                    break
+
+        if not matched_disease:
+            raise HTTPException(status_code=404, detail="Disease not found")
+
+        from app.services.risk_tiers import get_risk_tier
+        
+        return {
+            "success": True,
+            "disease": matched_disease,
+            "description": desc_lookup.get(matched_disease, "Description not available."),
+            "precautions": prec_lookup.get(matched_disease, []),
+            "risk_tier": get_risk_tier(matched_disease, 100.0)
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal Server Error: {str(error)}",
+        )
+
+
 @router.post(
     "/predict/outbreak",
     response_model=OutbreakPredictResponse,

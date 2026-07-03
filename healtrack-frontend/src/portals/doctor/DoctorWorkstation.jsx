@@ -13,11 +13,9 @@ import { VitalsCard } from './components/VitalsCard';
 import { HistoryTimeline } from './components/HistoryTimeline';
 import { PrescriptionBuilder } from './components/PrescriptionBuilder';
 import { ReportUpload } from './components/ReportUpload';
-import { PatientAnalytics } from './components/PatientAnalytics';
 
 export default function DoctorWorkstation() {
-    const { logout, user } = useAuth();
-    const [currentTab, setCurrentTab] = useState('workspace'); // 'workspace' or 'analytics'
+
     const [appointments, setAppointments] = useState([]);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [patientHistory, setPatientHistory] = useState(null);
@@ -199,31 +197,8 @@ export default function DoctorWorkstation() {
                     )}
                 </div>
 
-                {/* Switcher Tabs */}
-                <div className="flex bg-[#f1f3f5] p-1 rounded-full text-xs">
-                    <button 
-                        onClick={() => setCurrentTab('workspace')}
-                        className={`px-3 md:px-4 py-1.5 rounded-full font-bold transition-all ${
-                            currentTab === 'workspace' 
-                                ? 'bg-indigo-700 text-white shadow-sm' 
-                                : 'text-slate-600 hover:text-slate-800'
-                        }`}
-                    >
-                        <span className="hidden sm:inline">Workstation</span>
-                        <span className="sm:hidden">Work</span>
-                    </button>
-                    <button 
-                        onClick={() => setCurrentTab('analytics')}
-                        className={`px-3 md:px-4 py-1.5 rounded-full font-bold transition-all ${
-                            currentTab === 'analytics' 
-                                ? 'bg-indigo-700 text-white shadow-sm' 
-                                : 'text-slate-600 hover:text-slate-800'
-                        }`}
-                    >
-                        <span className="hidden sm:inline">Patient Analytics</span>
-                        <span className="sm:hidden">Analytics</span>
-                    </button>
-                </div>
+
+
 
                 <div className="flex items-center gap-2 md:gap-4">
                     <div className="w-48 lg:w-64 relative hidden md:block">
@@ -252,37 +227,16 @@ export default function DoctorWorkstation() {
             </header>
 
             {/* MAIN WORKSPACE */}
-            <main className="flex-1 flex overflow-hidden relative">
-                {currentTab === 'analytics' ? (
-                    <PatientAnalytics />
-                ) : (
-                    <>
-                        {/* MOBILE QUEUE OVERLAY */}
-                        {showQueue && (
-                            <div className="fixed inset-0 z-40 lg:hidden">
-                                <div className="fixed inset-0 bg-black/50" onClick={() => setShowQueue(false)} />
-                                <div className="fixed inset-y-14 left-0 w-80 bg-white z-50 shadow-xl overflow-y-auto">
-                                    <PatientQueue 
-                                        appointments={appointments.filter(appt => appt.patient_name?.toLowerCase().includes(searchQuery.toLowerCase()))} 
-                                        selectedAppointment={selectedAppointment}
-                                        handleSelectAppointment={(appt) => { handleSelectAppointment(appt); setShowQueue(false); }}
-                                        dateFilter={dateFilter}
-                                        setDateFilter={setDateFilter}
-                                    />
-                                </div>
-                            </div>
-                        )}
+            <main className="flex-1 flex overflow-hidden">
+                        {/* COLUMN 1: Daily Queue */}
+                        <PatientQueue 
+                            appointments={appointments} 
+                            selectedAppointment={selectedAppointment}
+                            handleSelectAppointment={handleSelectAppointment}
+                            dateFilter={dateFilter}
+                            setDateFilter={setDateFilter}
+                        />
 
-                        {/* DESKTOP QUEUE */}
-                        <div className="hidden lg:block">
-                            <PatientQueue 
-                                appointments={appointments.filter(appt => appt.patient_name?.toLowerCase().includes(searchQuery.toLowerCase()))} 
-                                selectedAppointment={selectedAppointment}
-                                handleSelectAppointment={handleSelectAppointment}
-                                dateFilter={dateFilter}
-                                setDateFilter={setDateFilter}
-                            />
-                        </div>
 
                         {loading ? (
                             <div className="flex-1 flex items-center justify-center">
@@ -374,8 +328,6 @@ export default function DoctorWorkstation() {
                                 </div>
                             </div>
                         )}
-                    </>
-                )}
             </main>
         </div>
     );

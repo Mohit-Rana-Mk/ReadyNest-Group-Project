@@ -1,5 +1,8 @@
 const db = require('../config/db');
 
+// In-memory cache for tracking the last queried/predicted disease per patient ID
+const patientLastDiseaseCache = {};
+
 // ─────────────────────────────────────────────────────────────
 // A. Preventive Recommendations
 // ─────────────────────────────────────────────────────────────
@@ -156,6 +159,155 @@ exports.submitTriage = async (req, res) => {
         const [patientRows] = await db.query('SELECT id FROM patients WHERE user_id = ?', [req.user.id]);
         if (patientRows.length === 0) return res.status(404).json({ message: 'Patient not found' });
         const actualPatientId = patientRows[0].id;
+
+        const inputLower = user_input.toLowerCase().trim().replace(/[?.!]/g, '');
+        
+        // Check for follow-up conversational queries
+        const isFollowUpCause = inputLower.includes('cause') || 
+                                inputLower.includes('why does it happen') || 
+                                inputLower.includes('how did i get') || 
+                                inputLower.includes('how is it caused');
+                                
+        const isFollowUpPrecaution = inputLower.includes('precaution') || 
+                                     inputLower.includes('prevent') || 
+                                     inputLower.includes('treatment') || 
+                                     inputLower.includes('remedy') || 
+                                     inputLower.includes('cure');
+
+        const isGenericFollowUp = inputLower === 'this' || 
+                                  inputLower.includes('about this') || 
+                                  inputLower.includes('tell me more');
+
+        if ((isFollowUpCause || isFollowUpPrecaution || isGenericFollowUp) && patientLastDiseaseCache[actualPatientId]) {
+            const cachedDisease = patientLastDiseaseCache[actualPatientId];
+            try {
+                const infoResponse = await fetch(`http://localhost:8000/api/v1/disease-info/${encodeURIComponent(cachedDisease)}`);
+                if (infoResponse.ok) {
+                    const infoData = await infoResponse.json();
+                    if (infoData.success) {
+                        const predictedRisk = infoData.risk_tier;
+                        const predictedDisease = infoData.disease;
+                        const predictionsList = [{
+                            rank: 1,
+                            disease: infoData.disease,
+                            confidence: 100,
+                            risk_tier: infoData.risk_tier,
+                            description: infoData.description,
+                            precautions: infoData.precautions
+                        }];
+
+                        let recommendation = '';
+                        if (isFollowUpCause) {
+                            recommendation = `Here is what causes ${infoData.disease}: ${infoData.description}`;
+                        } else if (isFollowUpPrecaution) {
+                            recommendation = `To manage/prevent ${infoData.disease}, you should follow these precautions: ${infoData.precautions.join(', ')}.`;
+                        } else {
+                            recommendation = `Here is more information about ${infoData.disease}: ${infoData.description}`;
+                        }
+
+                        // Save log to DB
+                        let dbRisk = predictedRisk;
+                        if (dbRisk === 'Urgent') dbRisk = 'High';
+                        else if (dbRisk === 'Moderate') dbRisk = 'Medium';
+
+                        await db.execute(
+                            `INSERT INTO ai_triage_logs (actualPatientId, user_input, extracted_symptoms, predicted_risk)
+                             VALUES (?, ?, ?, ?)`,
+                            [actualPatientId, user_input, JSON.stringify([]), dbRisk]
+                        );
+
+                        return res.status(200).json({
+                            predicted_risk: predictedRisk,
+                            extracted_symptoms: [],
+                            predicted_disease: predictedDisease,
+                            recommendation: recommendation,
+                            predictions: predictionsList
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error('Error calling ML service for cached disease info:', err.message);
+            }
+        }
+
+        // List of all known diseases supported by the ML engine
+        const knownDiseases = [
+            'vertigo', 'aids', 'acne', 'alcoholic hepatitis', 'allergy', 'arthritis', 'asthma', 
+            'spondylosis', 'chicken pox', 'cholestasis', 'cold', 'dengue', 'diabetes', 
+            'piles', 'drug reaction', 'fungal infection', 'gerd', 'gastroenteritis', 
+            'heart attack', 'hypertension', 'hyperthyroidism', 'hypoglycemia', 
+            'hypothyroidism', 'impetigo', 'jaundice', 'malaria', 'migraine', 
+            'osteoarthritis', 'paralysis', 'ulcer', 'pneumonia', 'psoriasis', 
+            'tuberculosis', 'typhoid', 'urinary tract infection', 'varicose veins', 'hepatitis a'
+        ];
+
+        let directDiseaseMatch = null;
+        for (const kd of knownDiseases) {
+            if (inputLower === kd || 
+                inputLower === `i have ${kd}` || 
+                inputLower === `tell me about ${kd}` || 
+                inputLower === `what is ${kd}` ||
+                inputLower === `how to treat ${kd}`) {
+                directDiseaseMatch = kd;
+                break;
+            }
+        }
+
+        if (directDiseaseMatch) {
+            try {
+                const infoResponse = await fetch(`http://localhost:8000/api/v1/disease-info/${encodeURIComponent(directDiseaseMatch)}`);
+                if (infoResponse.ok) {
+                    const infoData = await infoResponse.json();
+                    if (infoData.success) {
+                        const predictedRisk = infoData.risk_tier;
+                        const predictedDisease = infoData.disease;
+                        const predictionsList = [{
+                            rank: 1,
+                            disease: infoData.disease,
+                            confidence: 100,
+                            risk_tier: infoData.risk_tier,
+                            description: infoData.description,
+                            precautions: infoData.precautions
+                        }];
+
+                        // Cache the disease name for context memory
+                        patientLastDiseaseCache[actualPatientId] = infoData.disease;
+
+                        let recommendation = 'Monitor your symptoms. If they persist for more than 48 hours, consider a visit.';
+                        if (predictedRisk === 'Urgent') {
+                            recommendation = 'Please visit a hospital immediately or call emergency services.';
+                        } else if (predictedRisk === 'High') {
+                            recommendation = 'We highly recommend booking an urgent consultation today.';
+                        } else if (predictedRisk === 'Moderate' || predictedRisk === 'Medium') {
+                            recommendation = 'We recommend booking a consultation within 24 to 48 hours.';
+                        }
+
+                        // Save log to DB
+                        let dbRisk = predictedRisk;
+                        if (dbRisk === 'Urgent') dbRisk = 'High';
+                        else if (dbRisk === 'Moderate') dbRisk = 'Medium';
+
+                        await db.execute(
+                            `INSERT INTO ai_triage_logs (actualPatientId, user_input, extracted_symptoms, predicted_risk)
+                             VALUES (?, ?, ?, ?)`,
+                            [actualPatientId, user_input, JSON.stringify([]), dbRisk]
+                        );
+
+                        return res.status(200).json({
+                            predicted_risk: predictedRisk,
+                            extracted_symptoms: [],
+                            predicted_disease: predictedDisease,
+                            recommendation: recommendation,
+                            predictions: predictionsList
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error('Error calling ML service for direct disease info:', err.message);
+            }
+        }
+
+
         // 1. Fetch valid symptoms list from ML Service
         let validSymptoms = [];
         try {
@@ -199,7 +351,13 @@ exports.submitTriage = async (req, res) => {
             ];
         }
 
-        const inputLower = user_input.toLowerCase();
+
+        const urgentKeywords = ['stroke', 'heart attack', 'cardiac', 'hemorrhage', 'unconscious', 'coma', 'poisoning', 'paralysis', 'difficulty breathing'];
+        const highRiskKeywords = ['cancer', 'tumor', 'bleeding', 'tuberculosis', 'aids', 'hiv', 'severe chest pain', 'chest pain'];
+
+        const hasUrgentKeyword = urgentKeywords.some(kw => inputLower.includes(kw));
+        const hasHighRiskKeyword = highRiskKeywords.some(kw => inputLower.includes(kw));
+
         const matchedSymptoms = [];
 
         // Scan and match symptoms from free text
@@ -213,15 +371,17 @@ exports.submitTriage = async (req, res) => {
 
         // Fallback to basic keywords if no matching symptom
         if (matchedSymptoms.length === 0) {
-            if (inputLower.includes('fever') || inputLower.includes('hot')) matchedSymptoms.push('high_fever');
-            if (inputLower.includes('headache') || inputLower.includes('head pain')) matchedSymptoms.push('headache');
-            if (inputLower.includes('cough')) matchedSymptoms.push('cough');
-            if (inputLower.includes('vomit')) matchedSymptoms.push('vomiting');
-            if (inputLower.includes('tired') || inputLower.includes('weak')) matchedSymptoms.push('fatigue');
-            if (inputLower.includes('dizzy')) matchedSymptoms.push('dizziness');
-            if (inputLower.includes('nausea') || inputLower.includes('sick')) matchedSymptoms.push('nausea');
-            if (inputLower.includes('chest pain')) matchedSymptoms.push('chest_pain');
-            if (inputLower.includes('breath') || inputLower.includes('short of breath')) matchedSymptoms.push('breathlessness');
+            if (!hasUrgentKeyword && !hasHighRiskKeyword) {
+                if (inputLower.includes('fever') || inputLower.includes('hot')) matchedSymptoms.push('high_fever');
+                if (inputLower.includes('headache') || inputLower.includes('head pain')) matchedSymptoms.push('headache');
+                if (inputLower.includes('cough')) matchedSymptoms.push('cough');
+                if (inputLower.includes('vomit')) matchedSymptoms.push('vomiting');
+                if (inputLower.includes('tired') || inputLower.includes('weak')) matchedSymptoms.push('fatigue');
+                if (inputLower.includes('dizzy')) matchedSymptoms.push('dizziness');
+                if (inputLower.includes('nausea') || inputLower.includes('sick')) matchedSymptoms.push('nausea');
+                if (inputLower.includes('chest pain')) matchedSymptoms.push('chest_pain');
+                if (inputLower.includes('breath') || inputLower.includes('short of breath')) matchedSymptoms.push('breathlessness');
+            }
         }
 
         let predictedRisk = 'Low';
@@ -245,14 +405,6 @@ exports.submitTriage = async (req, res) => {
                         const topPrediction = mlData.predictions[0];
                         predictedDisease = `${topPrediction.disease} (${topPrediction.confidence}% confidence)`;
                         predictedRisk = topPrediction.risk_tier;
-
-                        if (predictedRisk === 'Urgent') {
-                            recommendation = 'Please visit a hospital immediately or call emergency services.';
-                        } else if (predictedRisk === 'High') {
-                            recommendation = 'We highly recommend booking an urgent consultation today.';
-                        } else if (predictedRisk === 'Moderate') {
-                            recommendation = 'We recommend booking a consultation within 24 to 48 hours.';
-                        }
                     }
                 }
             } catch (err) {
@@ -261,23 +413,54 @@ exports.submitTriage = async (req, res) => {
                 if (inputLower.includes('chest pain') || inputLower.includes('shortness of breath')) {
                     predictedRisk = 'High';
                     predictedDisease = 'Possible Cardiac Event (Fallback)';
-                    recommendation = 'Please visit a hospital immediately or call emergency services.';
                 } else if (inputLower.includes('fever') && inputLower.includes('cough')) {
                     predictedRisk = 'Medium';
                     predictedDisease = 'Viral Influenza (Fallback)';
-                    recommendation = 'We recommend booking a consultation within 24 hours.';
                 }
             }
+        } else {
+            // No symptoms matched, but check if we have urgent/high-risk keywords
+            if (hasUrgentKeyword) {
+                predictedRisk = 'Urgent';
+                predictedDisease = 'Suspicion of Urgent Condition (Clinical Evaluation Required)';
+            } else if (hasHighRiskKeyword) {
+                predictedRisk = 'High';
+                predictedDisease = 'Suspicion of High-Risk Condition (Clinical Evaluation Required)';
+            }
+        }
+
+        // Apply keyword-based upgrades if necessary
+        if (hasUrgentKeyword) {
+            predictedRisk = 'Urgent';
+        } else if (hasHighRiskKeyword && predictedRisk !== 'Urgent') {
+            predictedRisk = 'High';
+        }
+
+        // Set recommendations based on finalized risk level
+        if (predictedRisk === 'Urgent') {
+            recommendation = 'Please visit a hospital immediately or call emergency services.';
+        } else if (predictedRisk === 'High') {
+            recommendation = 'We highly recommend booking an urgent consultation today.';
+        } else if (predictedRisk === 'Moderate' || predictedRisk === 'Medium') {
+            recommendation = 'We recommend booking a consultation within 24 to 48 hours.';
         }
 
         // 3. Persist to database
         const symptomsJson = JSON.stringify(matchedSymptoms.map(s => s.replace(/_/g, ' ')));
+        let dbRisk = predictedRisk;
+        if (dbRisk === 'Urgent') dbRisk = 'High';
+        else if (dbRisk === 'Moderate') dbRisk = 'Medium';
 
         await db.execute(
             `INSERT INTO ai_triage_logs (patient_id, user_input, extracted_symptoms, predicted_risk)
              VALUES (?, ?, ?, ?)`,
-            [actualPatientId, user_input, symptomsJson, predictedRisk]
+            [actualPatientId, user_input, symptomsJson, dbRisk]
         );
+
+        // Cache the disease name for context memory if we have a top prediction
+        if (predictionsList && predictionsList.length > 0) {
+            patientLastDiseaseCache[actualPatientId] = predictionsList[0].disease;
+        }
 
         // 4. Return AI response to client
         res.status(201).json({

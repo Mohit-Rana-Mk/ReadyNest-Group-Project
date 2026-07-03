@@ -4,8 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
   ResponsiveContainer, Legend, PieChart, Pie, Cell 
 } from 'recharts';
-import axiosClient from '../../../api/axiosClient';
-import { Filter, Users, UserCheck, Calendar } from 'lucide-react';
+import { Filter, Users, Calendar } from 'lucide-react';
 
 const DEPARTMENTS = [
   'Cardiology', 'General Medicine', 'Ophthalmology', 'Orthopedics', 
@@ -45,7 +44,7 @@ export function PatientAnalytics() {
       if (selectedGenders.length > 0) params.append('genders', selectedGenders.join(','));
       if (selectedDepts.length > 0) params.append('departments', selectedDepts.join(','));
 
-      const res = await axiosClient.get(`/doctor/patient-analytics?${params.toString()}`);
+      const res = await axiosClient.get(`/admin/patient-analytics?${params.toString()}`);
       if (res.data && res.data.success) {
         setData(res.data.data);
       }
@@ -108,8 +107,8 @@ export function PatientAnalytics() {
 
       {/* FILTER & KPI ROW */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-        {/* KPI CARDS (Left 2 columns) */}
-        <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* KPI CARDS (Left 1 column) */}
+        <div className="lg:col-span-1">
           {/* Total Patients */}
           <Card className="p-6 bg-white border-l-4 border-blue-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between h-32">
             <div className="flex justify-between items-center text-slate-500">
@@ -121,22 +120,10 @@ export function PatientAnalytics() {
               <p className="text-[10px] text-slate-400 mt-1">Unique Patients Enrolled</p>
             </div>
           </Card>
-
-          {/* Repeat Patients */}
-          <Card className="p-6 bg-white border-l-4 border-indigo-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between h-32">
-            <div className="flex justify-between items-center text-slate-500">
-              <span className="text-xs font-semibold uppercase tracking-wider">Repeat Patients</span>
-              <UserCheck className="w-5 h-5 text-indigo-500" />
-            </div>
-            <div>
-              <h2 className="text-3xl font-bold text-slate-800">{kpis.repeatPatients}</h2>
-              <p className="text-[10px] text-slate-400 mt-1">Patients with Multiple Visits</p>
-            </div>
-          </Card>
         </div>
 
-        {/* FILTERS (Right 2 columns) */}
-        <Card className="lg:col-span-2 p-5 bg-white shadow-sm border border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* FILTERS (Right 3 columns) */}
+        <Card className="lg:col-span-3 p-5 bg-white shadow-sm border border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Gender Filter */}
           <div className="relative">
             <label className="text-xs font-semibold text-slate-600 block mb-1">Gender</label>

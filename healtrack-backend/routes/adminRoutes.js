@@ -14,5 +14,6 @@ router.get('/ecosystem-kpis', adminController.getEcosystemKpis);
 router.get('/auracare-stats', adminController.getAuraCareStats);
 router.post('/broadcast-awareness', adminController.broadcastAwareness);
 router.get('/outbreak-news', adminController.getOutbreakNews);
+router.get('/patient-analytics', adminController.getPatientAnalytics);
 
 module.exports = router;

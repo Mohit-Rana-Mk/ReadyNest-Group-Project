@@ -717,3 +717,126 @@ exports.getOutbreakNews = async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to fetch outbreak news', error: error.message });
     }
 };
+
+exports.getPatientAnalytics = async (req, res) => {
+    const { genders, departments, min_age, max_age } = req.query;
+
+    try {
+        let conditions = ['1=1'];
+        let params = [];
+
+        if (genders) {
+            conditions.push('p.gender IN (?)');
+            params.push(genders.split(','));
+        }
+        if (departments) {
+            conditions.push('s.name IN (?)');
+            params.push(departments.split(','));
+        }
+        if (min_age) {
+            conditions.push('TIMESTAMPDIFF(YEAR, p.date_of_birth, CURDATE()) >= ?');
+            params.push(parseInt(min_age));
+        }
+        if (max_age) {
+            conditions.push('TIMESTAMPDIFF(YEAR, p.date_of_birth, CURDATE()) <= ?');
+            params.push(parseInt(max_age));
+        }
+
+        const whereClause = conditions.join(' AND ');
+
+        // 1. Total Patients Count
+        const totalQuery = `
+            SELECT COUNT(DISTINCT p.id) as count 
+            FROM patients p
+            LEFT JOIN appointments a ON p.id = a.patient_id
+            LEFT JOIN users d ON a.doctor_id = d.id
+            LEFT JOIN services s ON d.service_id = s.id
+            WHERE ${whereClause}
+        `;
+        const [totalRows] = await db.query(totalQuery, params);
+        const totalPatients = totalRows[0]?.count || 0;
+
+
+
+        // 3. Patient Demographics (Gender breakdown)
+        const demographicsQuery = `
+            SELECT p.gender, COUNT(DISTINCT p.id) as count 
+            FROM patients p
+            LEFT JOIN appointments a ON p.id = a.patient_id
+            LEFT JOIN users d ON a.doctor_id = d.id
+            LEFT JOIN services s ON d.service_id = s.id
+            WHERE ${whereClause}
+            GROUP BY p.gender
+        `;
+        const [demographicsRows] = await db.query(demographicsQuery, params);
+
+        // 4. Age/Gender Analysis (Grouped bins)
+        const ageGenderQuery = `
+            SELECT TIMESTAMPDIFF(YEAR, p.date_of_birth, CURDATE()) as age, p.gender, COUNT(DISTINCT p.id) as count
+            FROM patients p
+            LEFT JOIN appointments a ON p.id = a.patient_id
+            LEFT JOIN users d ON a.doctor_id = d.id
+            LEFT JOIN services s ON d.service_id = s.id
+            WHERE ${whereClause}
+            GROUP BY age, p.gender
+        `;
+        const [ageGenderRows] = await db.query(ageGenderQuery, params);
+
+        // Process age bins: 0-19 (bin 0), 20-39 (bin 20), 40-59 (bin 40), 60-79 (bin 60), 80+ (bin 80)
+        const ageBins = {
+            '0': { bin: 0, label: '0', female: 0, male: 0 },
+            '20': { bin: 20, label: '20', female: 0, male: 0 },
+            '40': { bin: 40, label: '40', female: 0, male: 0 },
+            '60': { bin: 60, label: '60', female: 0, male: 0 },
+            '80': { bin: 80, label: '80', female: 0, male: 0 }
+        };
+
+        ageGenderRows.forEach(row => {
+            const age = parseInt(row.age);
+            const gender = (row.gender || '').toLowerCase();
+            let binKey = '0';
+            if (age >= 80) binKey = '80';
+            else if (age >= 60) binKey = '60';
+            else if (age >= 40) binKey = '40';
+            else if (age >= 20) binKey = '20';
+
+            if (gender === 'female') {
+                ageBins[binKey].female += row.count;
+            } else if (gender === 'male') {
+                ageBins[binKey].male += row.count;
+            }
+        });
+
+        const ageGenderData = Object.values(ageBins);
+
+        // 5. Disease Distribution (Prescription diagnosis counts)
+        const diseaseQuery = `
+            SELECT pr.diagnosis as name, COUNT(pr.id) as value
+            FROM prescriptions pr
+            JOIN patients p ON pr.patient_id = p.id
+            JOIN users d ON pr.doctor_id = d.id
+            JOIN services s ON d.service_id = s.id
+            WHERE ${whereClause}
+            GROUP BY pr.diagnosis
+            ORDER BY value DESC
+            LIMIT 10
+        `;
+        const [diseaseRows] = await db.query(diseaseQuery, params);
+
+        res.json({
+            success: true,
+            data: {
+                kpis: {
+                    totalPatients
+                },
+                demographics: demographicsRows,
+                ageGenderAnalysis: ageGenderData,
+                diseaseDistribution: diseaseRows
+            }
+        });
+
+    } catch (error) {
+        console.error("Error in getPatientAnalytics:", error);
+        res.status(500).json({ success: false, message: "Server error fetching patient analytics", error: error.message });
+    }
+};

@@ -8,7 +8,6 @@ router.use(authMiddleware(['Doctor']));
 
 // A. Daily Patient Queue
 router.get('/appointments', doctorController.getAppointments);
-router.get('/patient-analytics', doctorController.getPatientAnalytics);
 
 // B. Longitudinal Patient History
 router.get('/patient-history/:id', doctorController.getPatientHistory);

@@ -8,7 +8,8 @@ HIGH_SEVERITY_DISEASES = {
     'Hepatitis C', 'Hepatitis D', 'Hepatitis E', 'hepatitis A',
     'Alcoholic hepatitis', 'Malaria', 'Dengue', 'Typhoid',
     'Pneumonia', 'Paralysis (brain hemorrhage)', 'Diabetes',
-    'Hypertension', 'Hypoglycemia'
+    'Hypertension', 'Hypoglycemia', 'Cancer', 'Tumor', 'Stroke',
+    'Brain hemorrhage', 'Cardiac arrest'
 }
 
 MODERATE_SEVERITY_DISEASES = {
