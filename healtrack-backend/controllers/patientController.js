@@ -1,5 +1,8 @@
 const db = require('../config/db');
 
+// In-memory cache for tracking the last queried/predicted disease per patient ID
+const patientLastDiseaseCache = {};
+
 // ─────────────────────────────────────────────────────────────
 // A. Preventive Recommendations
 // ─────────────────────────────────────────────────────────────
@@ -135,6 +138,74 @@ exports.submitTriage = async (req, res) => {
     try {
         const inputLower = user_input.toLowerCase().trim().replace(/[?.!]/g, '');
         
+        // Check for follow-up conversational queries
+        const isFollowUpCause = inputLower.includes('cause') || 
+                                inputLower.includes('why does it happen') || 
+                                inputLower.includes('how did i get') || 
+                                inputLower.includes('how is it caused');
+                                
+        const isFollowUpPrecaution = inputLower.includes('precaution') || 
+                                     inputLower.includes('prevent') || 
+                                     inputLower.includes('treatment') || 
+                                     inputLower.includes('remedy') || 
+                                     inputLower.includes('cure');
+
+        const isGenericFollowUp = inputLower === 'this' || 
+                                  inputLower.includes('about this') || 
+                                  inputLower.includes('tell me more');
+
+        if ((isFollowUpCause || isFollowUpPrecaution || isGenericFollowUp) && patientLastDiseaseCache[patient_id]) {
+            const cachedDisease = patientLastDiseaseCache[patient_id];
+            try {
+                const infoResponse = await fetch(`http://localhost:8000/api/v1/disease-info/${encodeURIComponent(cachedDisease)}`);
+                if (infoResponse.ok) {
+                    const infoData = await infoResponse.json();
+                    if (infoData.success) {
+                        const predictedRisk = infoData.risk_tier;
+                        const predictedDisease = infoData.disease;
+                        const predictionsList = [{
+                            rank: 1,
+                            disease: infoData.disease,
+                            confidence: 100,
+                            risk_tier: infoData.risk_tier,
+                            description: infoData.description,
+                            precautions: infoData.precautions
+                        }];
+
+                        let recommendation = '';
+                        if (isFollowUpCause) {
+                            recommendation = `Here is what causes ${infoData.disease}: ${infoData.description}`;
+                        } else if (isFollowUpPrecaution) {
+                            recommendation = `To manage/prevent ${infoData.disease}, you should follow these precautions: ${infoData.precautions.join(', ')}.`;
+                        } else {
+                            recommendation = `Here is more information about ${infoData.disease}: ${infoData.description}`;
+                        }
+
+                        // Save log to DB
+                        let dbRisk = predictedRisk;
+                        if (dbRisk === 'Urgent') dbRisk = 'High';
+                        else if (dbRisk === 'Moderate') dbRisk = 'Medium';
+
+                        await db.execute(
+                            `INSERT INTO ai_triage_logs (patient_id, user_input, extracted_symptoms, predicted_risk)
+                             VALUES (?, ?, ?, ?)`,
+                            [patient_id, user_input, JSON.stringify([]), dbRisk]
+                        );
+
+                        return res.status(200).json({
+                            predicted_risk: predictedRisk,
+                            extracted_symptoms: [],
+                            predicted_disease: predictedDisease,
+                            recommendation: recommendation,
+                            predictions: predictionsList
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error('Error calling ML service for cached disease info:', err.message);
+            }
+        }
+
         // List of all known diseases supported by the ML engine
         const knownDiseases = [
             'vertigo', 'aids', 'acne', 'alcoholic hepatitis', 'allergy', 'arthritis', 'asthma', 
@@ -174,6 +245,9 @@ exports.submitTriage = async (req, res) => {
                             description: infoData.description,
                             precautions: infoData.precautions
                         }];
+
+                        // Cache the disease name for context memory
+                        patientLastDiseaseCache[patient_id] = infoData.disease;
 
                         let recommendation = 'Monitor your symptoms. If they persist for more than 48 hours, consider a visit.';
                         if (predictedRisk === 'Urgent') {
@@ -357,6 +431,11 @@ exports.submitTriage = async (req, res) => {
              VALUES (?, ?, ?, ?)`,
             [patient_id, user_input, symptomsJson, dbRisk]
         );
+
+        // Cache the disease name for context memory if we have a top prediction
+        if (predictionsList && predictionsList.length > 0) {
+            patientLastDiseaseCache[patient_id] = predictionsList[0].disease;
+        }
 
         // 4. Return AI response to client
         res.status(201).json({
