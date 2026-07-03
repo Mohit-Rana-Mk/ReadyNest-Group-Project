@@ -1,6 +1,44 @@
 import React from 'react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix leaflet icon path issues in React
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+    iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+});
+
+// Custom DivIcon generator to retain the glowing ping effect
+const createGlowingIcon = (risk, count, diagnosis) => {
+    const scale = Math.min(count * 4, 30); // Cap the scale
+    const baseColor = risk === 'High' ? 'red' : 'yellow';
+    
+    const htmlString = `
+        <div class="relative flex items-center justify-center" style="width: 24px; height: 24px; transform: translate(-50%, -50%);">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-${baseColor}-400" style="width: ${scale * 2}px; height: ${scale * 2}px"></span>
+            <div class="w-4 h-4 rounded-full shadow-md border-2 border-white bg-${baseColor}-500 z-10"></div>
+            <span class="absolute top-6 whitespace-nowrap bg-slate-800/90 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded shadow z-20">
+                ${diagnosis} (${count} cases)
+            </span>
+        </div>
+    `;
+
+    return L.divIcon({
+        className: 'custom-leaflet-icon',
+        html: htmlString,
+        iconSize: [0, 0], // Center it perfectly
+        iconAnchor: [0, 0], // Anchor at center
+    });
+};
 
 export function EpidemiologyMap({ outbreakStats, filter, setFilter }) {
+    // Map center (India coordinates)
+    const mapCenter = [22.9734, 78.6569];
+    const mapZoom = 4;
+
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 bg-white border border-[#e9ecef] rounded-2xl p-6 shadow-sm flex flex-col h-[550px]">
@@ -21,38 +59,25 @@ export function EpidemiologyMap({ outbreakStats, filter, setFilter }) {
                     </select>
                 </div>
                 
-                {/* Simulated Map */}
-                <div className="flex-1 bg-slate-100 rounded-xl relative overflow-hidden border border-slate-200/50 flex items-center justify-center">
-                    <div className="absolute inset-0 bg-slate-50 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px]"></div>
-                    
-                    {/* Outbreak Map Coordinates */}
-                    {outbreakStats.locations && outbreakStats.locations.map(loc => {
-                        const scale = loc.count * 4;
-                        return (
-                            <div 
-                                key={loc.id} 
-                                className="absolute flex flex-col items-center"
-                                style={{
-                                    top: loc.latitude ? `${(loc.latitude % 30) * 12 + 100}px` : '150px',
-                                    left: loc.longitude ? `${(loc.longitude % 70) * 4 + 100}px` : '200px'
-                                }}
-                            >
-                                <span className={`animate-ping absolute inline-flex h-${scale} w-${scale} rounded-full opacity-75 ${
-                                    loc.risk === 'High' ? 'bg-red-400' : 'bg-yellow-400'
-                                }`} style={{ height: `${scale * 2}px`, width: `${scale * 2}px` }}></span>
-                                <div className={`w-3.5 h-3.5 rounded-full shadow-md border-2 border-white ${
-                                    loc.risk === 'High' ? 'bg-red-500' : 'bg-yellow-500'
-                                }`}></div>
-                                <span className="mt-1 bg-slate-800/90 text-white text-[8px] font-extrabold px-1.5 py-0.5 rounded shadow">
-                                    {loc.diagnosis} ({loc.count} cases)
-                                </span>
-                            </div>
-                        );
-                    })}
-
-                    <span className="absolute bottom-3 left-3 text-[10px] bg-white border border-slate-200/50 text-slate-500 font-bold px-2 py-1 rounded">
-                        🗺️ Mapping India coordinates system (SRID 4326)
-                    </span>
+                {/* Interactive Leaflet Map */}
+                <div className="flex-1 bg-slate-100 rounded-xl relative overflow-hidden border border-slate-200/50 flex items-center justify-center z-0">
+                    <MapContainer center={mapCenter} zoom={mapZoom} style={{ height: '100%', width: '100%', zIndex: 0 }} zoomControl={false}>
+                        <TileLayer
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                        />
+                        {outbreakStats.locations && outbreakStats.locations.map(loc => {
+                            if (!loc.latitude || !loc.longitude) return null;
+                            const customIcon = createGlowingIcon(loc.risk, loc.count, loc.diagnosis);
+                            return (
+                                <Marker 
+                                    key={loc.id} 
+                                    position={[parseFloat(loc.latitude), parseFloat(loc.longitude)]}
+                                    icon={customIcon}
+                                />
+                            );
+                        })}
+                    </MapContainer>
                 </div>
             </div>
 
