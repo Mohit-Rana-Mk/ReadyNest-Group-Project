@@ -33,7 +33,7 @@ export default function PatientApp() {
         };
         loadData();
 
-        const socket = io('http://localhost:5001');
+        const socket = io('https://healtrack-backend-7h3o.onrender.com');
         socket.on('QUEUE_UPDATE', () => {
             loadData();
         });

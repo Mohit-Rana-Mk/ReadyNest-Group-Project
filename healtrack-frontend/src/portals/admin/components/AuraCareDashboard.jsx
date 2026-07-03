@@ -382,7 +382,7 @@ export function AuraCareDashboard() {
 
     // Setup Socket.io listener for new alerts
     useEffect(() => {
-        const socket = io('http://localhost:5001');
+        const socket = io('https://healtrack-backend-7h3o.onrender.com');
         
         socket.on('NEW_ALERT', (data) => {
             console.log("AuraCare Dashboard received NEW_ALERT:", data);
