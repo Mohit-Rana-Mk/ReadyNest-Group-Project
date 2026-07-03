@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '../../../components/ui/Card';
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
-  ResponsiveContainer, Legend, PieChart, Pie, Cell 
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, Legend, PieChart, Pie, Cell
 } from 'recharts';
 import { Filter, Users, Calendar } from 'lucide-react';
 import axiosClient from '../../../api/axiosClient';
 
 const DEPARTMENTS = [
-  'Cardiology', 'General Medicine', 'Ophthalmology', 'Orthopedics', 
+  'Cardiology', 'General Medicine', 'Ophthalmology', 'Orthopedics',
   'Pediatrics', 'Dermatology', 'ENT', 'Neurology', 'Gynecology', 'Psychiatry'
 ];
 
@@ -17,7 +17,7 @@ const GENDERS = ['Female', 'Male'];
 const PIE_COLORS = ['#3b82f6', '#1e3a8a']; // Matches PowerBI light blue & dark blue
 
 const MOSAIC_COLORS = [
-  '#2563eb', '#db2777', '#0f766e', '#a21caf', '#06b6d4', 
+  '#2563eb', '#db2777', '#0f766e', '#a21caf', '#06b6d4',
   '#4f46e5', '#e11d48', '#b45309', '#1e3a8a', '#7c3aed',
   '#ea580c', '#65a30d', '#059669', '#ca8a04', '#0284c7'
 ];
@@ -124,11 +124,11 @@ export function PatientAnalytics() {
         </div>
 
         {/* FILTERS (Right 3 columns) */}
-        <Card className="lg:col-span-3 p-5 bg-white shadow-sm border border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="lg:col-span-3 p-5 bg-white shadow-sm border border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-4 overflow-visible">
           {/* Gender Filter */}
           <div className="relative">
             <label className="text-xs font-semibold text-slate-600 block mb-1">Gender</label>
-            <button 
+            <button
               onClick={() => { setShowGenderDropdown(!showGenderDropdown); setShowDeptDropdown(false); }}
               className="w-full text-left bg-slate-50 border border-gray-300 rounded px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-100 flex justify-between items-center"
             >
@@ -139,11 +139,11 @@ export function PatientAnalytics() {
               <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 p-2 space-y-1">
                 {GENDERS.map(g => (
                   <label key={g} className="flex items-center gap-2 text-xs text-slate-600 hover:bg-slate-50 p-1 rounded cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      checked={selectedGenders.includes(g)} 
+                    <input
+                      type="checkbox"
+                      checked={selectedGenders.includes(g)}
                       onChange={() => toggleGender(g)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                     <span>{g}</span>
                   </label>
@@ -155,7 +155,7 @@ export function PatientAnalytics() {
           {/* Department Filter */}
           <div className="relative">
             <label className="text-xs font-semibold text-slate-600 block mb-1">Department</label>
-            <button 
+            <button
               onClick={() => { setShowDeptDropdown(!showDeptDropdown); setShowGenderDropdown(false); }}
               className="w-full text-left bg-slate-50 border border-gray-300 rounded px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-100 flex justify-between items-center"
             >
@@ -171,11 +171,11 @@ export function PatientAnalytics() {
                 </div>
                 {DEPARTMENTS.map(d => (
                   <label key={d} className="flex items-center gap-2 text-xs text-slate-600 hover:bg-slate-50 p-1 rounded cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      checked={selectedDepts.includes(d)} 
+                    <input
+                      type="checkbox"
+                      checked={selectedDepts.includes(d)}
                       onChange={() => toggleDept(d)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                     <span>{d}</span>
                   </label>
@@ -191,21 +191,21 @@ export function PatientAnalytics() {
               <span className="text-blue-600 font-bold">{minAge} - {maxAge}</span>
             </label>
             <div className="flex items-center gap-2 pt-1">
-              <input 
-                type="range" 
-                min="2" 
-                max="85" 
-                value={minAge} 
+              <input
+                type="range"
+                min="2"
+                max="85"
+                value={minAge}
                 onChange={(e) => setMinAge(Math.min(Number(e.target.value), maxAge - 1))}
-                className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" 
+                className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
               />
-              <input 
-                type="range" 
-                min="2" 
-                max="85" 
-                value={maxAge} 
+              <input
+                type="range"
+                min="2"
+                max="85"
+                value={maxAge}
                 onChange={(e) => setMaxAge(Math.max(Number(e.target.value), minAge + 1))}
-                className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" 
+                className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
               />
             </div>
           </div>
@@ -268,7 +268,7 @@ export function PatientAnalytics() {
         {/* Disease Distribution (Recharts Bar Chart) */}
         <Card className="lg:col-span-2 p-5 bg-white shadow-sm border border-gray-200">
           <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 border-b pb-2">Disease Distribution</h3>
-          
+
           {diseaseDistribution.length === 0 ? (
             <div className="h-72 flex items-center justify-center text-slate-400">
               No disease data matches the current filters.
