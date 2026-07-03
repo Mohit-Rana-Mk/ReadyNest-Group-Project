@@ -47,8 +47,8 @@ async function seed() {
         console.log('Inserted 10 services.');
 
         // 2. Insert Clinics
-        await db.query(`INSERT INTO clinics (id, name, license_number, address, city, postal_code, latitude, longitude, location, verification_status) VALUES 
-            (1, 'HealTrack Central Hospital', 'LIC-99882200', '123 Health Ave', 'Mumbai', '400001', 19.0760, 72.8777, ST_GeomFromText('POINT(72.8777 19.0760)', 4326), 'Approved')
+        await db.query(`INSERT INTO clinics (id, name, license_number, address, city, postal_code, latitude, longitude, verification_status) VALUES 
+            (1, 'HealTrack Central Hospital', 'LIC-99882200', '123 Health Ave', 'Mumbai', '400001', 19.0760, 72.8777, 'Approved')
         `);
         console.log('Inserted HealTrack Central Hospital.');
 

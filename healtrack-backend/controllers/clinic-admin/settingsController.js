@@ -30,11 +30,6 @@ exports.updateClinicSettings = async (req, res) => {
                            latitude = ?, longitude = ?, opening_time = ?, closing_time = ?, operational_days = ?`;
         let params = [name, address, latitude || null, longitude || null, opening_time || null, closing_time || null, operational_days || null];
 
-        if (latitude && longitude) {
-            updateQuery += `, location = ST_GeomFromText(?, 4326)`;
-            params.push(`POINT(${longitude} ${latitude})`);
-        }
-
         updateQuery += ` WHERE id = ?`;
         params.push(clinicId);
 

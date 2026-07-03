@@ -151,8 +151,8 @@ exports.registerClinic = async (req, res) => {
 
         // 1. Create Clinic (Pending)
         const [clinicResult] = await db.execute(
-            `INSERT INTO clinics (name, license_number, address, city, postal_code, location, verification_status) 
-             VALUES (?, ?, ?, ?, ?, ST_GeomFromText('POINT(0 0)', 4326), 'Pending')`,
+            `INSERT INTO clinics (name, license_number, address, city, postal_code, verification_status) 
+             VALUES (?, ?, ?, ?, ?, 'Pending')`,
             [clinic_name, license_number, address || '', city || '', postal_code || '']
         );
         const clinicId = clinicResult.insertId;

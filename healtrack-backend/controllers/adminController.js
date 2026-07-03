@@ -68,9 +68,9 @@ exports.createClinic = async (req, res) => {
         const lngVal = longitude ? parseFloat(longitude) : 0.0;
 
         await db.query(
-            `INSERT INTO clinics (name, license_number, address, city, postal_code, latitude, longitude, location, verification_status) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ST_GeomFromText(?, 4326), 'Approved')`,
-            [name, license_number, address, city, postal_code, latVal, lngVal, `POINT(${lngVal} ${latVal})`]
+            `INSERT INTO clinics (name, license_number, address, city, postal_code, latitude, longitude, verification_status) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, 'Approved')`,
+            [name, license_number, address, city, postal_code, latVal, lngVal]
         );
 
         res.json({ success: true, message: "Clinic successfully onboarded and set to Approved!" });

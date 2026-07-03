@@ -64,7 +64,6 @@ CREATE TABLE clinics (
     postal_code VARCHAR(20) NOT NULL,
     latitude DECIMAL(10, 8) NULL,
     longitude DECIMAL(11, 8) NULL,
-    location POINT NOT NULL, 
     verification_status ENUM('Pending', 'Approved', 'Delisted', 'Suspended') DEFAULT 'Pending',
     opening_time TIME NULL,
     closing_time TIME NULL,
