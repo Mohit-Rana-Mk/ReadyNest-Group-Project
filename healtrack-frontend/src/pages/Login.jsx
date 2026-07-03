@@ -129,24 +129,6 @@ export default function Login() {
                         </div>
                     </div>
 
-                    <div className="mt-8 border-t border-gray-200 pt-6">
-                        <div className="relative">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-slate-200" />
-                            </div>
-                            <div className="relative flex justify-center text-sm">
-                                <span className="px-2 bg-white text-slate-500">Demo Accounts (Pass: password123)</span>
-                            </div>
-                        </div>
-                        
-                        <div className="mt-6 grid grid-cols-2 gap-3 text-xs text-slate-500">
-                            <div>Super: <span className="font-mono bg-slate-100 p-0.5 rounded">superadmin@</span></div>
-                            <div>Clinic: <span className="font-mono bg-slate-100 p-0.5 rounded">admin@</span></div>
-                            <div>Doctor: <span className="font-mono bg-slate-100 p-0.5 rounded">vikram@</span></div>
-                            <div>Reception: <span className="font-mono bg-slate-100 p-0.5 rounded">rahul@</span></div>
-                            <div className="col-span-2 text-center">Patient: <span className="font-mono bg-slate-100 p-0.5 rounded">patient1@mail.com</span></div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
