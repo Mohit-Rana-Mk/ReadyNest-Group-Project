@@ -64,13 +64,12 @@ CREATE TABLE clinics (
     postal_code VARCHAR(20) NOT NULL,
     latitude DECIMAL(10, 8) NULL,
     longitude DECIMAL(11, 8) NULL,
-    location POINT NOT NULL SRID 4326, 
+    location POINT NOT NULL, 
     verification_status ENUM('Pending', 'Approved', 'Delisted', 'Suspended') DEFAULT 'Pending',
     opening_time TIME NULL,
     closing_time TIME NULL,
     operational_days VARCHAR(255) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    SPATIAL INDEX idx_clinic_location (location),
     INDEX idx_clinic_status (verification_status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
