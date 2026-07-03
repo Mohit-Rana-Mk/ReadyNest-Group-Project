@@ -6,7 +6,7 @@ import PreventiveAlertBanner from './components/PreventiveAlertBanner';
 import ClinicDiscovery from './components/ClinicDiscovery';
 import AiTriageAssistant from './components/AiTriageAssistant';
 import AppointmentHistory from './components/AppointmentHistory';
-import { fetchRecommendations, fetchClinics, fetchAppointments } from '../../api/patientApi';
+import { fetchRecommendations, fetchClinics, fetchAppointments, dismissRecommendation } from '../../api/patientApi';
 import { io } from 'socket.io-client';
 
 export default function PatientApp() {
@@ -45,6 +45,17 @@ export default function PatientApp() {
             socket.disconnect();
         };
     }, []);
+
+    const handleDismissAlert = async (id) => {
+        // Optimistically remove from UI
+        setRecommendations(prev => prev.filter(r => r.id !== id));
+        try {
+            await dismissRecommendation(id);
+        } catch (error) {
+            console.error('Failed to dismiss alert:', error);
+            // Optionally, we could reload data here if it fails
+        }
+    };
 
     const desktopNavItems = [
         { id: 'home', name: 'Home', icon: Home },
@@ -178,7 +189,7 @@ export default function PatientApp() {
                                         <PreventiveAlertBanner 
                                             recommendations={recommendations} 
                                             onBookNow={() => setActiveTab('find-care')}
-                                            onDismiss={(id) => setRecommendations(prev => prev.filter(r => r.id !== id))}
+                                            onDismiss={handleDismissAlert}
                                         />
                                     </div>
                                     

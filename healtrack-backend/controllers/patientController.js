@@ -162,72 +162,137 @@ exports.submitTriage = async (req, res) => {
 
         const inputLower = user_input.toLowerCase().trim().replace(/[?.!]/g, '');
         
-        // Check for follow-up conversational queries
-        const isFollowUpCause = inputLower.includes('cause') || 
-                                inputLower.includes('why does it happen') || 
-                                inputLower.includes('how did i get') || 
-                                inputLower.includes('how is it caused');
-                                
-        const isFollowUpPrecaution = inputLower.includes('precaution') || 
-                                     inputLower.includes('prevent') || 
-                                     inputLower.includes('treatment') || 
-                                     inputLower.includes('remedy') || 
-                                     inputLower.includes('cure');
+        let validSymptoms = [];
+        try {
+            const mlServiceUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
+            const symResponse = await fetch(`${mlServiceUrl}/api/v1/symptoms`);
+            if (symResponse.ok) {
+                validSymptoms = await symResponse.json();
+            }
+        } catch (err) {
+            console.error('Error calling ML service for symptoms:', err.message);
+        }
 
-        const isGenericFollowUp = inputLower === 'this' || 
-                                  inputLower.includes('about this') || 
-                                  inputLower.includes('tell me more');
+        if (!validSymptoms || validSymptoms.length === 0) {
+            validSymptoms = [
+                'itching', 'skin_rash', 'nodal_skin_eruptions', 'continuous_sneezing',
+                'shivering', 'chills', 'joint_pain', 'stomach_pain', 'acidity', 'ulcers_on_tongue',
+                'muscle_wasting', 'vomiting', 'burning_micturition', 'spotting_ urination', 'fatigue',
+                'weight_gain', 'anxiety', 'cold_hands_and_feets', 'mood_swings', 'weight_loss',
+                'restlessness', 'lethargy', 'patches_in_throat', 'irregular_sugar_level', 'cough',
+                'high_fever', 'sunken_eyes', 'breathlessness', 'sweating', 'dehydration',
+                'indigestion', 'headache', 'yellowish_skin', 'dark_urine', 'nausea', 'loss_of_appetite',
+                'pain_behind_the_eyes', 'back_pain', 'constipation', 'abdominal_pain', 'diarrhoea',
+                'mild_fever', 'yellow_urine', 'yellowing_of_eyes', 'acute_liver_failure', 'fluid_overload',
+                'swelling_of_stomach', 'swelled_lymph_nodes', 'malaise', 'blurred_and_distorted_vision',
+                'phlegm', 'throat_irritation', 'redness_of_eyes', 'sinus_pressure', 'runny_nose',
+                'congestion', 'chest_pain', 'weakness_in_limbs', 'fast_heart_rate',
+                'pain_during_bowel_movements', 'pain_in_anal_region', 'bloody_stool',
+                'irritation_in_anus', 'neck_pain', 'dizziness', 'cramps', 'bruising', 'obesity',
+                'swollen_legs', 'swollen_blood_vessels', 'puffy_face_and_eyes', 'enlarged_thyroid',
+                'brittle_nails', 'swollen_extremeties', 'excessive_hunger', 'extra_marital_contacts',
+                'drying_and_tingling_lips', 'slurred_speech', 'knee_pain', 'hip_joint_pain',
+                'muscle_weakness', 'stiff_neck', 'swelling_joints', 'movement_stiffness',
+                'spinning_movements', 'loss_of_balance', 'unsteadiness', 'weakness_of_one_body_side',
+                'loss_of_smell', 'bladder_discomfort', 'foul_smell_of urine',
+                'continuous_feel_of_urine', 'passage_of_gases', 'internal_itching', 'toxic_look_(typhos)',
+                'depression', 'irritability', 'muscle_pain', 'altered_sensorium',
+                'red_spots_over_body', 'belly_pain', 'abnormal_menstruation', 'dischromic _patches',
+                'watering_from_eyes', 'increased_appetite', 'polyuria', 'family_history', 'mucoid_sputum',
+                'rusty_sputum', 'lack_of_concentration', 'visual_disturbances', 'receiving_blood_transfusion',
+                'receiving_unsterile_injections', 'coma', 'stomach_bleeding', 'distention_of_abdomen',
+                'history_of_alcohol_consumption', 'fluid_overload',
+                'blood_in_sputum', 'prominent_veins_on_calf', 'palpitations', 'painful_walking',
+                'pus_filled_pimples', 'blackheads', 'scurring', 'skin_peeling', 'silver_like_dusting',
+                'small_dents_in_nails', 'inflammatory_nails', 'blister', 'red_sore_around_nose',
+                'yellow_crust_ooze'
+            ];
+        }
 
-        if ((isFollowUpCause || isFollowUpPrecaution || isGenericFollowUp) && patientLastDiseaseCache[actualPatientId]) {
-            const cachedDisease = patientLastDiseaseCache[actualPatientId];
-            try {
-                const mlServiceUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
-                const infoResponse = await fetch(`${mlServiceUrl}/api/v1/disease-info/${encodeURIComponent(cachedDisease)}`);
-                if (infoResponse.ok) {
-                    const infoData = await infoResponse.json();
-                    if (infoData.success) {
-                        const predictedRisk = infoData.risk_tier;
-                        const predictedDisease = infoData.disease;
-                        const predictionsList = [{
-                            rank: 1,
-                            disease: infoData.disease,
-                            confidence: 100,
-                            risk_tier: infoData.risk_tier,
-                            description: infoData.description,
-                            precautions: infoData.precautions
-                        }];
+        const urgentKeywords = ['stroke', 'heart attack', 'cardiac', 'hemorrhage', 'unconscious', 'coma', 'poisoning', 'paralysis', 'difficulty breathing'];
+        const highRiskKeywords = ['cancer', 'tumor', 'bleeding', 'tuberculosis', 'aids', 'hiv', 'severe chest pain', 'chest pain'];
 
-                        let recommendation = '';
-                        if (isFollowUpCause) {
-                            recommendation = `Here is what causes ${infoData.disease}: ${infoData.description}`;
-                        } else if (isFollowUpPrecaution) {
-                            recommendation = `To manage/prevent ${infoData.disease}, you should follow these precautions: ${infoData.precautions.join(', ')}.`;
-                        } else {
-                            recommendation = `Here is more information about ${infoData.disease}: ${infoData.description}`;
+        const hasUrgentKeyword = urgentKeywords.some(kw => inputLower.includes(kw));
+        const hasHighRiskKeyword = highRiskKeywords.some(kw => inputLower.includes(kw));
+
+        const matchedSymptoms = [];
+
+        validSymptoms.forEach(sym => {
+            const readableSym = sym.replace(/_/g, ' ');
+            if (inputLower.includes(readableSym)) {
+                matchedSymptoms.push(sym);
+            }
+        });
+
+        // Check for follow-up conversational queries ONLY IF no new symptoms were detected
+        if (matchedSymptoms.length === 0 && !hasUrgentKeyword && !hasHighRiskKeyword) {
+            const isFollowUpCause = inputLower.includes('cause') || 
+                                    inputLower.includes('why does it happen') || 
+                                    inputLower.includes('how did i get') || 
+                                    inputLower.includes('how is it caused');
+                                    
+            const isFollowUpPrecaution = inputLower.includes('precaution') || 
+                                         inputLower.includes('prevent') || 
+                                         inputLower.includes('treatment') || 
+                                         inputLower.includes('remedy') || 
+                                         inputLower.includes('cure');
+
+            const isGenericFollowUp = inputLower === 'this' || 
+                                      inputLower.includes('about this') || 
+                                      inputLower.includes('tell me more');
+
+            const cacheKey = `${req.user.id}_${actualPatientId}`;
+
+            if ((isFollowUpCause || isFollowUpPrecaution || isGenericFollowUp) && patientLastDiseaseCache[cacheKey]) {
+                const cachedDisease = patientLastDiseaseCache[cacheKey];
+                try {
+                    const mlServiceUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
+                    const infoResponse = await fetch(`${mlServiceUrl}/api/v1/disease-info/${encodeURIComponent(cachedDisease)}`);
+                    if (infoResponse.ok) {
+                        const infoData = await infoResponse.json();
+                        if (infoData.success) {
+                            const predictedRisk = infoData.risk_tier;
+                            const predictedDisease = infoData.disease;
+                            const predictionsList = [{
+                                rank: 1,
+                                disease: infoData.disease,
+                                confidence: 100,
+                                risk_tier: infoData.risk_tier,
+                                description: infoData.description,
+                                precautions: infoData.precautions
+                            }];
+
+                            let recommendation = '';
+                            if (isFollowUpCause) {
+                                recommendation = `Here is what causes ${infoData.disease}: ${infoData.description}`;
+                            } else if (isFollowUpPrecaution) {
+                                recommendation = `To manage/prevent ${infoData.disease}, you should follow these precautions: ${infoData.precautions.join(', ')}.`;
+                            } else {
+                                recommendation = `Here is more information about ${infoData.disease}: ${infoData.description}`;
+                            }
+
+                            let dbRisk = predictedRisk;
+                            if (dbRisk === 'Urgent') dbRisk = 'High';
+                            else if (dbRisk === 'Moderate') dbRisk = 'Medium';
+
+                            await db.execute(
+                                `INSERT INTO ai_triage_logs (patient_id, user_input, extracted_symptoms, predicted_risk)
+                                 VALUES (?, ?, ?, ?)`,
+                                [actualPatientId, user_input, JSON.stringify([]), dbRisk]
+                            );
+
+                            return res.status(200).json({
+                                predicted_risk: predictedRisk,
+                                extracted_symptoms: [],
+                                predicted_disease: predictedDisease,
+                                recommendation: recommendation,
+                                predictions: predictionsList
+                            });
                         }
-
-                        // Save log to DB
-                        let dbRisk = predictedRisk;
-                        if (dbRisk === 'Urgent') dbRisk = 'High';
-                        else if (dbRisk === 'Moderate') dbRisk = 'Medium';
-
-                        await db.execute(
-                            `INSERT INTO ai_triage_logs (patient_id, user_input, extracted_symptoms, predicted_risk)
-                             VALUES (?, ?, ?, ?)`,
-                            [actualPatientId, user_input, JSON.stringify([]), dbRisk]
-                        );
-
-                        return res.status(200).json({
-                            predicted_risk: predictedRisk,
-                            extracted_symptoms: [],
-                            predicted_disease: predictedDisease,
-                            recommendation: recommendation,
-                            predictions: predictionsList
-                        });
                     }
+                } catch (err) {
+                    console.error('Error calling ML service for cached disease info:', err.message);
                 }
-            } catch (err) {
-                console.error('Error calling ML service for cached disease info:', err.message);
             }
         }
 
@@ -244,6 +309,7 @@ exports.submitTriage = async (req, res) => {
 
         let directDiseaseMatch = null;
         for (const kd of knownDiseases) {
+            // Strictly match when the user explicitly asks about a disease
             if (inputLower === kd || 
                 inputLower === `i have ${kd}` || 
                 inputLower === `tell me about ${kd}` || 
@@ -310,67 +376,6 @@ exports.submitTriage = async (req, res) => {
         }
 
 
-        // 1. Fetch valid symptoms list from ML Service
-        let validSymptoms = [];
-        try {
-            const mlServiceUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
-            const symResponse = await fetch(`${mlServiceUrl}/api/v1/symptoms`);
-            if (symResponse.ok) {
-                validSymptoms = await symResponse.json();
-            }
-        } catch (err) {
-            console.error('Error calling ML service for symptoms:', err.message);
-        }
-
-        // Fallback list of common symptoms if ML service is down
-        if (!validSymptoms || validSymptoms.length === 0) {
-            validSymptoms = [
-                'itching', 'skin_rash', 'continuous_sneezing', 'shivering', 'chills', 'joint_pain',
-                'stomach_pain', 'acidity', 'ulcers_on_tongue', 'muscle_wasting', 'vomiting',
-                'burning_micturition', 'spotting_urination', 'fatigue', 'weight_gain', 'anxiety',
-                'cold_hands_and_feets', 'mood_swings', 'weight_loss', 'restlessness', 'lethargy',
-                'patches_in_throat', 'irregular_sugar_level', 'cough', 'high_fever', 'sunken_eyes',
-                'breathlessness', 'sweating', 'dehydration', 'indigestion', 'headache', 'yellowish_skin',
-                'dark_urine', 'nausea', 'loss_of_appetite', 'pain_behind_the_eyes', 'back_pain',
-                'constipation', 'abdominal_pain', 'diarrhoea', 'mild_fever', 'yellow_urine',
-                'yellowing_of_eyes', 'acute_liver_failure', 'fluid_overload', 'swelling_of_stomach',
-                'swelled_lymph_nodes', 'malaise', 'blurred_and_distorted_vision', 'phlegm',
-                'throat_irritation', 'redness_of_eyes', 'sinus_pressure', 'runny_nose', 'congestion',
-                'chest_pain', 'weakness_in_limbs', 'fast_heart_rate', 'pain_during_bowel_movements',
-                'pain_in_anal_region', 'bloody_stool', 'irritation_in_anus', 'neck_pain', 'dizziness',
-                'cramps', 'bruising', 'obesity', 'swollen_legs', 'swollen_blood_vessels',
-                'puffy_face_and_eyes', 'enlarged_thyroid', 'brittle_nails', 'swollen_extremeties',
-                'excessive_hunger', 'extra_marital_contacts', 'drying_of_peels_and_cutis',
-                'internal_itching', 'toxic_look_(typhos)', 'depression', 'irritability', 'muscle_pain',
-                'altered_sensorium', 'red_spots_over_body', 'belly_pain', 'abnormal_menstruation',
-                'dischromic_patches', 'watering_from_eyes', 'increased_appetite', 'polyuria',
-                'family_history', 'mucoid_sputum', 'rusty_sputum', 'lack_of_concentration',
-                'visual_disturbances', 'receiving_blood_transfusion', 'receiving_unsterile_injection',
-                'coma', 'stomach_bleeding', 'distention_of_abdomen', 'history_of_alcohol_consumption',
-                'blood_in_sputum', 'prominent_veins_on_calf', 'palpitations', 'painful_walking',
-                'pus_filled_pimples', 'blackheads', 'scurring', 'skin_peeling', 'silver_like_dusting',
-                'small_dents_in_nails', 'inflammatory_nails', 'blister', 'red_sore_around_nose',
-                'yellow_crust_ooze'
-            ];
-        }
-
-
-        const urgentKeywords = ['stroke', 'heart attack', 'cardiac', 'hemorrhage', 'unconscious', 'coma', 'poisoning', 'paralysis', 'difficulty breathing'];
-        const highRiskKeywords = ['cancer', 'tumor', 'bleeding', 'tuberculosis', 'aids', 'hiv', 'severe chest pain', 'chest pain'];
-
-        const hasUrgentKeyword = urgentKeywords.some(kw => inputLower.includes(kw));
-        const hasHighRiskKeyword = highRiskKeywords.some(kw => inputLower.includes(kw));
-
-        const matchedSymptoms = [];
-
-        // Scan and match symptoms from free text
-        validSymptoms.forEach(sym => {
-            // Replace underscores with spaces for natural language matching
-            const readableSym = sym.replace(/_/g, ' ');
-            if (inputLower.includes(readableSym)) {
-                matchedSymptoms.push(sym);
-            }
-        });
 
         // Fallback to basic keywords if no matching symptom
         if (matchedSymptoms.length === 0) {
@@ -462,8 +467,10 @@ exports.submitTriage = async (req, res) => {
         );
 
         // Cache the disease name for context memory if we have a top prediction
+        // Key it by a combination of user_id and patient_id to prevent cross-family member bleeding
         if (predictionsList && predictionsList.length > 0) {
-            patientLastDiseaseCache[actualPatientId] = predictionsList[0].disease;
+            const cacheKey = `${req.user.id}_${actualPatientId}`;
+            patientLastDiseaseCache[cacheKey] = predictionsList[0].disease;
         }
 
         // 4. Return AI response to client
