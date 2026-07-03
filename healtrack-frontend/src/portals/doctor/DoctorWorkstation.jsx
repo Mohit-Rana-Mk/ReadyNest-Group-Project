@@ -227,7 +227,7 @@ export default function DoctorWorkstation() {
             <main className="flex-1 flex overflow-hidden">
                         {/* COLUMN 1: Daily Queue */}
                         <PatientQueue 
-                            appointments={appointments} 
+                            appointments={appointments.filter(a => a.patient_name?.toLowerCase().includes(searchQuery.toLowerCase()))} 
                             selectedAppointment={selectedAppointment}
                             handleSelectAppointment={handleSelectAppointment}
                             dateFilter={dateFilter}
