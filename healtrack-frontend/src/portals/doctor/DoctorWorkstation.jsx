@@ -15,7 +15,7 @@ import { PrescriptionBuilder } from './components/PrescriptionBuilder';
 import { ReportUpload } from './components/ReportUpload';
 
 export default function DoctorWorkstation() {
-
+    const { logout, user } = useAuth();
     const [appointments, setAppointments] = useState([]);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [patientHistory, setPatientHistory] = useState(null);
