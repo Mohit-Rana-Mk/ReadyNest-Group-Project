@@ -50,7 +50,6 @@ export default function DoctorWorkstation() {
         socket.on('QUEUE_UPDATE', (data) => {
             console.log("Realtime event received: QUEUE_UPDATE", data);
             fetchAppointments(true); // pass true to indicate it's a background refresh
-            fetchStats();
         });
 
         return () => {
