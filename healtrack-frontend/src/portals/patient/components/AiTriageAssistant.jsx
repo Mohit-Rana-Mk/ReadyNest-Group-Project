@@ -62,7 +62,7 @@ export default function AiTriageAssistant() {
     };
 
     return (
-        <div className="flex flex-col h-[calc(100vh-10rem)] max-w-3xl mx-auto w-full">
+        <div className="flex flex-col h-[calc(100vh-8rem)] md:h-[calc(100vh-6rem)] lg:h-[calc(100vh-5rem)] max-w-5xl mx-auto w-full bg-white md:border border-gray-200 md:shadow-lg rounded-3xl overflow-hidden">
             {/* Chat header */}
             <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl mx-1 mb-3 shadow-lg">
                 <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
