@@ -666,8 +666,14 @@ exports.getClinicDoctors = async (req, res) => {
 exports.bookAppointment = async (req, res) => {
     const { clinic_id, doctor_id, patient_id, appointment_date } = req.body;
     
+    console.log("BOOK APPT PAYLOAD:", req.body);
     if (!clinic_id || !doctor_id || !patient_id || !appointment_date) {
-        return res.status(400).json({ message: 'Missing required booking fields' });
+        const missing = [];
+        if (!clinic_id) missing.push('clinic_id');
+        if (!doctor_id) missing.push('doctor_id');
+        if (!patient_id) missing.push('patient_id');
+        if (!appointment_date) missing.push('appointment_date');
+        return res.status(400).json({ message: `Missing required booking fields: ${missing.join(', ')}` });
     }
 
     try {
