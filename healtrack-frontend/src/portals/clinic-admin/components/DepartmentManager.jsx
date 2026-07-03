@@ -11,13 +11,11 @@ const iconMap = {
   'Orthopedics': Bone
 };
 
-export function DepartmentManager({ departments, refreshData }) {
+export function DepartmentManager({ departments, refreshData, clinicId = 1 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [globalServices, setGlobalServices] = useState([]);
   const [formData, setFormData] = useState({ service_id: '', custom_service_name: '', consultation_fee: '' });
-  
-  const clinicId = 1;
 
   useEffect(() => {
     // Fetch global services for the Add Department dropdown

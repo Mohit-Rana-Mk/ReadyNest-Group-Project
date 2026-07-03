@@ -79,13 +79,13 @@ export default function ClinicManagementPortal() {
     if (loading) return <div className="p-8 text-center text-gray-500">Loading portal data...</div>;
 
     switch (activeTab) {
-      case 'dashboard': return <AnalyticsDashboard data={portalData.analytics} />;
+      case 'dashboard': return <AnalyticsDashboard data={portalData.analytics} clinicId={clinicId} />;
       case 'staff': return <StaffManagement staff={portalData.staff} refreshData={fetchPortalData} clinicId={clinicId} />;
-      case 'departments': return <DepartmentManager departments={portalData.departments} refreshData={fetchPortalData} />;
-      case 'operations': return <OperationsOverview operations={portalData.operations} />;
-      case 'reports': return <ReportsAndLogs />;
-      case 'settings': return <ClinicSettings />;
-      default: return <AnalyticsDashboard data={portalData.analytics} />;
+      case 'departments': return <DepartmentManager departments={portalData.departments} refreshData={fetchPortalData} clinicId={clinicId} />;
+      case 'operations': return <OperationsOverview operations={portalData.operations} clinicId={clinicId} />;
+      case 'reports': return <ReportsAndLogs clinicId={clinicId} />;
+      case 'settings': return <ClinicSettings clinicId={clinicId} />;
+      default: return <AnalyticsDashboard data={portalData.analytics} clinicId={clinicId} />;
     }
   };
 
