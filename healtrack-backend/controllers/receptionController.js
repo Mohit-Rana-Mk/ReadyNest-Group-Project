@@ -17,7 +17,7 @@ exports.getQueue = async (req, res) => {
         );
 
         const [doctors] = await db.query(
-            `SELECT u.id, u.name, COALESCE(cs.consultation_fee, u.consultation_fee) as consultation_fee 
+            `SELECT u.id, u.name, COALESCE(cs.consultation_fee, 0) as consultation_fee 
              FROM users u
              JOIN doctor_schedules ds ON u.id = ds.doctor_id
              LEFT JOIN clinic_services cs ON cs.clinic_id = ds.clinic_id AND cs.service_id = u.service_id

@@ -17,7 +17,7 @@ export default function ReceptionDesk() {
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState(null);
 
-  const clinicId = 1; // Assuming hardcoded clinic ID for now
+  const clinicId = user?.clinic_id || 1;
 
   const fetchQueue = async (isBackground = false) => {
     if (!isBackground) setLoading(true);
