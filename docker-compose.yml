@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: healtrack-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Root@123
+      MYSQL_DATABASE: team_project
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  ml-service:
+    build:
+      context: ./healtrack-ml-service
+      dockerfile: Dockerfile
+    container_name: healtrack-ml-service
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+
+  backend:
+    build:
+      context: ./healtrack-backend
+      dockerfile: Dockerfile
+    container_name: healtrack-backend
+    restart: always
+    ports:
+      - "5001:5001"
+    depends_on:
+      - db
+      - ml-service
+    environment:
+      - PORT=5001
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=Root@123
+      - DB_NAME=team_project
+      - JWT_SECRET=secret
+      - ML_SERVICE_URL=http://ml-service:8000
+
+volumes:
+  db_data:
