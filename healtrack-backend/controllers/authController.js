@@ -39,7 +39,7 @@ exports.login = async (req, res) => {
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            console.log("Login failed: Password mismatch for email:", email, "password provided:", password, "stored hash:", user.password);
+            console.log("Login failed: Password mismatch for email:", email);
             return res.status(401).json({ success: false, message: 'Invalid credentials (password mismatch)' });
         }
 

@@ -3,7 +3,7 @@ import axiosClient from '../../api/axiosClient';
 import { ENDPOINTS } from '../../api/endpoints';
 
 // Import Icons from Lucide
-import { Activity, Search, Bell, Monitor, CheckCircle2, FileText, Pill, CheckCircle, LogOut, Menu, X, Users } from 'lucide-react';
+import { Search, Monitor, CheckCircle2, LogOut, Users } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { io } from 'socket.io-client';
 

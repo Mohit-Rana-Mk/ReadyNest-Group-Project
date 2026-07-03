@@ -26,7 +26,7 @@ router.get('/appointments/family', patientController.getFamilyAppointments);
 router.get('/family', patientController.getFamilyMembers);
 router.post('/family', patientController.addFamilyMember);
 
-// C. Clinic Details
+// Clinic Details
 router.get('/clinics/:clinicId/wait-time', patientController.getClinicWaitTime);
 router.get('/clinics/:clinicId/doctors', patientController.getClinicDoctors);
 

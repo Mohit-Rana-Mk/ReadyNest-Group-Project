@@ -211,7 +211,7 @@ exports.submitTriage = async (req, res) => {
                         else if (dbRisk === 'Moderate') dbRisk = 'Medium';
 
                         await db.execute(
-                            `INSERT INTO ai_triage_logs (actualPatientId, user_input, extracted_symptoms, predicted_risk)
+                            `INSERT INTO ai_triage_logs (patient_id, user_input, extracted_symptoms, predicted_risk)
                              VALUES (?, ?, ?, ?)`,
                             [actualPatientId, user_input, JSON.stringify([]), dbRisk]
                         );
@@ -288,7 +288,7 @@ exports.submitTriage = async (req, res) => {
                         else if (dbRisk === 'Moderate') dbRisk = 'Medium';
 
                         await db.execute(
-                            `INSERT INTO ai_triage_logs (actualPatientId, user_input, extracted_symptoms, predicted_risk)
+                            `INSERT INTO ai_triage_logs (patient_id, user_input, extracted_symptoms, predicted_risk)
                              VALUES (?, ?, ?, ?)`,
                             [actualPatientId, user_input, JSON.stringify([]), dbRisk]
                         );
