@@ -12,10 +12,8 @@ import { VitalsCard } from './components/VitalsCard';
 import { HistoryTimeline } from './components/HistoryTimeline';
 import { PrescriptionBuilder } from './components/PrescriptionBuilder';
 import { ReportUpload } from './components/ReportUpload';
-import { PatientAnalytics } from './components/PatientAnalytics';
 
 export default function DoctorWorkstation() {
-    const [currentTab, setCurrentTab] = useState('workspace'); // 'workspace' or 'analytics'
     const [appointments, setAppointments] = useState([]);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [patientHistory, setPatientHistory] = useState(null);
@@ -182,29 +180,7 @@ export default function DoctorWorkstation() {
                     <h2 className="font-bold text-slate-800 text-base leading-none">HealTrack <span className="text-indigo-700">Doctor</span></h2>
                 </div>
 
-                {/* Switcher Tabs */}
-                <div className="flex bg-[#f1f3f5] p-1 rounded-full text-xs">
-                    <button 
-                        onClick={() => setCurrentTab('workspace')}
-                        className={`px-4 py-1.5 rounded-full font-bold transition-all ${
-                            currentTab === 'workspace' 
-                                ? 'bg-indigo-700 text-white shadow-sm' 
-                                : 'text-slate-600 hover:text-slate-800'
-                        }`}
-                    >
-                        Workstation
-                    </button>
-                    <button 
-                        onClick={() => setCurrentTab('analytics')}
-                        className={`px-4 py-1.5 rounded-full font-bold transition-all ${
-                            currentTab === 'analytics' 
-                                ? 'bg-indigo-700 text-white shadow-sm' 
-                                : 'text-slate-600 hover:text-slate-800'
-                        }`}
-                    >
-                        Patient Analytics
-                    </button>
-                </div>
+
 
                 <div className="flex items-center gap-4">
                     <div className="w-64 relative hidden md:block">
@@ -229,10 +205,6 @@ export default function DoctorWorkstation() {
 
             {/* MAIN WORKSPACE */}
             <main className="flex-1 flex overflow-hidden">
-                {currentTab === 'analytics' ? (
-                    <PatientAnalytics />
-                ) : (
-                    <>
                         {/* COLUMN 1: Daily Queue */}
                         <PatientQueue 
                             appointments={appointments} 
@@ -329,8 +301,6 @@ export default function DoctorWorkstation() {
                                 </div>
                             </div>
                         )}
-                    </>
-                )}
             </main>
         </div>
     );

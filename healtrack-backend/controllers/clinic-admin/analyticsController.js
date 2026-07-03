@@ -111,6 +111,19 @@ exports.getOperationalDashboard = async (req, res) => {
             ? ((cancelledAppointments / totalAppointments) * 100).toFixed(2) 
             : '0.00';
 
+        // Repeat Patients Count for the specific clinic (more than 1 appointment at this clinic)
+        const repeatQuery = `
+            SELECT COUNT(DISTINCT a.patient_id) as count
+            FROM appointments a
+            JOIN users d ON a.doctor_id = d.id
+            JOIN services s ON d.service_id = s.id
+            ${whereClause} AND a.patient_id IN (
+                SELECT patient_id FROM appointments WHERE clinic_id = ? GROUP BY patient_id HAVING COUNT(id) > 1
+            )
+        `;
+        const [repeatRows] = await db.query(repeatQuery, [...params, clinicId]);
+        const repeatPatients = repeatRows[0]?.count || 0;
+
         // 2. Doctor Utilization (Bar Chart: Count of AppointmentID by Doctor)
         const utilizationQuery = `
             SELECT d.name as doctor_name, COUNT(a.id) as count
@@ -167,7 +180,8 @@ exports.getOperationalDashboard = async (req, res) => {
                 noShowRate: parseFloat(noShowRate),
                 totalAppointments,
                 totalRevenue,
-                totalDoctors
+                totalDoctors,
+                repeatPatients: parseInt(repeatPatients)
             },
             doctorUtilization: utilizationRows,
             revenueOverview: revenueRows,

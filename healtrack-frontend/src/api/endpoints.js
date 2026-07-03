@@ -16,6 +16,7 @@ export const ENDPOINTS = {
     },
     ADMIN: {
         PENDING_CLINICS: '/admin/pending-clinics',
-        OUTBREAK_STATS: '/admin/outbreak-stats'
+        OUTBREAK_STATS: '/admin/outbreak-stats',
+        PATIENT_ANALYTICS: '/admin/patient-analytics'
     }
 };

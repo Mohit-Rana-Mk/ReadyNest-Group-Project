@@ -87,7 +87,7 @@ export function AnalyticsDashboard() {
   };
 
   // Safe KPI extractors
-  const kpis = data?.kpis || { noShowRate: 0, totalAppointments: 0, totalRevenue: 0, totalDoctors: 0 };
+  const kpis = data?.kpis || { noShowRate: 0, totalAppointments: 0, totalRevenue: 0, totalDoctors: 0, repeatPatients: 0 };
   const doctorUtilization = data?.doctorUtilization || [];
   const revenueOverview = data?.revenueOverview || [];
   const peakHours = data?.peakHours || [];
@@ -110,154 +110,165 @@ export function AnalyticsDashboard() {
         </h1>
       </div>
 
-      {/* FILTER & KPI CONTAINER */}
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start">
-        {/* KPI CARDS (Left 3 columns) */}
-        <div className="xl:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
-          {/* No-show Rate */}
-          <Card className="p-6 bg-white border-l-4 border-rose-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between h-32">
-            <div className="flex justify-between items-center text-slate-500">
-              <span className="text-xs font-semibold uppercase tracking-wider">No-show Rate</span>
-              <ShieldAlert className="w-5 h-5 text-rose-500" />
-            </div>
-            <div>
-              <h2 className="text-3xl font-bold text-slate-800">{kpis.noShowRate}%</h2>
-              <p className="text-[10px] text-slate-400 mt-1">Cancelled Appts Ratio</p>
-            </div>
-          </Card>
-
-          {/* Count of AppointmentID */}
-          <Card className="p-6 bg-white border-l-4 border-blue-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between h-32">
-            <div className="flex justify-between items-center text-slate-500">
-              <span className="text-xs font-semibold uppercase tracking-wider">Appointments</span>
-              <UserCheck className="w-5 h-5 text-blue-500" />
-            </div>
-            <div>
-              <h2 className="text-3xl font-bold text-slate-800">{kpis.totalAppointments}</h2>
-              <p className="text-[10px] text-slate-400 mt-1">Total Scheduled Visits</p>
-            </div>
-          </Card>
-
-          {/* Sum of Revenue */}
-          <Card className="p-6 bg-white border-l-4 border-emerald-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between h-32">
-            <div className="flex justify-between items-center text-slate-500">
-              <span className="text-xs font-semibold uppercase tracking-wider">Revenue</span>
-              <CreditCard className="w-5 h-5 text-emerald-500" />
-            </div>
-            <div>
-              <h2 className="text-3xl font-bold text-slate-800">{formatRevenue(kpis.totalRevenue)}</h2>
-              <p className="text-[10px] text-slate-400 mt-1">Consultation Earnings</p>
-            </div>
-          </Card>
-
-          {/* Count of Doctor */}
-          <Card className="p-6 bg-white border-l-4 border-indigo-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between h-32">
-            <div className="flex justify-between items-center text-slate-500">
-              <span className="text-xs font-semibold uppercase tracking-wider">Doctors</span>
-              <Users className="w-5 h-5 text-indigo-500" />
-            </div>
-            <div>
-              <h2 className="text-3xl font-bold text-slate-800">{kpis.totalDoctors}</h2>
-              <p className="text-[10px] text-slate-400 mt-1">Active Physicians</p>
-            </div>
-          </Card>
-        </div>
-
-        {/* FILTERS (Right 1 column) */}
-        <Card className="p-5 bg-white shadow-sm border border-gray-200 space-y-4">
-          <div className="flex items-center gap-2 text-slate-700 font-bold border-b pb-2">
-            <Filter className="w-4 h-4 text-blue-500" />
-            <span className="text-sm">Filter Dashboard</span>
+      {/* KPI CARDS (Full Width) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        {/* No-show Rate */}
+        <Card className="p-6 bg-white border-l-4 border-rose-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between h-32">
+          <div className="flex justify-between items-center text-slate-500">
+            <span className="text-xs font-semibold uppercase tracking-wider">No-show Rate</span>
+            <ShieldAlert className="w-5 h-5 text-rose-500" />
           </div>
+          <div>
+            <h2 className="text-3xl font-bold text-slate-800">{kpis.noShowRate}%</h2>
+            <p className="text-[10px] text-slate-400 mt-1">Cancelled Appts Ratio</p>
+          </div>
+        </Card>
 
-          <div className="space-y-3">
-            {/* Department Filter */}
-            <div className="relative">
-              <label className="text-xs font-semibold text-slate-600 block mb-1">Department</label>
-              <button 
-                onClick={() => { setShowDeptDropdown(!showDeptDropdown); setShowStatusDropdown(false); }}
-                className="w-full text-left bg-slate-50 border border-gray-300 rounded px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-100 flex justify-between items-center"
-              >
-                <span>{selectedDepts.length === DEPARTMENTS.length ? 'All Departments' : `${selectedDepts.length} Selected`}</span>
-                <span className="text-slate-400">▼</span>
-              </button>
-              {showDeptDropdown && (
-                <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 max-h-48 overflow-y-auto p-2 space-y-1">
-                  <div className="flex justify-between items-center border-b pb-1 mb-1">
-                    <button onClick={handleSelectAllDepts} className="text-[10px] font-bold text-blue-600 hover:underline">
-                      {selectedDepts.length === DEPARTMENTS.length ? 'Deselect All' : 'Select All'}
-                    </button>
-                  </div>
-                  {DEPARTMENTS.map(d => (
-                    <label key={d} className="flex items-center gap-2 text-xs text-slate-600 hover:bg-slate-50 p-1 rounded cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={selectedDepts.includes(d)} 
-                        onChange={() => toggleDept(d)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
-                      />
-                      <span>{d}</span>
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
+        {/* Count of AppointmentID */}
+        <Card className="p-6 bg-white border-l-4 border-blue-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between h-32">
+          <div className="flex justify-between items-center text-slate-500">
+            <span className="text-xs font-semibold uppercase tracking-wider">Appointments</span>
+            <UserCheck className="w-5 h-5 text-blue-500" />
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold text-slate-800">{kpis.totalAppointments}</h2>
+            <p className="text-[10px] text-slate-400 mt-1">Total Scheduled Visits</p>
+          </div>
+        </Card>
 
-            {/* Status Filter */}
-            <div className="relative">
-              <label className="text-xs font-semibold text-slate-600 block mb-1">Status</label>
-              <button 
-                onClick={() => { setShowStatusDropdown(!showStatusDropdown); setShowDeptDropdown(false); }}
-                className="w-full text-left bg-slate-50 border border-gray-300 rounded px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-100 flex justify-between items-center"
-              >
-                <span>{selectedStatuses.length === STATUSES.length ? 'All Statuses' : `${selectedStatuses.length} Selected`}</span>
-                <span className="text-slate-400">▼</span>
-              </button>
-              {showStatusDropdown && (
-                <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 p-2 space-y-1">
-                  <div className="flex justify-between items-center border-b pb-1 mb-1">
-                    <button onClick={handleSelectAllStatuses} className="text-[10px] font-bold text-blue-600 hover:underline">
-                      {selectedStatuses.length === STATUSES.length ? 'Deselect All' : 'Select All'}
-                    </button>
-                  </div>
-                  {STATUSES.map(s => (
-                    <label key={s} className="flex items-center gap-2 text-xs text-slate-600 hover:bg-slate-50 p-1 rounded cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={selectedStatuses.includes(s)} 
-                        onChange={() => toggleStatus(s)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
-                      />
-                      <span>{s}</span>
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
+        {/* Sum of Revenue */}
+        <Card className="p-6 bg-white border-l-4 border-emerald-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between h-32">
+          <div className="flex justify-between items-center text-slate-500">
+            <span className="text-xs font-semibold uppercase tracking-wider">Revenue</span>
+            <CreditCard className="w-5 h-5 text-emerald-500" />
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold text-slate-800">{formatRevenue(kpis.totalRevenue)}</h2>
+            <p className="text-[10px] text-slate-400 mt-1">Consultation Earnings</p>
+          </div>
+        </Card>
 
-            {/* Date Picker */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-600 block flex items-center gap-1">
-                <Calendar className="w-3 h-3 text-slate-400" /> Date Range
-              </label>
-              <div className="flex gap-2">
-                <input 
-                  type="date" 
-                  value={startDate} 
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="w-1/2 bg-slate-50 border border-gray-300 rounded px-2 py-1 text-[11px] text-slate-700 focus:ring-blue-500 focus:border-blue-500" 
-                />
-                <input 
-                  type="date" 
-                  value={endDate} 
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="w-1/2 bg-slate-50 border border-gray-300 rounded px-2 py-1 text-[11px] text-slate-700 focus:ring-blue-500 focus:border-blue-500" 
-                />
-              </div>
-            </div>
+        {/* Count of Doctor */}
+        <Card className="p-6 bg-white border-l-4 border-indigo-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between h-32">
+          <div className="flex justify-between items-center text-slate-500">
+            <span className="text-xs font-semibold uppercase tracking-wider">Doctors</span>
+            <Users className="w-5 h-5 text-indigo-500" />
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold text-slate-800">{kpis.totalDoctors}</h2>
+            <p className="text-[10px] text-slate-400 mt-1">Active Physicians</p>
+          </div>
+        </Card>
+
+        {/* Repeat Patients */}
+        <Card className="p-6 bg-white border-l-4 border-cyan-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between h-32">
+          <div className="flex justify-between items-center text-slate-500">
+            <span className="text-xs font-semibold uppercase tracking-wider">Repeat Patients</span>
+            <UserCheck className="w-5 h-5 text-cyan-500" />
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold text-slate-800">{kpis.repeatPatients || 0}</h2>
+            <p className="text-[10px] text-slate-400 mt-1">Patients with Multiple Visits</p>
           </div>
         </Card>
       </div>
+
+      {/* HORIZONTAL FILTERS BAR (Full Width) */}
+      <Card className="p-4 bg-white shadow-sm border border-gray-200">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+          {/* Department Filter */}
+          <div className="relative">
+            <label className="text-xs font-bold text-slate-600 mb-1.5 flex items-center gap-1">
+              <Filter className="w-3.5 h-3.5 text-blue-500" /> Department
+            </label>
+            <button 
+              onClick={() => { setShowDeptDropdown(!showDeptDropdown); setShowStatusDropdown(false); }}
+              className="w-full text-left bg-slate-50 border border-gray-300 rounded px-3 py-2 text-xs text-slate-700 hover:bg-slate-100 flex justify-between items-center h-9"
+            >
+              <span>{selectedDepts.length === DEPARTMENTS.length ? 'All Departments' : `${selectedDepts.length} Selected`}</span>
+              <span className="text-slate-400">▼</span>
+            </button>
+            {showDeptDropdown && (
+              <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 max-h-48 overflow-y-auto p-2 space-y-1">
+                <div className="flex justify-between items-center border-b pb-1 mb-1">
+                  <button onClick={handleSelectAllDepts} className="text-[10px] font-bold text-blue-600 hover:underline">
+                    {selectedDepts.length === DEPARTMENTS.length ? 'Deselect All' : 'Select All'}
+                  </button>
+                </div>
+                {DEPARTMENTS.map(d => (
+                  <label key={d} className="flex items-center gap-2 text-xs text-slate-600 hover:bg-slate-50 p-1 rounded cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={selectedDepts.includes(d)} 
+                      onChange={() => toggleDept(d)}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
+                    />
+                    <span>{d}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Status Filter */}
+          <div className="relative">
+            <label className="text-xs font-bold text-slate-600 block mb-1.5">Status</label>
+            <button 
+              onClick={() => { setShowStatusDropdown(!showStatusDropdown); setShowDeptDropdown(false); }}
+              className="w-full text-left bg-slate-50 border border-gray-300 rounded px-3 py-2 text-xs text-slate-700 hover:bg-slate-100 flex justify-between items-center h-9"
+            >
+              <span>{selectedStatuses.length === STATUSES.length ? 'All Statuses' : `${selectedStatuses.length} Selected`}</span>
+              <span className="text-slate-400">▼</span>
+            </button>
+            {showStatusDropdown && (
+              <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 p-2 space-y-1">
+                <div className="flex justify-between items-center border-b pb-1 mb-1">
+                  <button onClick={handleSelectAllStatuses} className="text-[10px] font-bold text-blue-600 hover:underline">
+                    {selectedStatuses.length === STATUSES.length ? 'Deselect All' : 'Select All'}
+                  </button>
+                </div>
+                {STATUSES.map(s => (
+                  <label key={s} className="flex items-center gap-2 text-xs text-slate-600 hover:bg-slate-50 p-1 rounded cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={selectedStatuses.includes(s)} 
+                      onChange={() => toggleStatus(s)}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
+                    />
+                    <span>{s}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Start Date */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-600 block flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5 text-slate-400" /> Start Date
+            </label>
+            <input 
+              type="date" 
+              value={startDate} 
+              onChange={(e) => setStartDate(e.target.value)}
+              className="w-full bg-slate-50 border border-gray-300 rounded px-3 py-1.5 text-xs text-slate-700 focus:ring-blue-500 focus:border-blue-500 h-9" 
+            />
+          </div>
+
+          {/* End Date */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-600 block flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5 text-slate-400" /> End Date
+            </label>
+            <input 
+              type="date" 
+              value={endDate} 
+              onChange={(e) => setEndDate(e.target.value)}
+              className="w-full bg-slate-50 border border-gray-300 rounded px-3 py-1.5 text-xs text-slate-700 focus:ring-blue-500 focus:border-blue-500 h-9" 
+            />
+          </div>
+        </div>
+      </Card>
 
       {/* CHARTS LAYOUT (Grid of 2 columns) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative">
