@@ -180,11 +180,9 @@ export default function DoctorWorkstation() {
             {/* TOP BAR */}
             <header className="h-14 bg-white border-b border-[#e9ecef] px-3 md:px-6 flex justify-between items-center shrink-0">
                 <div className="flex items-center gap-2 md:gap-4">
-                    {currentTab === 'workspace' && (
-                        <button onClick={() => setShowQueue(!showQueue)} className="lg:hidden p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg">
-                            <Users className="w-5 h-5" />
-                        </button>
-                    )}
+                    <button onClick={() => setShowQueue(!showQueue)} className="lg:hidden p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg">
+                        <Users className="w-5 h-5" />
+                    </button>
                     <div className="flex items-center gap-2">
                         <img src="/logo.png" alt="HealTrack Logo" className="w-7 h-7 md:w-8 md:h-8 object-contain" />
                         <h2 className="font-bold text-slate-800 text-sm md:text-base leading-none">HealTrack <span className="text-indigo-700">Doctor</span></h2>

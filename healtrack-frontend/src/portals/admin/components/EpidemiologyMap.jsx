@@ -66,7 +66,7 @@ export function EpidemiologyMap({ outbreakStats, filter, setFilter }) {
                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                             url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
                         />
-                        {outbreakStats.locations && outbreakStats.locations.map(loc => {
+                        {outbreakStats.locations && outbreakStats.locations.map((loc, idx) => {
                             if (!loc.latitude || !loc.longitude) return null;
                             const customIcon = createGlowingIcon(loc.risk, loc.count, loc.diagnosis);
                             
@@ -78,7 +78,7 @@ export function EpidemiologyMap({ outbreakStats, filter, setFilter }) {
                             
                             return (
                                 <Marker 
-                                    key={loc.id} 
+                                    key={`${loc.id}-${idx}`}
                                     position={[lat + jitterLat, lng + jitterLng]}
                                     icon={customIcon}
                                 />
