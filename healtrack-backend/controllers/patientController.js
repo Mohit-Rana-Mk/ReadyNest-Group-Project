@@ -614,14 +614,20 @@ exports.addFamilyMember = async (req, res) => {
 exports.getClinicWaitTime = async (req, res) => {
     const { clinicId } = req.params;
     try {
+        // Use IST date to match the local timezone of the clinics
+        const today = new Date();
+        const istOffset = 5.5 * 60 * 60 * 1000;
+        const istDate = new Date(today.getTime() + istOffset);
+        const dateString = istDate.toISOString().split('T')[0];
+
         // Count pending appointments for today
         const [rows] = await db.query(
             `SELECT COUNT(*) as pending_count 
              FROM appointments 
              WHERE clinic_id = ? 
-               AND DATE(appointment_date) = CURDATE() 
+               AND DATE(appointment_date) = ? 
                AND status IN ('Scheduled', 'Checked-In', 'In Consultation')`,
-            [clinicId]
+            [clinicId, dateString]
         );
         
         const pendingCount = rows[0].pending_count;
