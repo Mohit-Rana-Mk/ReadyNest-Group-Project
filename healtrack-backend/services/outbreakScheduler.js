@@ -1,44 +1,24 @@
 const http = require('http');
 const db = require('../config/db');
 
-// Helper to make HTTP POST requests using native node http module
-function postJSON(urlStr, data) {
-    return new Promise((resolve, reject) => {
-        const url = new URL(urlStr);
-        const postData = JSON.stringify(data);
-        
-        const options = {
-            hostname: url.hostname,
-            port: url.port,
-            path: url.pathname,
+// Helper to make HTTP POST requests using native fetch
+async function postJSON(urlStr, data) {
+    try {
+        const response = await fetch(urlStr, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Content-Length': Buffer.byteLength(postData)
-            }
-        };
-
-        const req = http.request(options, (res) => {
-            let body = '';
-            res.setEncoding('utf8');
-            res.on('data', (chunk) => body += chunk);
-            res.on('end', () => {
-                if (res.statusCode >= 200 && res.statusCode < 300) {
-                    try {
-                        resolve(JSON.parse(body));
-                    } catch (e) {
-                        reject(new Error("Failed to parse response: " + e.message));
-                    }
-                } else {
-                    reject(new Error(`Request failed with status code ${res.statusCode}: ${body}`));
-                }
-            });
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+            redirect: 'follow'
         });
-
-        req.on('error', (e) => reject(e));
-        req.write(postData);
-        req.end();
-    });
+        
+        if (!response.ok) {
+            throw new Error(`Request failed with status code ${response.status}: ${await response.text()}`);
+        }
+        
+        return await response.json();
+    } catch (e) {
+        throw e;
+    }
 }
 
 // Perform the outbreak prediction check
