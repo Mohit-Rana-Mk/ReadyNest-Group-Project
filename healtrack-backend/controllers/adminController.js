@@ -87,14 +87,16 @@ exports.getEpidemiologyTrends = async (req, res) => {
 
         // Fetch clinic locations for outbreak mapping
         const [locations] = await db.query(
-            `SELECT c.id, c.name, c.latitude, c.longitude, p.diagnosis, COUNT(p.id) as count,
+            `SELECT c.id, c.name, 
+                    COALESCE(c.latitude, 28.6139) as latitude, 
+                    COALESCE(c.longitude, 77.2090) as longitude, 
+                    p.diagnosis, COUNT(p.id) as count,
                     CASE WHEN COUNT(p.id) > 10 THEN 'High' ELSE 'Medium' END as risk
              FROM clinics c
              JOIN appointments a ON c.id = a.clinic_id
              JOIN prescriptions p ON a.id = p.appointment_id
              WHERE p.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
-               AND c.latitude IS NOT NULL AND c.longitude IS NOT NULL
-             GROUP BY c.id, c.name, c.latitude, c.longitude, p.diagnosis
+             GROUP BY c.id, c.name, latitude, longitude, p.diagnosis
              HAVING count > 0
              ORDER BY count DESC`,
             [days]
