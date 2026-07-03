@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const axiosClient = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api',
+    baseURL: import.meta.env.VITE_API_BASE_URL || 'https://healtrack-backend-7h3o.onrender.com/api',
     headers: {
         'Content-Type': 'application/json'
     }
