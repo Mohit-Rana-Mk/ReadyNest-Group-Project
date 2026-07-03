@@ -202,7 +202,7 @@ CREATE TABLE preventive_recommendations (
     alert_title VARCHAR(255) NOT NULL, 
     alert_description TEXT NOT NULL,
     target_service_id INT NOT NULL,    
-    status ENUM('Pending', 'Booked', 'Ignored') DEFAULT 'Pending',
+    status ENUM('Pending', 'Booked', 'Ignored', 'Read') DEFAULT 'Pending',
     generated_by ENUM('System_Cron', 'Doctor_Flag') DEFAULT 'System_Cron',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE,
