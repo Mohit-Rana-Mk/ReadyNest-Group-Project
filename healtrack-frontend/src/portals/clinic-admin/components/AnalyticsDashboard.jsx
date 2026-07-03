@@ -14,7 +14,7 @@ const DEPARTMENTS = [
 
 const STATUSES = ['Scheduled', 'Checked-In', 'In Consultation', 'Completed', 'Cancelled'];
 
-export function AnalyticsDashboard() {
+export function AnalyticsDashboard({ clinicId = 1 }) {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
   
@@ -31,7 +31,6 @@ export function AnalyticsDashboard() {
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
     try {
-      const clinicId = 1; // Hardcoded clinic context
       const params = new URLSearchParams();
       if (selectedDepts.length === 0 || selectedStatuses.length === 0) {
         setData({
@@ -59,7 +58,7 @@ export function AnalyticsDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [startDate, endDate, selectedDepts, selectedStatuses]);
+  }, [startDate, endDate, selectedDepts, selectedStatuses, clinicId]);
 
   useEffect(() => {
     fetchDashboardData();
