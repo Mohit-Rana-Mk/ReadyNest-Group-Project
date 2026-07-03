@@ -177,6 +177,12 @@ exports.submitTriage = async (req, res) => {
         }
 
         const inputLower = user_input.toLowerCase();
+        const urgentKeywords = ['stroke', 'heart attack', 'cardiac', 'hemorrhage', 'unconscious', 'coma', 'poisoning', 'paralysis', 'difficulty breathing'];
+        const highRiskKeywords = ['cancer', 'tumor', 'bleeding', 'tuberculosis', 'aids', 'hiv', 'severe chest pain', 'chest pain'];
+
+        const hasUrgentKeyword = urgentKeywords.some(kw => inputLower.includes(kw));
+        const hasHighRiskKeyword = highRiskKeywords.some(kw => inputLower.includes(kw));
+
         const matchedSymptoms = [];
 
         // Scan and match symptoms from free text
@@ -190,15 +196,17 @@ exports.submitTriage = async (req, res) => {
 
         // Fallback to basic keywords if no matching symptom
         if (matchedSymptoms.length === 0) {
-            if (inputLower.includes('fever') || inputLower.includes('hot')) matchedSymptoms.push('high_fever');
-            if (inputLower.includes('headache') || inputLower.includes('head pain')) matchedSymptoms.push('headache');
-            if (inputLower.includes('cough')) matchedSymptoms.push('cough');
-            if (inputLower.includes('vomit')) matchedSymptoms.push('vomiting');
-            if (inputLower.includes('tired') || inputLower.includes('weak')) matchedSymptoms.push('fatigue');
-            if (inputLower.includes('dizzy')) matchedSymptoms.push('dizziness');
-            if (inputLower.includes('nausea') || inputLower.includes('sick')) matchedSymptoms.push('nausea');
-            if (inputLower.includes('chest pain')) matchedSymptoms.push('chest_pain');
-            if (inputLower.includes('breath') || inputLower.includes('short of breath')) matchedSymptoms.push('breathlessness');
+            if (!hasUrgentKeyword && !hasHighRiskKeyword) {
+                if (inputLower.includes('fever') || inputLower.includes('hot')) matchedSymptoms.push('high_fever');
+                if (inputLower.includes('headache') || inputLower.includes('head pain')) matchedSymptoms.push('headache');
+                if (inputLower.includes('cough')) matchedSymptoms.push('cough');
+                if (inputLower.includes('vomit')) matchedSymptoms.push('vomiting');
+                if (inputLower.includes('tired') || inputLower.includes('weak')) matchedSymptoms.push('fatigue');
+                if (inputLower.includes('dizzy')) matchedSymptoms.push('dizziness');
+                if (inputLower.includes('nausea') || inputLower.includes('sick')) matchedSymptoms.push('nausea');
+                if (inputLower.includes('chest pain')) matchedSymptoms.push('chest_pain');
+                if (inputLower.includes('breath') || inputLower.includes('short of breath')) matchedSymptoms.push('breathlessness');
+            }
         }
 
         let predictedRisk = 'Low';
@@ -222,14 +230,6 @@ exports.submitTriage = async (req, res) => {
                         const topPrediction = mlData.predictions[0];
                         predictedDisease = `${topPrediction.disease} (${topPrediction.confidence}% confidence)`;
                         predictedRisk = topPrediction.risk_tier;
-
-                        if (predictedRisk === 'Urgent') {
-                            recommendation = 'Please visit a hospital immediately or call emergency services.';
-                        } else if (predictedRisk === 'High') {
-                            recommendation = 'We highly recommend booking an urgent consultation today.';
-                        } else if (predictedRisk === 'Moderate') {
-                            recommendation = 'We recommend booking a consultation within 24 to 48 hours.';
-                        }
                     }
                 }
             } catch (err) {
@@ -238,22 +238,48 @@ exports.submitTriage = async (req, res) => {
                 if (inputLower.includes('chest pain') || inputLower.includes('shortness of breath')) {
                     predictedRisk = 'High';
                     predictedDisease = 'Possible Cardiac Event (Fallback)';
-                    recommendation = 'Please visit a hospital immediately or call emergency services.';
                 } else if (inputLower.includes('fever') && inputLower.includes('cough')) {
                     predictedRisk = 'Medium';
                     predictedDisease = 'Viral Influenza (Fallback)';
-                    recommendation = 'We recommend booking a consultation within 24 hours.';
                 }
             }
+        } else {
+            // No symptoms matched, but check if we have urgent/high-risk keywords
+            if (hasUrgentKeyword) {
+                predictedRisk = 'Urgent';
+                predictedDisease = 'Suspicion of Urgent Condition (Clinical Evaluation Required)';
+            } else if (hasHighRiskKeyword) {
+                predictedRisk = 'High';
+                predictedDisease = 'Suspicion of High-Risk Condition (Clinical Evaluation Required)';
+            }
+        }
+
+        // Apply keyword-based upgrades if necessary
+        if (hasUrgentKeyword) {
+            predictedRisk = 'Urgent';
+        } else if (hasHighRiskKeyword && predictedRisk !== 'Urgent') {
+            predictedRisk = 'High';
+        }
+
+        // Set recommendations based on finalized risk level
+        if (predictedRisk === 'Urgent') {
+            recommendation = 'Please visit a hospital immediately or call emergency services.';
+        } else if (predictedRisk === 'High') {
+            recommendation = 'We highly recommend booking an urgent consultation today.';
+        } else if (predictedRisk === 'Moderate' || predictedRisk === 'Medium') {
+            recommendation = 'We recommend booking a consultation within 24 to 48 hours.';
         }
 
         // 3. Persist to database
         const symptomsJson = JSON.stringify(matchedSymptoms.map(s => s.replace(/_/g, ' ')));
+        let dbRisk = predictedRisk;
+        if (dbRisk === 'Urgent') dbRisk = 'High';
+        else if (dbRisk === 'Moderate') dbRisk = 'Medium';
 
         await db.execute(
             `INSERT INTO ai_triage_logs (patient_id, user_input, extracted_symptoms, predicted_risk)
              VALUES (?, ?, ?, ?)`,
-            [patient_id, user_input, symptomsJson, predictedRisk]
+            [patient_id, user_input, symptomsJson, dbRisk]
         );
 
         // 4. Return AI response to client

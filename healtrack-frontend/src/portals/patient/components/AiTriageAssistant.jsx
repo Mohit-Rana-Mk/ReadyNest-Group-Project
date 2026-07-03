@@ -3,9 +3,11 @@ import { Send, Bot, User, AlertTriangle, ShieldCheck, ShieldAlert, Loader2 } fro
 import { postTriage } from '../../../api/patientApi';
 
 const riskConfig = {
-    Low:    { color: 'emerald', icon: ShieldCheck, label: 'Low Risk' },
-    Medium: { color: 'amber',   icon: ShieldAlert, label: 'Medium Risk' },
-    High:   { color: 'red',     icon: AlertTriangle, label: 'High Risk' },
+    Low:      { color: 'emerald', icon: ShieldCheck, label: 'Low Risk' },
+    Moderate: { color: 'amber',   icon: ShieldAlert, label: 'Moderate Risk' },
+    Medium:   { color: 'amber',   icon: ShieldAlert, label: 'Medium Risk' },
+    High:     { color: 'red',     icon: AlertTriangle, label: 'High Risk' },
+    Urgent:   { color: 'red',     icon: AlertTriangle, label: 'Urgent Risk' },
 };
 
 export default function AiTriageAssistant() {

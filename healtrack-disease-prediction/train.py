@@ -47,48 +47,30 @@ Whitespace stripped from all cells
 NaN values filled with 0
 '''
 
-# Severity weight encoding
+# Severity weight encoding into a 132-dimensional vector per sample
+symptom_list = list(sev['Symptom'].unique())
+symptom_weights_dict = dict(zip(sev['Symptom'], sev['weight']))
 
-vals = df.values.copy()
-symptoms = sev['Symptom'].values
-weights  = sev['weight'].values
+X_data = []
+for idx, row in df.iterrows():
+    # Extract symptoms in this row (ignoring Disease, which is in column 0)
+    row_symptoms = [str(val).strip() for val in row[1:] if pd.notna(val) and str(val).strip() != '0' and str(val).strip() != '']
+    
+    feat_vec = np.zeros(len(symptom_list))
+    for sym in row_symptoms:
+        sym_clean = sym.replace(' ', '_')
+        if sym_clean in symptom_weights_dict:
+            feat_idx = symptom_list.index(sym_clean)
+            feat_vec[feat_idx] = symptom_weights_dict[sym_clean]
+    X_data.append(feat_vec)
 
-'''
-Weight scale: 1 (very mild) → 7 (very severe) -> severity weight encoding
-'''
-
-for i in range(len(symptoms)):
-    match_mask = (vals == symptoms[i])
-    if not match_mask.any():
-        print(f"WARNING: symptom '{symptoms[i]}' in Symptom-severity.csv "
-              f"never matched any value in dataset.csv — check for a "
-              f"spelling/formatting mismatch (it will be encoded as 0).")
-    vals[match_mask] = weights[i]
-
-df_encoded = pd.DataFrame(vals, columns=cols)
-
-symptom_cols = cols[1:]
-for c in symptom_cols:
-    df_encoded[c] = pd.to_numeric(df_encoded[c], errors='coerce').fillna(0)
-
-
-'''
-Symptom names replaced with severity weights
-Weight scale: 1 (very mild) → 7 (very severe)
-'''
-
-# Preparing features and labels
-
-X = df_encoded[symptom_cols].values.astype(float)
-y_raw = df_encoded['Disease'].values
+X = np.array(X_data)
+y_raw = df['Disease'].str.strip().values
 
 le = LabelEncoder()
 y  = le.fit_transform(y_raw)
 
-symptom_list = list(symptom_cols)
-
 # Training and Testing
-
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42, stratify=y
 )
