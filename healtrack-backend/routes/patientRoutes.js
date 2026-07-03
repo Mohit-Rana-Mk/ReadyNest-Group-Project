@@ -7,7 +7,8 @@ const authMiddleware = require('../middleware/authMiddleware');
 router.use(authMiddleware(['Patient']));
 
 // A. Home & Preventive Analytics
-router.get('/:patientId/recommendations', patientController.getRecommendations);
+router.get('/recommendations', patientController.getRecommendations);
+router.put('/recommendations/:id/dismiss', patientController.dismissRecommendation);
 router.get('/services', patientController.getServices);
 
 // B. Nearby Clinics

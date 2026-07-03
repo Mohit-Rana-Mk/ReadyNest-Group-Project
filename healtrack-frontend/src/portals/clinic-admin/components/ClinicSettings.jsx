@@ -57,7 +57,13 @@ export function ClinicSettings() {
           }));
         },
         (error) => {
-          alert("Unable to retrieve your location. Please check browser permissions.");
+          console.warn("Geolocation failed, using mock fallback location.", error);
+          setFormData((prev) => ({
+            ...prev,
+            latitude: "28.613900",
+            longitude: "77.209000"
+          }));
+          alert("Unable to retrieve real location due to browser restrictions. Using default mock location (New Delhi) for demonstration.");
         }
       );
     } else {

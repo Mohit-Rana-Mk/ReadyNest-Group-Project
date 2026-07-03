@@ -3,7 +3,7 @@ import axiosClient from '../../api/axiosClient';
 import { ENDPOINTS } from '../../api/endpoints';
 
 // Import Icons from Lucide
-import { Activity, Search, Bell, Monitor, CheckCircle2, FileText, Pill, CheckCircle, LogOut } from 'lucide-react';
+import { Activity, Search, Bell, Monitor, CheckCircle2, FileText, Pill, CheckCircle, LogOut, Menu, X, Users } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { io } from 'socket.io-client';
 
@@ -25,6 +25,7 @@ export default function DoctorWorkstation() {
     const [loadingHistory, setLoadingHistory] = useState(false);
     const [dateFilter, setDateFilter] = useState('today');
     const [searchQuery, setSearchQuery] = useState('');
+    const [showQueue, setShowQueue] = useState(false);
 
     // Form fields
     const [diagnosis, setDiagnosis] = useState('');
@@ -179,14 +180,19 @@ export default function DoctorWorkstation() {
     return (
         <div className="h-screen bg-[#f8f9fa] text-slate-700 flex flex-col font-sans antialiased overflow-hidden">
             {/* TOP BAR */}
-            <header className="h-14 bg-white border-b border-[#e9ecef] px-6 flex justify-between items-center shrink-0">
-                <div className="flex items-center gap-4">
+            <header className="h-14 bg-white border-b border-[#e9ecef] px-3 md:px-6 flex justify-between items-center shrink-0">
+                <div className="flex items-center gap-2 md:gap-4">
+                    {currentTab === 'workspace' && (
+                        <button onClick={() => setShowQueue(!showQueue)} className="lg:hidden p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg">
+                            <Users className="w-5 h-5" />
+                        </button>
+                    )}
                     <div className="flex items-center gap-2">
-                        <img src="/logo.png" alt="HealTrack Logo" className="w-8 h-8 object-contain" />
-                        <h2 className="font-bold text-slate-800 text-base leading-none">HealTrack <span className="text-indigo-700">Doctor</span></h2>
+                        <img src="/logo.png" alt="HealTrack Logo" className="w-7 h-7 md:w-8 md:h-8 object-contain" />
+                        <h2 className="font-bold text-slate-800 text-sm md:text-base leading-none">HealTrack <span className="text-indigo-700">Doctor</span></h2>
                     </div>
                     {user?.clinic_name && (
-                        <div className="hidden md:flex items-center px-3 py-1 bg-indigo-50 border border-indigo-100 rounded-full">
+                        <div className="hidden lg:flex items-center px-3 py-1 bg-indigo-50 border border-indigo-100 rounded-full">
                             <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wide mr-2">Clinic:</span>
                             <span className="text-xs font-bold text-indigo-800">{user.clinic_name}</span>
                         </div>
@@ -197,28 +203,30 @@ export default function DoctorWorkstation() {
                 <div className="flex bg-[#f1f3f5] p-1 rounded-full text-xs">
                     <button 
                         onClick={() => setCurrentTab('workspace')}
-                        className={`px-4 py-1.5 rounded-full font-bold transition-all ${
+                        className={`px-3 md:px-4 py-1.5 rounded-full font-bold transition-all ${
                             currentTab === 'workspace' 
                                 ? 'bg-indigo-700 text-white shadow-sm' 
                                 : 'text-slate-600 hover:text-slate-800'
                         }`}
                     >
-                        Workstation
+                        <span className="hidden sm:inline">Workstation</span>
+                        <span className="sm:hidden">Work</span>
                     </button>
                     <button 
                         onClick={() => setCurrentTab('analytics')}
-                        className={`px-4 py-1.5 rounded-full font-bold transition-all ${
+                        className={`px-3 md:px-4 py-1.5 rounded-full font-bold transition-all ${
                             currentTab === 'analytics' 
                                 ? 'bg-indigo-700 text-white shadow-sm' 
                                 : 'text-slate-600 hover:text-slate-800'
                         }`}
                     >
-                        Patient Analytics
+                        <span className="hidden sm:inline">Patient Analytics</span>
+                        <span className="sm:hidden">Analytics</span>
                     </button>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <div className="w-64 relative hidden md:block">
+                <div className="flex items-center gap-2 md:gap-4">
+                    <div className="w-48 lg:w-64 relative hidden md:block">
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                             <Search className="w-4 h-4 stroke-[2.2]" />
                         </span>
@@ -230,13 +238,13 @@ export default function DoctorWorkstation() {
                                 className="w-full bg-[#f1f3f5] border-0 rounded-full pl-9 pr-4 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-700 transition"
                             />
                     </div>
-                    <div className="h-6 w-px bg-[#e9ecef]"></div>
+                    <div className="h-6 w-px bg-[#e9ecef] hidden md:block"></div>
                     <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600 text-[11px]">
                             DR
                         </div>
-                        <span className="text-xs font-semibold text-slate-800 hidden sm:block">Doctor Portal</span>
-                        <button onClick={logout} className="ml-2 p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition" title="Logout">
+                        <span className="text-xs font-semibold text-slate-800 hidden lg:block">Doctor Portal</span>
+                        <button onClick={logout} className="ml-1 md:ml-2 p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition" title="Logout">
                             <LogOut className="w-4 h-4" />
                         </button>
                     </div>
@@ -244,42 +252,63 @@ export default function DoctorWorkstation() {
             </header>
 
             {/* MAIN WORKSPACE */}
-            <main className="flex-1 flex overflow-hidden">
+            <main className="flex-1 flex overflow-hidden relative">
                 {currentTab === 'analytics' ? (
                     <PatientAnalytics />
                 ) : (
                     <>
-                        {/* COLUMN 1: Daily Queue */}
-                        <PatientQueue 
-                            appointments={appointments.filter(appt => appt.patient_name?.toLowerCase().includes(searchQuery.toLowerCase()))} 
-                            selectedAppointment={selectedAppointment}
-                            handleSelectAppointment={handleSelectAppointment}
-                            dateFilter={dateFilter}
-                            setDateFilter={setDateFilter}
-                        />
+                        {/* MOBILE QUEUE OVERLAY */}
+                        {showQueue && (
+                            <div className="fixed inset-0 z-40 lg:hidden">
+                                <div className="fixed inset-0 bg-black/50" onClick={() => setShowQueue(false)} />
+                                <div className="fixed inset-y-14 left-0 w-80 bg-white z-50 shadow-xl overflow-y-auto">
+                                    <PatientQueue 
+                                        appointments={appointments.filter(appt => appt.patient_name?.toLowerCase().includes(searchQuery.toLowerCase()))} 
+                                        selectedAppointment={selectedAppointment}
+                                        handleSelectAppointment={(appt) => { handleSelectAppointment(appt); setShowQueue(false); }}
+                                        dateFilter={dateFilter}
+                                        setDateFilter={setDateFilter}
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        {/* DESKTOP QUEUE */}
+                        <div className="hidden lg:block">
+                            <PatientQueue 
+                                appointments={appointments.filter(appt => appt.patient_name?.toLowerCase().includes(searchQuery.toLowerCase()))} 
+                                selectedAppointment={selectedAppointment}
+                                handleSelectAppointment={handleSelectAppointment}
+                                dateFilter={dateFilter}
+                                setDateFilter={setDateFilter}
+                            />
+                        </div>
 
                         {loading ? (
                             <div className="flex-1 flex items-center justify-center">
                                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-700"></div>
                             </div>
                         ) : !selectedAppointment ? (
-                            <div className="flex-1 flex items-center justify-center text-slate-400 flex-col">
+                            <div className="flex-1 flex items-center justify-center text-slate-400 flex-col p-4">
                                 <Monitor className="w-12 h-12 mb-4 text-slate-300" />
-                                <p>Select a patient from the queue to start session.</p>
+                                <p className="text-center">Select a patient from the queue to start session.</p>
+                                <button onClick={() => setShowQueue(true)} className="lg:hidden mt-4 px-4 py-2 bg-indigo-700 text-white rounded-xl text-sm font-bold">
+                                    Open Patient Queue
+                                </button>
                             </div>
                         ) : (
                             <div className="flex-1 flex flex-col relative overflow-hidden">
                                 
                                 {/* Session Header */}
-                                <div className="bg-white border-b border-[#e9ecef] p-4 flex justify-between items-center shrink-0">
+                                <div className="bg-white border-b border-[#e9ecef] p-3 md:p-4 flex justify-between items-center shrink-0">
                                     <div>
-                                        <h2 className="text-lg font-bold text-slate-800">{selectedAppointment.patient_name}</h2>
+                                        <h2 className="text-base md:text-lg font-bold text-slate-800">{selectedAppointment.patient_name}</h2>
                                         <p className="text-xs text-slate-500">
                                             {selectedAppointment.gender} • {new Date().getFullYear() - new Date(selectedAppointment.date_of_birth).getFullYear()} yrs • Blood: {selectedAppointment.blood_group}
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-3 text-sm font-semibold">
-                                        <span className={`px-3 py-1 rounded-full border ${
+                                        <span className={`px-2 md:px-3 py-1 rounded-full border text-xs md:text-sm ${
                                             selectedAppointment.status === 'Completed' 
                                                 ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
                                                 : 'bg-amber-50 text-amber-700 border-amber-200'
@@ -289,15 +318,15 @@ export default function DoctorWorkstation() {
                                     </div>
                                 </div>
 
-                                {/* Split Panes */}
-                                <div className="flex-1 flex gap-6 p-6 overflow-hidden">
+                                {/* Split Panes — Stack on mobile, side-by-side on desktop */}
+                                <div className="flex-1 flex flex-col lg:flex-row gap-4 lg:gap-6 p-4 lg:p-6 overflow-y-auto lg:overflow-hidden">
                                     {/* Left Pane: History Timeline */}
-                                    <div className="flex-1 min-w-0">
+                                    <div className="lg:flex-1 min-w-0">
                                         <HistoryTimeline patientHistory={patientHistory} loadingHistory={loadingHistory} />
                                     </div>
                                     
                                     {/* Right Pane: Vitals & Prescriptions */}
-                                    <div className="w-[400px] shrink-0 flex flex-col gap-6 overflow-y-auto pr-2 pb-24">
+                                    <div className="w-full lg:w-[400px] lg:shrink-0 flex flex-col gap-4 lg:gap-6 lg:overflow-y-auto lg:pr-2 pb-24">
                                         <VitalsCard vitals={vitals} handleVitalsChange={handleVitalsChange} />
                                         
                                         <ReportUpload 
@@ -322,7 +351,7 @@ export default function DoctorWorkstation() {
                                 </div>
 
                                 {/* ATOMIC SIGN-OFF BAR */}
-                                <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-[#e9ecef] p-4 flex justify-between items-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-10">
+                                <div className="sticky lg:absolute bottom-0 left-0 right-0 bg-white border-t border-[#e9ecef] p-3 md:p-4 flex flex-col sm:flex-row justify-between items-center gap-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-10">
                                     <div className="text-sm font-medium">
                                         {submitStatus.message && (
                                             <span className={submitStatus.type === 'error' ? 'text-red-500' : 'text-emerald-600'}>
@@ -333,14 +362,14 @@ export default function DoctorWorkstation() {
                                     <button
                                         onClick={handleSubmitConsultation}
                                         disabled={selectedAppointment.status === 'Completed'}
-                                        className={`px-6 py-2.5 rounded-xl font-bold transition flex items-center gap-2 ${
+                                        className={`w-full sm:w-auto px-4 md:px-6 py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm ${
                                             selectedAppointment.status === 'Completed'
                                                 ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
                                                 : 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-md'
                                         }`}
                                     >
                                         <CheckCircle2 className="w-5 h-5" />
-                                        {selectedAppointment.status === 'Completed' ? 'Consultation Completed' : 'Sign & Complete Consultation'}
+                                        {selectedAppointment.status === 'Completed' ? 'Completed' : 'Sign & Complete'}
                                     </button>
                                 </div>
                             </div>

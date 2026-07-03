@@ -1,9 +1,10 @@
 import axiosClient from './axiosClient';
 
-const PATIENT_ID = 1; // Hardcoded for testing
-
 export const fetchRecommendations = () =>
-    axiosClient.get(`/patient/${PATIENT_ID}/recommendations`).then(res => res.data);
+    axiosClient.get(`/patient/recommendations`).then(res => res.data);
+
+export const dismissRecommendation = (id) =>
+    axiosClient.put(`/patient/recommendations/${id}/dismiss`).then(res => res.data);
 
 export const fetchClinics = (filters = {}) => {
     const params = new URLSearchParams();
@@ -22,7 +23,6 @@ export const fetchServices = () =>
 
 export const postTriage = (userInput) =>
     axiosClient.post('/patient/triage', {
-        patient_id: PATIENT_ID,
         user_input: userInput
     }).then(res => res.data);
 

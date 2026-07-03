@@ -83,21 +83,32 @@ exports.createClinic = async (req, res) => {
 // 2. Epidemiological Intelligence
 exports.getEpidemiologyTrends = async (req, res) => {
     try {
+        const days = parseInt(req.query.days) || 30;
+
         // Fetch clinic locations for outbreak mapping
         const [locations] = await db.query(
-            `SELECT id, name, latitude, longitude, city, postal_code 
-             FROM clinics 
-             WHERE latitude IS NOT NULL AND longitude IS NOT NULL`
+            `SELECT c.id, c.name, c.latitude, c.longitude, p.diagnosis, COUNT(p.id) as count,
+                    CASE WHEN COUNT(p.id) > 10 THEN 'High' ELSE 'Medium' END as risk
+             FROM clinics c
+             JOIN appointments a ON c.id = a.clinic_id
+             JOIN prescriptions p ON a.id = p.appointment_id
+             WHERE p.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+               AND c.latitude IS NOT NULL AND c.longitude IS NOT NULL
+             GROUP BY c.id, c.name, c.latitude, c.longitude, p.diagnosis
+             HAVING count > 0
+             ORDER BY count DESC`,
+            [days]
         );
 
-        // Fetch top diagnosis counts in past 30 days
+        // Fetch top diagnosis counts in past X days
         const [trends] = await db.query(
             `SELECT diagnosis as label, COUNT(id) as count 
              FROM prescriptions 
-             WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) 
+             WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY) 
              GROUP BY diagnosis 
              ORDER BY count DESC 
-             LIMIT 5`
+             LIMIT 5`,
+            [days]
         );
 
         res.json({
@@ -666,7 +677,7 @@ exports.broadcastAwareness = async (req, res) => {
         // 1. Insert alert into preventive_recommendations for all registered patients
         await db.query(
             `INSERT INTO preventive_recommendations (patient_id, alert_title, alert_description, status, generated_by, target_service_id)
-             SELECT id, ?, ?, 'Pending', 'AuraCare', 2 FROM patients`,
+             SELECT id, ?, ?, 'Pending', 'System_Cron', 2 FROM patients`,
             [title, description]
         );
         

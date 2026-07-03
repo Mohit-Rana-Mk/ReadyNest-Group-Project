@@ -55,7 +55,7 @@ export function AuraCareDashboard() {
     const [dept, setDept] = useState('all');
     const [time, setTime] = useState('weekly');
     const [loading, setLoading] = useState(false);
-    const [isDemoMode, setIsDemoMode] = useState(false);
+
     const [activeOutbreakAlerts, setActiveOutbreakAlerts] = useState([]);
     
     // Loaded States
@@ -333,12 +333,9 @@ export function AuraCareDashboard() {
                 setStockAlerts(data.stockAlerts || []);
                 setUtilizationRankings(data.utilizationRankings || []);
                 setAiInsights(data.aiInsights || []);
-
-                setIsDemoMode(false);
             }
         } catch (error) {
             console.warn("Backend `/admin/auracare-stats` route unavailable or database empty.");
-            setIsDemoMode(false);
             
             setStats({
                 kpiAppointments: '0',
@@ -966,12 +963,7 @@ export function AuraCareDashboard() {
                 </div>
 
                 <div className="control-panel">
-                    {isDemoMode && (
-                        <div className="px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 animate-pulse">
-                            <AlertTriangle className="w-3.5 h-3.5" />
-                            Sandbox Mock Data
-                        </div>
-                    )}
+
                     
                     <div className="select-wrapper">
                         <select value={dept} onChange={(e) => setDept(e.target.value)}>

@@ -1,12 +1,24 @@
 import React from 'react';
 
-export function EpidemiologyMap({ outbreakStats }) {
+export function EpidemiologyMap({ outbreakStats, filter, setFilter }) {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 bg-white border border-[#e9ecef] rounded-2xl p-6 shadow-sm flex flex-col h-[550px]">
-                <div className="mb-4">
-                    <h3 className="font-bold text-slate-800 text-base">Geospatial Outbreak Heatmap</h3>
-                    <p className="text-xs text-slate-400">Platform-wide disease tracking based on active prescriptions and clinic coordinates (SRID 4326).</p>
+                <div className="mb-4 flex justify-between items-start">
+                    <div>
+                        <h3 className="font-bold text-slate-800 text-base">Geospatial Outbreak Heatmap</h3>
+                        <p className="text-xs text-slate-400">Platform-wide disease tracking based on active prescriptions and clinic coordinates (SRID 4326).</p>
+                    </div>
+                    <select 
+                        value={filter} 
+                        onChange={(e) => setFilter(Number(e.target.value))}
+                        className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-gray-50 text-gray-700 outline-none focus:border-indigo-500 font-semibold shadow-sm"
+                    >
+                        <option value={7}>Last 7 Days</option>
+                        <option value={30}>Last 30 Days</option>
+                        <option value={90}>Last 90 Days</option>
+                        <option value={365}>Last 1 Year</option>
+                    </select>
                 </div>
                 
                 {/* Simulated Map */}
@@ -46,7 +58,9 @@ export function EpidemiologyMap({ outbreakStats }) {
 
             <div className="space-y-6">
                 <div className="bg-white border border-[#e9ecef] rounded-2xl p-6 shadow-sm space-y-4">
-                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Disease Trends (30 Days)</h4>
+                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        Disease Trends ({filter === 365 ? '1 Year' : `${filter} Days`})
+                    </h4>
                     <div className="space-y-4">
                         {outbreakStats.trends && outbreakStats.trends.map((t, idx) => (
                             <div key={idx} className="space-y-1">
@@ -57,7 +71,7 @@ export function EpidemiologyMap({ outbreakStats }) {
                                 <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                                     <div 
                                         className="bg-indigo-700 h-full rounded-full transition-all" 
-                                        style={{ width: `${Math.min((t.count / 30) * 100, 100)}%` }}
+                                        style={{ width: `${Math.min((t.count / filter) * 100, 100)}%` }}
                                     ></div>
                                 </div>
                                 <span className="text-[9px] font-bold text-emerald-600 block">{t.change || '+12% this week'}</span>

@@ -4,9 +4,11 @@ const db = require('../config/db');
 // A. Preventive Recommendations
 // ─────────────────────────────────────────────────────────────
 exports.getRecommendations = async (req, res) => {
-    const { patientId } = req.params;
-
     try {
+        const [patientRows] = await db.query('SELECT id FROM patients WHERE user_id = ?', [req.user.id]);
+        if (patientRows.length === 0) return res.status(404).json({ message: 'Patient not found' });
+        const actualPatientId = patientRows[0].id;
+
         const [recommendations] = await db.query(
             `SELECT pr.id, pr.alert_title, pr.alert_description, pr.status, pr.generated_by,
                     s.name AS target_service, pr.created_at
@@ -14,12 +16,30 @@ exports.getRecommendations = async (req, res) => {
              JOIN services s ON pr.target_service_id = s.id
              WHERE pr.patient_id = ? AND pr.status = 'Pending'
              ORDER BY pr.created_at DESC`,
-            [patientId]
+            [actualPatientId]
         );
 
         res.status(200).json(recommendations);
     } catch (error) {
         console.error('Recommendations Error:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+exports.dismissRecommendation = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const [patientRows] = await db.query('SELECT id FROM patients WHERE user_id = ?', [req.user.id]);
+        if (patientRows.length === 0) return res.status(404).json({ message: 'Patient not found' });
+        const actualPatientId = patientRows[0].id;
+
+        await db.query(
+            `UPDATE preventive_recommendations SET status = 'Read' WHERE id = ? AND patient_id = ?`,
+            [id, actualPatientId]
+        );
+        res.status(200).json({ success: true, message: 'Recommendation dismissed' });
+    } catch (error) {
+        console.error('Dismiss Recommendations Error:', error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
 };
@@ -126,13 +146,16 @@ exports.getNearbyClinics = async (req, res) => {
 // C. AI Symptom Triage
 // ─────────────────────────────────────────────────────────────
 exports.submitTriage = async (req, res) => {
-    const { patient_id, user_input } = req.body;
+    const { user_input } = req.body;
 
-    if (!patient_id || !user_input) {
-        return res.status(400).json({ message: 'patient_id and user_input are required' });
+    if (!user_input) {
+        return res.status(400).json({ message: 'user_input is required' });
     }
 
     try {
+        const [patientRows] = await db.query('SELECT id FROM patients WHERE user_id = ?', [req.user.id]);
+        if (patientRows.length === 0) return res.status(404).json({ message: 'Patient not found' });
+        const actualPatientId = patientRows[0].id;
         // 1. Fetch valid symptoms list from ML Service
         let validSymptoms = [];
         try {
@@ -253,7 +276,7 @@ exports.submitTriage = async (req, res) => {
         await db.execute(
             `INSERT INTO ai_triage_logs (patient_id, user_input, extracted_symptoms, predicted_risk)
              VALUES (?, ?, ?, ?)`,
-            [patient_id, user_input, symptomsJson, predictedRisk]
+            [actualPatientId, user_input, symptomsJson, predictedRisk]
         );
 
         // 4. Return AI response to client
@@ -435,10 +458,11 @@ exports.getClinicDoctors = async (req, res) => {
     const { clinicId } = req.params;
     try {
         const [doctors] = await db.query(
-            `SELECT DISTINCT u.id, u.name, u.consultation_fee, s.name as department, s.id as department_id
+            `SELECT DISTINCT u.id, u.name, COALESCE(cs.consultation_fee, u.consultation_fee) as consultation_fee, s.name as department, s.id as department_id
              FROM users u
              JOIN doctor_schedules ds ON u.id = ds.doctor_id
              LEFT JOIN services s ON u.service_id = s.id
+             LEFT JOIN clinic_services cs ON cs.clinic_id = ds.clinic_id AND cs.service_id = u.service_id
              WHERE ds.clinic_id = ? AND u.role = 'Doctor' AND u.status = 'Active'`,
             [clinicId]
         );

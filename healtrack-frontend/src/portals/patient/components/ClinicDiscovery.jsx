@@ -87,8 +87,14 @@ export default function ClinicDiscovery() {
                     }));
                 },
                 (error) => {
-                    console.error('Error getting location:', error);
-                    alert('Unable to retrieve your location');
+                    console.warn('Geolocation failed, using mock fallback location', error);
+                    setFilters(prev => ({
+                        ...prev,
+                        lat: "28.6139",
+                        lng: "77.2090",
+                        radius: '10'
+                    }));
+                    alert('Unable to retrieve real location due to browser restrictions. Using default mock location (New Delhi) for demonstration.');
                 }
             );
         }
@@ -188,8 +194,8 @@ export default function ClinicDiscovery() {
             </div>
 
             {/* Filters */}
-            <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-2">
-                <div className="flex gap-2">
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-end gap-3">
+                <div className="flex-1 flex gap-2">
                     <button
                         onClick={filters.lat ? handleClearLocation : handleUseLocation}
                         className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded-lg transition-colors border ${
@@ -223,7 +229,7 @@ export default function ClinicDiscovery() {
                         </div>
                     )}
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="flex-1 grid grid-cols-2 gap-2">
                     <div>
                         <label className="text-[10px] text-gray-500 font-medium">City</label>
                         <select 
@@ -253,7 +259,7 @@ export default function ClinicDiscovery() {
                         </select>
                     </div>
                 </div>
-                <div>
+                <div className="flex-1">
                     <label className="text-[10px] text-gray-500 font-medium">Department</label>
                     <select 
                         name="service_id" 
@@ -278,7 +284,7 @@ export default function ClinicDiscovery() {
                     <p className="mt-3 text-sm">No clinics found matching criteria.</p>
                 </div>
             ) : (
-                <div className="space-y-3 pb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
                     {clinics.map(clinic => (
                         <div
                             key={clinic.id}

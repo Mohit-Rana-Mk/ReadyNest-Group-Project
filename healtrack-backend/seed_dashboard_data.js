@@ -1,5 +1,6 @@
 require('dotenv').config();
 const mysql = require('mysql2/promise');
+const bcrypt = require('bcrypt');
 
 async function seed() {
     const db = await mysql.createConnection({
@@ -70,11 +71,13 @@ async function seed() {
         }
         console.log('Inserted clinic services fees.');
 
-        // 4. Insert users & doctors (14 doctors + 1 Admin)
-        const adminPasswordHash = 'hash'; // Simplified for seed
-        await db.query(`INSERT INTO users (id, name, email, phone, password, role, status, service_id) VALUES 
-            (1, 'Admin', 'admin@healtrack.com', '1000000001', '${adminPasswordHash}', 'Admin', 'Active', NULL)
-        `);
+        // 4. Insert Admins, Staff, & Doctors
+        const passwordHash = await bcrypt.hash('password123', 10);
+        await db.query(`INSERT INTO users (id, name, email, phone, password, role, status, service_id, clinic_id) VALUES 
+            (1, 'Super Admin', 'superadmin@healtrack.com', '1000000001', ?, 'SuperAdmin', 'Active', NULL, NULL),
+            (16, 'Clinic Admin', 'admin@healtrack.com', '1000000015', ?, 'ClinicAdmin', 'Active', NULL, 1),
+            (17, 'Receptionist', 'reception@healtrack.com', '1000000016', ?, 'ClinicStaff', 'Active', NULL, 1)
+        `, [passwordHash, passwordHash, passwordHash]);
 
         const doctors = [
             { id: 2, name: 'Dr. Vivek Nair', service_id: 5, email: 'vivek@healtrack.com', phone: '2000000001' },       // Pediatrics
@@ -95,8 +98,8 @@ async function seed() {
 
         for (let doc of doctors) {
             await db.query(
-                `INSERT INTO users (id, name, email, phone, password, role, status, service_id) VALUES (?, ?, ?, ?, ?, 'Doctor', 'Active', ?)`,
-                [doc.id, doc.name, doc.email, doc.phone, adminPasswordHash, doc.service_id]
+                `INSERT INTO users (id, name, email, phone, password, role, status, service_id, clinic_id) VALUES (?, ?, ?, ?, ?, 'Doctor', 'Active', ?, 1)`,
+                [doc.id, doc.name, doc.email, doc.phone, passwordHash, doc.service_id]
             );
             // Insert schedule
             const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -166,8 +169,8 @@ async function seed() {
         // Insert patient users and profiles in batches
         for (let p of patientsList) {
             await db.query(
-                `INSERT INTO users (id, name, email, phone, password, role, status) VALUES (?, ?, ?, ?, 'hash', 'Patient', 'Active')`,
-                [p.userId, p.name, p.email, p.phone]
+                `INSERT INTO users (id, name, email, phone, password, role, status) VALUES (?, ?, ?, ?, ?, 'Patient', 'Active')`,
+                [p.userId, p.name, p.email, p.phone, passwordHash]
             );
             await db.query(
                 `INSERT INTO patients (user_id, mrn, name, date_of_birth, gender, blood_group) VALUES (?, ?, ?, ?, ?, 'O+')`,

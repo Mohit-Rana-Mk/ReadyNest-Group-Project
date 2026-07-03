@@ -18,70 +18,130 @@ export function OpdQueueTable({ queue, onStatusChange }) {
   const completedQueue = filteredQueue.filter(app => app.status === 'Completed');
 
   const renderTable = (appointments, isCompletedTable = false) => (
-    <div className="overflow-x-auto border-t border-gray-200">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className={isCompletedTable ? "bg-green-50" : "bg-gray-50"}>
-          <tr>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient Name</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor Assigned</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-            {!isCompletedTable && <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>}
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {appointments.map((appointment) => (
-            <tr key={appointment.id} className="hover:bg-gray-50 transition-colors">
-              <td className="px-6 py-4 whitespace-nowrap">
+    <>
+      {/* Mobile Card View */}
+      <div className="md:hidden divide-y divide-gray-200 border-t border-gray-200">
+        {appointments.length === 0 ? (
+           <div className="p-6 text-center text-gray-500 text-sm">
+             {isCompletedTable ? "No completed appointments." : "No appointments currently in the active queue."}
+           </div>
+        ) : appointments.map((appointment) => (
+          <div key={appointment.id} className="p-4 space-y-3 bg-white">
+            <div className="flex justify-between items-start">
+              <div>
                 <div className="text-sm font-medium text-gray-900">{appointment.patientName}</div>
                 {appointment.patientMrn && (
                   <div className="text-xs text-gray-500 mt-0.5">{appointment.patientMrn}</div>
                 )}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              </div>
+              <Badge status={appointment.status} />
+            </div>
+            
+            <div className="text-sm text-gray-600 flex justify-between">
+              <div>
+                <span className="font-medium text-gray-500 mr-1">Doctor:</span> 
                 {isCompletedTable ? (
                   <span className="font-semibold text-green-700">{appointment.doctorName} (Completed)</span>
                 ) : (
                   appointment.doctorName
                 )}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{appointment.time}</td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <Badge status={appointment.status} />
-              </td>
-              {!isCompletedTable && (
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-2 items-center">
-                  {(appointment.status === 'Scheduled' || appointment.status === 'Checked-In') && (
-                    <button
-                      onClick={() => onStatusChange(appointment.id, 'In Consultation')}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-1.5 px-3 rounded shadow-sm transition"
-                    >
-                      Send In
-                    </button>
-                  )}
-                  <select
-                    value={appointment.status}
-                    onChange={(e) => onStatusChange(appointment.id, e.target.value)}
-                    className="block rounded-md border-gray-300 py-1 pl-2 pr-6 text-xs focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 bg-white border"
+              </div>
+              <div>
+                <span className="font-medium text-gray-500 mr-1">Time:</span> {appointment.time}
+              </div>
+            </div>
+
+            {!isCompletedTable && (
+              <div className="pt-2 flex justify-between items-center gap-2">
+                <select
+                  value={appointment.status}
+                  onChange={(e) => onStatusChange(appointment.id, e.target.value)}
+                  className="flex-1 rounded-md border-gray-300 py-2 pl-3 pr-8 text-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 bg-white border"
+                >
+                  {statusOptions.map(opt => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+                {(appointment.status === 'Scheduled' || appointment.status === 'Checked-In') && (
+                  <button
+                    onClick={() => onStatusChange(appointment.id, 'In Consultation')}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2 px-4 rounded shadow-sm transition whitespace-nowrap"
                   >
-                    {statusOptions.map(opt => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
-                </td>
-              )}
-            </tr>
-          ))}
-          {appointments.length === 0 && (
+                    Send In
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block overflow-x-auto border-t border-gray-200">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className={isCompletedTable ? "bg-green-50" : "bg-gray-50"}>
             <tr>
-              <td colSpan={isCompletedTable ? "4" : "5"} className="px-6 py-8 text-center text-gray-500">
-                {isCompletedTable ? "No completed appointments." : "No appointments currently in the active queue."}
-              </td>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient Name</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor Assigned</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              {!isCompletedTable && <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>}
             </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {appointments.map((appointment) => (
+              <tr key={appointment.id} className="hover:bg-gray-50 transition-colors">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900">{appointment.patientName}</div>
+                  {appointment.patientMrn && (
+                    <div className="text-xs text-gray-500 mt-0.5">{appointment.patientMrn}</div>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {isCompletedTable ? (
+                    <span className="font-semibold text-green-700">{appointment.doctorName} (Completed)</span>
+                  ) : (
+                    appointment.doctorName
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{appointment.time}</td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <Badge status={appointment.status} />
+                </td>
+                {!isCompletedTable && (
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-2 items-center">
+                    {(appointment.status === 'Scheduled' || appointment.status === 'Checked-In') && (
+                      <button
+                        onClick={() => onStatusChange(appointment.id, 'In Consultation')}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-1.5 px-3 rounded shadow-sm transition"
+                      >
+                        Send In
+                      </button>
+                    )}
+                    <select
+                      value={appointment.status}
+                      onChange={(e) => onStatusChange(appointment.id, e.target.value)}
+                      className="block rounded-md border-gray-300 py-1 pl-2 pr-6 text-xs focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 bg-white border"
+                    >
+                      {statusOptions.map(opt => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                  </td>
+                )}
+              </tr>
+            ))}
+            {appointments.length === 0 && (
+              <tr>
+                <td colSpan={isCompletedTable ? "4" : "5"} className="px-6 py-8 text-center text-gray-500">
+                  {isCompletedTable ? "No completed appointments." : "No appointments currently in the active queue."}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 
   return (

@@ -1,18 +1,15 @@
 const http = require('http');
+const jwt = require('jsonwebtoken');
 
-const data = JSON.stringify({
-    email: 'sneha1@mail.com',
-    password: 'password123'
-});
+const token = jwt.sign({ id: 5, role: 'Patient' }, 'super_secret_jwt_key', { expiresIn: '1d' });
 
 const req = http.request({
     hostname: 'localhost',
     port: 5001,
-    path: '/api/auth/login',
-    method: 'POST',
+    path: '/api/patient/recommendations',
+    method: 'GET',
     headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': data.length
+        'Authorization': `Bearer ${token}`
     }
 }, res => {
     let body = '';
@@ -20,5 +17,4 @@ const req = http.request({
     res.on('end', () => console.log('STATUS:', res.statusCode, body));
 });
 req.on('error', console.error);
-req.write(data);
 req.end();

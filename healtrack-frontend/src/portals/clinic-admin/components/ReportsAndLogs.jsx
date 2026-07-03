@@ -40,7 +40,11 @@ export function ReportsAndLogs() {
       const headers = Object.keys(ledger[0]);
       const csvContent = [
         headers.join(','),
-        ...ledger.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
+        ...ledger.map(row => headers.map(header => {
+            const val = row[header];
+            if (val === null || val === undefined) return '""';
+            return `"${String(val).replace(/"/g, '""')}"`;
+        }).join(','))
       ].join('\n');
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });

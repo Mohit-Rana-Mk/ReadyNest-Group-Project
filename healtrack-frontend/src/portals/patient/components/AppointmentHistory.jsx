@@ -48,9 +48,9 @@ export default function AppointmentHistory({ appointments }) {
                 )}
             </div>
 
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {filteredAppointments.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                    <div className="col-span-full flex flex-col items-center justify-center py-16 text-gray-400">
                         <p className="text-sm">No records found for this family member.</p>
                     </div>
                 ) : filteredAppointments.map(appt => {

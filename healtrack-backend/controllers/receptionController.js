@@ -17,11 +17,12 @@ exports.getQueue = async (req, res) => {
         );
 
         const [doctors] = await db.query(
-            `SELECT u.id, u.name, u.consultation_fee 
+            `SELECT u.id, u.name, COALESCE(cs.consultation_fee, u.consultation_fee) as consultation_fee 
              FROM users u
              JOIN doctor_schedules ds ON u.id = ds.doctor_id
+             LEFT JOIN clinic_services cs ON cs.clinic_id = ds.clinic_id AND cs.service_id = u.service_id
              WHERE ds.clinic_id = ? AND u.status = 'Active'
-             GROUP BY u.id`,
+             GROUP BY u.id, consultation_fee`,
              [clinicId]
         );
 

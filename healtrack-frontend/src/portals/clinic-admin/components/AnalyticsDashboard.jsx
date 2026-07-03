@@ -33,7 +33,18 @@ export function AnalyticsDashboard() {
     try {
       const clinicId = 1; // Hardcoded clinic context
       const params = new URLSearchParams();
-      
+      if (selectedDepts.length === 0 || selectedStatuses.length === 0) {
+        setData({
+          kpis: { noShowRate: 0, totalAppointments: 0, totalRevenue: 0, totalDoctors: 0 },
+          doctorUtilization: [],
+          revenueOverview: [],
+          peakHours: [],
+          appointmentsOverview: []
+        });
+        setLoading(false);
+        return;
+      }
+
       if (startDate) params.append('start_date', startDate);
       if (endDate) params.append('end_date', endDate);
       if (selectedDepts.length > 0) params.append('departments', selectedDepts.join(','));
@@ -111,11 +122,11 @@ export function AnalyticsDashboard() {
       </div>
 
       {/* FILTER & KPI CONTAINER */}
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start">
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start flex-col-reverse xl:flex-row">
         {/* KPI CARDS (Left 3 columns) */}
-        <div className="xl:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="xl:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* No-show Rate */}
-          <Card className="p-6 bg-white border-l-4 border-rose-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between h-32">
+          <Card className="p-6 bg-white border-l-4 border-rose-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between min-h-[120px]">
             <div className="flex justify-between items-center text-slate-500">
               <span className="text-xs font-semibold uppercase tracking-wider">No-show Rate</span>
               <ShieldAlert className="w-5 h-5 text-rose-500" />
@@ -127,7 +138,7 @@ export function AnalyticsDashboard() {
           </Card>
 
           {/* Count of AppointmentID */}
-          <Card className="p-6 bg-white border-l-4 border-blue-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between h-32">
+          <Card className="p-6 bg-white border-l-4 border-blue-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between min-h-[120px]">
             <div className="flex justify-between items-center text-slate-500">
               <span className="text-xs font-semibold uppercase tracking-wider">Appointments</span>
               <UserCheck className="w-5 h-5 text-blue-500" />
@@ -139,7 +150,7 @@ export function AnalyticsDashboard() {
           </Card>
 
           {/* Sum of Revenue */}
-          <Card className="p-6 bg-white border-l-4 border-emerald-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between h-32">
+          <Card className="p-6 bg-white border-l-4 border-emerald-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between min-h-[120px]">
             <div className="flex justify-between items-center text-slate-500">
               <span className="text-xs font-semibold uppercase tracking-wider">Revenue</span>
               <CreditCard className="w-5 h-5 text-emerald-500" />
@@ -151,7 +162,7 @@ export function AnalyticsDashboard() {
           </Card>
 
           {/* Count of Doctor */}
-          <Card className="p-6 bg-white border-l-4 border-indigo-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between h-32">
+          <Card className="p-6 bg-white border-l-4 border-indigo-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between min-h-[120px]">
             <div className="flex justify-between items-center text-slate-500">
               <span className="text-xs font-semibold uppercase tracking-wider">Doctors</span>
               <Users className="w-5 h-5 text-indigo-500" />
@@ -164,7 +175,7 @@ export function AnalyticsDashboard() {
         </div>
 
         {/* FILTERS (Right 1 column) */}
-        <Card className="p-5 bg-white shadow-sm border border-gray-200 space-y-4">
+        <div className="xl:col-span-1 bg-white rounded-lg shadow-sm border border-gray-200 p-5 space-y-4">
           <div className="flex items-center gap-2 text-slate-700 font-bold border-b pb-2">
             <Filter className="w-4 h-4 text-blue-500" />
             <span className="text-sm">Filter Dashboard</span>
@@ -214,7 +225,7 @@ export function AnalyticsDashboard() {
                 <span className="text-slate-400">▼</span>
               </button>
               {showStatusDropdown && (
-                <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 p-2 space-y-1">
+                <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 max-h-48 overflow-y-auto p-2 space-y-1">
                   <div className="flex justify-between items-center border-b pb-1 mb-1">
                     <button onClick={handleSelectAllStatuses} className="text-[10px] font-bold text-blue-600 hover:underline">
                       {selectedStatuses.length === STATUSES.length ? 'Deselect All' : 'Select All'}
@@ -256,7 +267,7 @@ export function AnalyticsDashboard() {
               </div>
             </div>
           </div>
-        </Card>
+        </div>
       </div>
 
       {/* CHARTS LAYOUT (Grid of 2 columns) */}
