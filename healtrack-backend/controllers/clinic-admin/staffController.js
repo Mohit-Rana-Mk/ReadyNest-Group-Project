@@ -50,6 +50,9 @@ exports.addStaff = async (req, res) => {
         res.status(201).json({ message: 'Staff added successfully', id: newUserId, credentials: { email, password: generatedPassword } });
     } catch (error) {
         console.error('Add Staff Error:', error);
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({ message: 'A user with this email or phone number already exists.' });
+        }
         res.status(500).json({ message: 'Internal Server Error' });
     }
 };

@@ -28,22 +28,36 @@ exports.addDepartment = async (req, res) => {
 
     try {
         if (service_id === 'custom' && custom_service_name) {
-            // Create a new global service
-            const [result] = await db.execute(
-                `INSERT INTO services (name) VALUES (?)`,
+            // Check if the service already exists globally
+            const [existingService] = await db.execute(
+                `SELECT id FROM services WHERE LOWER(name) = LOWER(?)`,
                 [custom_service_name]
             );
-            service_id = result.insertId;
+            
+            if (existingService.length > 0) {
+                service_id = existingService[0].id;
+            } else {
+                // Create a new global service
+                const [result] = await db.execute(
+                    `INSERT INTO services (name) VALUES (?)`,
+                    [custom_service_name]
+                );
+                service_id = result.insertId;
+            }
         }
 
         await db.execute(
             `INSERT INTO clinic_services (clinic_id, service_id, consultation_fee) 
-             VALUES (?, ?, ?)`,
+             VALUES (?, ?, ?)
+             ON DUPLICATE KEY UPDATE consultation_fee = VALUES(consultation_fee)`,
              [clinicId, service_id, consultation_fee]
         );
         res.status(201).json({ message: 'Department added to clinic successfully' });
     } catch (error) {
         console.error('Add Department Error:', error);
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({ message: 'This department already exists.' });
+        }
         res.status(500).json({ message: 'Internal Server Error' });
     }
 };
