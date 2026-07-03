@@ -69,10 +69,17 @@ export function EpidemiologyMap({ outbreakStats, filter, setFilter }) {
                         {outbreakStats.locations && outbreakStats.locations.map(loc => {
                             if (!loc.latitude || !loc.longitude) return null;
                             const customIcon = createGlowingIcon(loc.risk, loc.count, loc.diagnosis);
+                            
+                            const lat = parseFloat(loc.latitude);
+                            const lng = parseFloat(loc.longitude);
+                            // Add deterministic jitter so markers at the exact same location don't overlap text
+                            const jitterLat = (loc.diagnosis.charCodeAt(0) % 10 - 5) * 0.15;
+                            const jitterLng = (loc.diagnosis.charCodeAt(loc.diagnosis.length - 1) % 10 - 5) * 0.15;
+                            
                             return (
                                 <Marker 
                                     key={loc.id} 
-                                    position={[parseFloat(loc.latitude), parseFloat(loc.longitude)]}
+                                    position={[lat + jitterLat, lng + jitterLng]}
                                     icon={customIcon}
                                 />
                             );
