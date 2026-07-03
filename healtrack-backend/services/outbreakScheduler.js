@@ -91,7 +91,8 @@ async function runOutbreakCheck(io) {
         };
 
         console.log("Sending caseloads to ML Outbreak Service:", JSON.stringify(payload));
-        const response = await postJSON('http://127.0.0.1:8000/api/v1/predict/outbreak', payload);
+        const mlServiceUrl = process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000';
+        const response = await postJSON(`${mlServiceUrl}/api/v1/predict/outbreak`, payload);
         
         if (!response || !response.success || !response.results) {
             console.error("Invalid response from ML service");
