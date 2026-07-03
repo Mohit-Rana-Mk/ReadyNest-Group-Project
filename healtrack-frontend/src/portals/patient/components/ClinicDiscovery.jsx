@@ -109,6 +109,7 @@ export default function ClinicDiscovery() {
         try {
             const family = await fetchFamilyMembers();
             setFamilyMembers(family);
+            setIsAddingNewPatient(family.length === 0);
             
             const { fetchClinicDoctors } = await import('../../../api/patientApi');
             const doctors = await fetchClinicDoctors(clinic.id);
