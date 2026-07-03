@@ -3,6 +3,12 @@ const db = require('../config/db');
 exports.getQueue = async (req, res) => {
     const { clinicId } = req.params;
     try {
+        // Use IST date to match the local timezone of the clinics
+        const today = new Date();
+        const istOffset = 5.5 * 60 * 60 * 1000;
+        const istDate = new Date(today.getTime() + istOffset);
+        const dateString = istDate.toISOString().split('T')[0];
+
         const [queue] = await db.query(
             `SELECT a.id, a.appointment_date, a.status, 
                     DATE_FORMAT(a.appointment_date, '%h:%i %p') as time,
@@ -11,9 +17,9 @@ exports.getQueue = async (req, res) => {
              JOIN patients p ON a.patient_id = p.id
              JOIN users pu ON p.user_id = pu.id
              JOIN users du ON a.doctor_id = du.id
-             WHERE a.clinic_id = ? AND DATE(a.appointment_date) = CURDATE()
+             WHERE a.clinic_id = ? AND DATE(a.appointment_date) = ?
              ORDER BY a.appointment_date ASC`,
-             [clinicId]
+             [clinicId, dateString]
         );
 
         const [doctors] = await db.query(

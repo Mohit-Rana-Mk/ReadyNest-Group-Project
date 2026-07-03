@@ -8,7 +8,11 @@ exports.getAppointments = async (req, res) => {
         
         let dateCondition = '';
         if (dateFilter === 'today') {
-            dateCondition = 'AND DATE(a.appointment_date) = CURDATE()';
+            const today = new Date();
+            const istOffset = 5.5 * 60 * 60 * 1000;
+            const istDate = new Date(today.getTime() + istOffset);
+            const dateString = istDate.toISOString().split('T')[0];
+            dateCondition = `AND DATE(a.appointment_date) = '${dateString}'`;
         } else if (dateFilter === 'past_week') {
             dateCondition = 'AND a.appointment_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)';
         } else if (dateFilter === 'past_month') {
