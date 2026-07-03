@@ -47,6 +47,7 @@ export default function AiTriageAssistant() {
                     extracted_symptoms: data.extracted_symptoms,
                     predicted_disease: data.predicted_disease,
                     recommendation: data.recommendation,
+                    predictions: data.predictions,
                 },
             ]);
         } catch (err) {
@@ -97,6 +98,7 @@ export default function AiTriageAssistant() {
                                             symptoms={msg.extracted_symptoms}
                                             disease={msg.predicted_disease}
                                             recommendation={msg.recommendation}
+                                            predictions={msg.predictions}
                                         />
                                     ) : null}
                                 </div>
@@ -150,7 +152,7 @@ export default function AiTriageAssistant() {
 }
 
 // ── Triage Result Card ──────────────────────────────────────
-function TriageCard({ risk, symptoms, disease, recommendation }) {
+function TriageCard({ risk, symptoms, disease, recommendation, predictions }) {
     const config = riskConfig[risk] || riskConfig.Low;
     const Icon = config.icon;
 
@@ -160,6 +162,10 @@ function TriageCard({ risk, symptoms, disease, recommendation }) {
         red:     { bg: 'bg-red-50',      border: 'border-red-200',     badge: 'bg-red-100 text-red-700',         icon: 'text-red-600' },
     };
     const c = colorMap[config.color];
+
+    const topPrediction = (predictions && predictions.length > 0) ? predictions[0] : null;
+    const description = topPrediction?.description;
+    const precautions = topPrediction?.precautions;
 
     return (
         <div className={`${c.bg} border ${c.border} rounded-2xl rounded-tl-md p-3.5 shadow-sm space-y-2.5`}>
@@ -172,16 +178,18 @@ function TriageCard({ risk, symptoms, disease, recommendation }) {
             </div>
 
             {/* Symptoms */}
-            <div>
-                <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Detected Symptoms</p>
-                <div className="flex flex-wrap gap-1.5">
-                    {symptoms.map((s, i) => (
-                        <span key={i} className="text-xs bg-white/80 border border-gray-200 text-gray-700 px-2 py-0.5 rounded-lg">
-                            {s}
-                        </span>
-                    ))}
+            {symptoms && symptoms.length > 0 && (
+                <div>
+                    <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Detected Symptoms</p>
+                    <div className="flex flex-wrap gap-1.5">
+                        {symptoms.map((s, i) => (
+                            <span key={i} className="text-xs bg-white/80 border border-gray-200 text-gray-700 px-2 py-0.5 rounded-lg">
+                                {s}
+                            </span>
+                        ))}
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Predicted Disease */}
             {disease && (
@@ -193,8 +201,32 @@ function TriageCard({ risk, symptoms, disease, recommendation }) {
                 </div>
             )}
 
+            {/* Description */}
+            {description && (
+                <div>
+                    <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">About Disease</p>
+                    <p className="text-xs text-gray-600 leading-relaxed bg-white/60 p-2 rounded-lg border border-gray-200">
+                        {description}
+                    </p>
+                </div>
+            )}
+
+            {/* Precautions */}
+            {precautions && precautions.length > 0 && (
+                <div>
+                    <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Recommended Precautions</p>
+                    <div className="flex flex-wrap gap-1.5">
+                        {precautions.map((p, i) => (
+                            <span key={i} className="text-xs bg-indigo-50/50 border border-indigo-100 text-indigo-700 px-2 py-0.5 rounded-lg font-medium">
+                                {p}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Recommendation */}
-            <p className="text-xs text-gray-600 leading-relaxed">{recommendation}</p>
+            <p className="text-xs text-gray-600 leading-relaxed font-medium">{recommendation}</p>
         </div>
     );
 }

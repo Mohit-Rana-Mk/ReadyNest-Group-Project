@@ -133,6 +133,82 @@ exports.submitTriage = async (req, res) => {
     }
 
     try {
+        const inputLower = user_input.toLowerCase().trim().replace(/[?.!]/g, '');
+        
+        // List of all known diseases supported by the ML engine
+        const knownDiseases = [
+            'vertigo', 'aids', 'acne', 'alcoholic hepatitis', 'allergy', 'arthritis', 'asthma', 
+            'spondylosis', 'chicken pox', 'cholestasis', 'cold', 'dengue', 'diabetes', 
+            'piles', 'drug reaction', 'fungal infection', 'gerd', 'gastroenteritis', 
+            'heart attack', 'hypertension', 'hyperthyroidism', 'hypoglycemia', 
+            'hypothyroidism', 'impetigo', 'jaundice', 'malaria', 'migraine', 
+            'osteoarthritis', 'paralysis', 'ulcer', 'pneumonia', 'psoriasis', 
+            'tuberculosis', 'typhoid', 'urinary tract infection', 'varicose veins', 'hepatitis a'
+        ];
+
+        let directDiseaseMatch = null;
+        for (const kd of knownDiseases) {
+            if (inputLower === kd || 
+                inputLower === `i have ${kd}` || 
+                inputLower === `tell me about ${kd}` || 
+                inputLower === `what is ${kd}` ||
+                inputLower === `how to treat ${kd}`) {
+                directDiseaseMatch = kd;
+                break;
+            }
+        }
+
+        if (directDiseaseMatch) {
+            try {
+                const infoResponse = await fetch(`http://localhost:8000/api/v1/disease-info/${encodeURIComponent(directDiseaseMatch)}`);
+                if (infoResponse.ok) {
+                    const infoData = await infoResponse.json();
+                    if (infoData.success) {
+                        const predictedRisk = infoData.risk_tier;
+                        const predictedDisease = infoData.disease;
+                        const predictionsList = [{
+                            rank: 1,
+                            disease: infoData.disease,
+                            confidence: 100,
+                            risk_tier: infoData.risk_tier,
+                            description: infoData.description,
+                            precautions: infoData.precautions
+                        }];
+
+                        let recommendation = 'Monitor your symptoms. If they persist for more than 48 hours, consider a visit.';
+                        if (predictedRisk === 'Urgent') {
+                            recommendation = 'Please visit a hospital immediately or call emergency services.';
+                        } else if (predictedRisk === 'High') {
+                            recommendation = 'We highly recommend booking an urgent consultation today.';
+                        } else if (predictedRisk === 'Moderate' || predictedRisk === 'Medium') {
+                            recommendation = 'We recommend booking a consultation within 24 to 48 hours.';
+                        }
+
+                        // Save log to DB
+                        let dbRisk = predictedRisk;
+                        if (dbRisk === 'Urgent') dbRisk = 'High';
+                        else if (dbRisk === 'Moderate') dbRisk = 'Medium';
+
+                        await db.execute(
+                            `INSERT INTO ai_triage_logs (patient_id, user_input, extracted_symptoms, predicted_risk)
+                             VALUES (?, ?, ?, ?)`,
+                            [patient_id, user_input, JSON.stringify([]), dbRisk]
+                        );
+
+                        return res.status(200).json({
+                            predicted_risk: predictedRisk,
+                            extracted_symptoms: [],
+                            predicted_disease: predictedDisease,
+                            recommendation: recommendation,
+                            predictions: predictionsList
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error('Error calling ML service for direct disease info:', err.message);
+            }
+        }
+
         // 1. Fetch valid symptoms list from ML Service
         let validSymptoms = [];
         try {
@@ -176,7 +252,7 @@ exports.submitTriage = async (req, res) => {
             ];
         }
 
-        const inputLower = user_input.toLowerCase();
+
         const urgentKeywords = ['stroke', 'heart attack', 'cardiac', 'hemorrhage', 'unconscious', 'coma', 'poisoning', 'paralysis', 'difficulty breathing'];
         const highRiskKeywords = ['cancer', 'tumor', 'bleeding', 'tuberculosis', 'aids', 'hiv', 'severe chest pain', 'chest pain'];
 
