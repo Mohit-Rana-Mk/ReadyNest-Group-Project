@@ -2,12 +2,9 @@ import React, { useState } from 'react';
 import { ShieldAlert, X, CalendarPlus, ChevronRight } from 'lucide-react';
 import { dismissRecommendation } from '../../../api/patientApi';
 
-export default function PreventiveAlertBanner({ recommendations, onBookNow }) {
-    const [dismissed, setDismissed] = useState([]);
-
-    const visible = recommendations.filter(r => !dismissed.includes(r.id));
-
-    if (visible.length === 0) return null;
+export default function PreventiveAlertBanner({ recommendations, onBookNow, onDismiss }) {
+    if (!recommendations || recommendations.length === 0) return null;
+    const visible = recommendations;
 
     return (
         <div className="space-y-3">
@@ -25,8 +22,8 @@ export default function PreventiveAlertBanner({ recommendations, onBookNow }) {
                     {/* Dismiss */}
                     <button
                         onClick={() => {
-                            setDismissed(prev => [...prev, rec.id]);
                             dismissRecommendation(rec.id).catch(err => console.error("Failed to dismiss alert:", err));
+                            if (onDismiss) onDismiss(rec.id);
                         }}
                         className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors"
                     >

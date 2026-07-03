@@ -178,6 +178,7 @@ export default function PatientApp() {
                                         <PreventiveAlertBanner 
                                             recommendations={recommendations} 
                                             onBookNow={() => setActiveTab('find-care')}
+                                            onDismiss={(id) => setRecommendations(prev => prev.filter(r => r.id !== id))}
                                         />
                                     </div>
                                     
