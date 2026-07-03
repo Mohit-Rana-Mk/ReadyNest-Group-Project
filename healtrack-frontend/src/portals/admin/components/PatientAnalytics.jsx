@@ -5,6 +5,7 @@ import {
   ResponsiveContainer, Legend, PieChart, Pie, Cell 
 } from 'recharts';
 import { Filter, Users, Calendar } from 'lucide-react';
+import axiosClient from '../../../api/axiosClient';
 
 const DEPARTMENTS = [
   'Cardiology', 'General Medicine', 'Ophthalmology', 'Orthopedics', 
