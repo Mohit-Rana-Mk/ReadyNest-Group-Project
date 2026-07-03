@@ -20,7 +20,7 @@ export function AnalyticsDashboard({ clinicId = 1 }) {
   
   // Filter States
   const [startDate, setStartDate] = useState('2026-01-01');
-  const [endDate, setEndDate] = useState('2026-06-30');
+  const [endDate, setEndDate] = useState('2026-12-31');
   const [selectedDepts, setSelectedDepts] = useState(DEPARTMENTS);
   const [selectedStatuses, setSelectedStatuses] = useState(STATUSES);
 
