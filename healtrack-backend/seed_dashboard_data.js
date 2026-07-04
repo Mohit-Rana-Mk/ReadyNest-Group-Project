@@ -2,19 +2,9 @@ require('dotenv').config();
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
 
-async function seed() {
-    const db = await mysql.createConnection({
-        host: process.env.DB_HOST || 'localhost',
-        port: process.env.DB_PORT || 3306,
-        user: process.env.DB_USER || 'root',
-        password: process.env.DB_PASSWORD || '',
-        database: process.env.DB_NAME || 'team_project',
-        ssl: process.env.DB_SSL === 'true' ? {
-            minVersion: 'TLSv1.2',
-            rejectUnauthorized: true
-        } : undefined
-    });
+const db = require('./config/db');
 
+async function seed() {
     console.log('Connected to DB. Starting high-fidelity dashboard seeding...');
 
     try {

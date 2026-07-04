@@ -786,11 +786,11 @@ exports.getPatientAnalytics = async (req, res) => {
 
         // Process age bins: 0-19 (bin 0), 20-39 (bin 20), 40-59 (bin 40), 60-79 (bin 60), 80+ (bin 80)
         const ageBins = {
-            '0': { bin: 0, label: '0', female: 0, male: 0 },
-            '20': { bin: 20, label: '20', female: 0, male: 0 },
-            '40': { bin: 40, label: '40', female: 0, male: 0 },
-            '60': { bin: 60, label: '60', female: 0, male: 0 },
-            '80': { bin: 80, label: '80', female: 0, male: 0 }
+            '0': { bin: 0, label: '0-19', female: 0, male: 0 },
+            '20': { bin: 20, label: '20-39', female: 0, male: 0 },
+            '40': { bin: 40, label: '40-59', female: 0, male: 0 },
+            '60': { bin: 60, label: '60-79', female: 0, male: 0 },
+            '80': { bin: 80, label: '80+', female: 0, male: 0 }
         };
 
         ageGenderRows.forEach(row => {

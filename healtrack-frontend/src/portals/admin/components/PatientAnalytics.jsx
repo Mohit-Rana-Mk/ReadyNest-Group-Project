@@ -42,8 +42,8 @@ export function PatientAnalytics() {
       const params = new URLSearchParams();
       if (minAge) params.append('min_age', minAge);
       if (maxAge) params.append('max_age', maxAge);
-      if (selectedGenders.length > 0) params.append('genders', selectedGenders.join(','));
-      if (selectedDepts.length > 0) params.append('departments', selectedDepts.join(','));
+      if (selectedGenders.length > 0 && selectedGenders.length < GENDERS.length) params.append('genders', selectedGenders.join(','));
+      if (selectedDepts.length > 0 && selectedDepts.length < DEPARTMENTS.length) params.append('departments', selectedDepts.join(','));
 
       const res = await axiosClient.get(`/admin/patient-analytics?${params.toString()}`);
       if (res.data && res.data.success) {
