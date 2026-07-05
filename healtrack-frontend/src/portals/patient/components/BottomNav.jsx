@@ -1,45 +1,69 @@
 import React from 'react';
-import { Home, Search, Bot, ClipboardList } from 'lucide-react';
-
-const tabs = [
-    { id: 'home', label: 'Home', icon: Home },
-    { id: 'find-care', label: 'Find Care', icon: Search },
-    { id: 'triage', label: 'AI Triage', icon: Bot },
-    { id: 'records', label: 'Records', icon: ClipboardList },
-];
+import { Home, Search, Activity, ClipboardList, BookOpen } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function BottomNav({ activeTab, onTabChange }) {
+    const { t } = useTranslation();
+
+    const tabs = [
+        { id: 'home', label: 'HOME', icon: Home },
+        { id: 'find-care', label: 'SEARCH', icon: Search },
+        { id: 'triage', label: 'AI TRIAGE', icon: Activity, isSpecial: true },
+        { id: 'awareness', label: 'AWARENESS', icon: BookOpen },
+        { id: 'records', label: 'RECORDS', icon: ClipboardList },
+    ];
+
     return (
-        <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] z-50 md:hidden">
-            <div className="flex items-center justify-around py-2">
-                {tabs.map(tab => {
+        <div className="fixed bottom-4 left-4 right-4 bg-white border border-slate-100/80 rounded-[28px] shadow-[0_12px_36px_rgba(0,0,0,0.12)] z-50 md:hidden py-1 px-2">
+            <div className="flex items-end justify-around relative">
+                {tabs.map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.id;
+
+                    if (tab.isSpecial) {
+                        return (
+                            <button
+                                key={tab.id}
+                                onClick={() => onTabChange(tab.id)}
+                                className="flex flex-col items-center relative -top-3 cursor-pointer group"
+                            >
+                                {/* Floating Dark Circle */}
+                                <div className={`w-14 h-14 bg-[#0B132B] rounded-full flex items-center justify-center shadow-lg border-4 border-white transition-all duration-200 ${
+                                    isActive ? 'scale-110 bg-indigo-950' : 'group-hover:scale-105'
+                                }`}>
+                                    {/* Pulse line/Heartbeat icon in cyan */}
+                                    <Icon className="w-6 h-6 text-[#38bdf8]" strokeWidth={2.5} />
+                                </div>
+                                <span className={`text-[8px] font-extrabold tracking-widest mt-1 ${
+                                    isActive ? 'text-[#0B132B]' : 'text-slate-400'
+                                }`}>
+                                    {tab.label}
+                                </span>
+                            </button>
+                        );
+                    }
+
                     return (
                         <button
                             key={tab.id}
                             onClick={() => onTabChange(tab.id)}
-                            className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all duration-200 ${
-                                isActive
-                                    ? 'text-indigo-600 scale-105'
-                                    : 'text-gray-400 hover:text-gray-600'
-                            }`}
+                            className="flex flex-col items-center py-2.5 px-3 cursor-pointer group transition-all"
                         >
-                            <div className={`p-1.5 rounded-xl transition-colors duration-200 ${
-                                isActive ? 'bg-indigo-50' : ''
+                            <Icon 
+                                className={`w-5.5 h-5.5 transition-colors duration-200 ${
+                                    isActive ? 'text-[#0B132B]' : 'text-slate-400 group-hover:text-slate-600'
+                                }`} 
+                                strokeWidth={isActive ? 2.5 : 2}
+                            />
+                            <span className={`text-[8px] font-extrabold tracking-widest mt-1 transition-colors duration-200 ${
+                                isActive ? 'text-[#0B132B]' : 'text-slate-400 group-hover:text-slate-600'
                             }`}>
-                                <Icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
-                            </div>
-                            <span className={`text-[10px] font-medium ${isActive ? 'font-semibold' : ''}`}>
                                 {tab.label}
                             </span>
                         </button>
                     );
                 })}
             </div>
-
-            {/* Safe area spacer for iOS */}
-            <div className="h-[env(safe-area-inset-bottom)]" />
-        </nav>
+        </div>
     );
 }

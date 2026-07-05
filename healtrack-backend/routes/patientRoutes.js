@@ -17,6 +17,7 @@ router.get('/clinics/nearby', patientController.getNearbyClinics);
 
 // C. AI Triage
 router.post('/triage', patientController.submitTriage);
+router.post('/parkinsons/predict', patientController.predictParkinsons);
 
 // D. Appointment History
 router.get('/:patientId/appointments', patientController.getAppointments);

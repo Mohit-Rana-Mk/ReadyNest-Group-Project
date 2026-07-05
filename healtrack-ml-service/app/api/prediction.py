@@ -6,7 +6,9 @@ from app.validation.schemas import (
     DiseasePredictInput,
     OutbreakPredictInput,
     OutbreakPredictResponse,
+    ParkinsonTestsInput,
 )
+from app.services.parkinsons_prediction import predict_parkinsons_full, predict_from_tests
 
 from app.services.triage_engine import run_triage
 from app.database.prediction_repository import save_prediction
@@ -181,4 +183,35 @@ def predict_outbreak(input_data: OutbreakPredictInput):
         raise HTTPException(
             status_code=500,
             detail=f"Internal Server Error: Outbreak prediction engine failed: {str(error)}",
-        )
+        )
+
+
+@router.post(
+    "/predict/parkinsons",
+    status_code=status.HTTP_200_OK,
+    summary="Predict Parkinson's from 22 voice features",
+)
+def predict_parkinsons(input_data: dict):
+    try:
+        return predict_parkinsons_full(input_data)
+    except Exception as error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal Server Error: Parkinson's prediction failed: {str(error)}",
+        )
+
+
+@router.post(
+    "/predict/parkinsons/from-tests",
+    status_code=status.HTTP_200_OK,
+    summary="Predict Parkinson's risk from home tests",
+)
+def predict_parkinsons_from_tests(input_data: ParkinsonTestsInput):
+    try:
+        return predict_from_tests(input_data.model_dump())
+    except Exception as error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal Server Error: Parkinson's test prediction failed: {str(error)}",
+        )
+

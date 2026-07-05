@@ -489,6 +489,55 @@ exports.submitTriage = async (req, res) => {
     }
 };
 
+exports.predictParkinsons = async (req, res) => {
+    const { tremorVariance, tapCount, tapAvgIntervalMs, tapVariabilityMs, voiceMatchPercent } = req.body;
+
+    try {
+        const [patientRows] = await db.query('SELECT id FROM patients WHERE user_id = ?', [req.user.id]);
+        if (patientRows.length === 0) return res.status(404).json({ message: 'Patient not found' });
+        const actualPatientId = patientRows[0].id;
+
+        const mlServiceUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
+        const response = await fetch(`${mlServiceUrl}/api/v1/predict/parkinsons/from-tests`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                tremorVariance: parseFloat(tremorVariance || 0),
+                tapCount: parseInt(tapCount || 0),
+                tapAvgIntervalMs: parseFloat(tapAvgIntervalMs || 0),
+                tapVariabilityMs: parseFloat(tapVariabilityMs || 0),
+                voiceMatchPercent: parseFloat(voiceMatchPercent || 0)
+            })
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`ML Service responded with status ${response.status}: ${errText}`);
+        }
+
+        const result = await response.json();
+
+        // Map riskLabel to dbRisk
+        let dbRisk = 'Low';
+        if (result.riskLabel === 'High Risk') dbRisk = 'High';
+        else if (result.riskLabel === 'Moderate Risk') dbRisk = 'Medium';
+
+        // Persist to database
+        const symptomsJson = JSON.stringify(['tremor', 'bradykinesia', 'vocal monotony']);
+        await db.execute(
+            `INSERT INTO ai_triage_logs (patient_id, user_input, extracted_symptoms, predicted_risk)
+             VALUES (?, ?, ?, ?)`,
+            [actualPatientId, "Parkinson's Disease Home Screening Test", symptomsJson, dbRisk]
+        );
+
+        res.status(200).json(result);
+    } catch (error) {
+        console.error('Parkinsons Prediction Error:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+
 // ─────────────────────────────────────────────────────────────
 // D. Patient Appointment History
 // ─────────────────────────────────────────────────────────────

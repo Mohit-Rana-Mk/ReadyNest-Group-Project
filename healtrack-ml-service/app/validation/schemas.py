@@ -83,4 +83,17 @@ class OutbreakDiseaseResult(BaseModel):
 
 class OutbreakPredictResponse(BaseModel):
     success: bool
-    results: List[OutbreakDiseaseResult]
+    results: List[OutbreakDiseaseResult]
+
+
+# -------------------------------
+# Parkinson's Prediction
+# -------------------------------
+
+class ParkinsonTestsInput(BaseModel):
+    tremorVariance: float
+    tapCount: int
+    tapAvgIntervalMs: float
+    tapVariabilityMs: float
+    voiceMatchPercent: float
+

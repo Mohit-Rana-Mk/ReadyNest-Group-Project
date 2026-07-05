@@ -1,5 +1,7 @@
 // React Context for global user auth state & role
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import i18n from 'i18next';
+import axiosClient from '../api/axiosClient';
 
 const AuthContext = createContext();
 
@@ -15,7 +17,12 @@ export const AuthProvider = ({ children }) => {
                         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
                     }).join('')
                 );
-                return JSON.parse(jsonPayload);
+                const decoded = JSON.parse(jsonPayload);
+                // Sync i18n with saved preference immediately
+                if (decoded.language) {
+                    i18n.changeLanguage(decoded.language);
+                }
+                return decoded;
             } catch (e) {
                 console.error("Invalid token format in localStorage:", e);
                 localStorage.removeItem('token');
@@ -32,6 +39,9 @@ export const AuthProvider = ({ children }) => {
     const login = (userData, token) => {
         setUser(userData);
         localStorage.setItem('token', token);
+        if (userData.language) {
+            i18n.changeLanguage(userData.language);
+        }
     };
 
     const logout = () => {
@@ -39,8 +49,24 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('token');
     };
 
+    const changeLanguage = async (newLang) => {
+        try {
+            await i18n.changeLanguage(newLang);
+            if (user) {
+                await axiosClient.put('/auth/language', { language: newLang });
+                const updatedUser = { ...user, language: newLang };
+                setUser(updatedUser);
+                
+                // Re-encode JWT mock-payload or update token storage if needed
+                // For simplicity, we just update the in-memory user state and axios will continue using the active token
+            }
+        } catch (e) {
+            console.error("Failed to sync language change with backend:", e);
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, login, logout, changeLanguage }}>
             {children}
         </AuthContext.Provider>
     );

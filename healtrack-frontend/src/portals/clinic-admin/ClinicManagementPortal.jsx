@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Users, Grid, Activity, FileText, Settings, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Users, Grid, Activity, FileText, Settings, LogOut, Menu, X, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import axiosClient from '../../api/axiosClient';
 
 import { AnalyticsDashboard } from './components/AnalyticsDashboard';
+import { OutbreakAlerts } from './components/OutbreakAlerts';
 import { StaffManagement } from './components/StaffManagement';
 import { DepartmentManager } from './components/DepartmentManager';
 import { OperationsOverview } from './components/OperationsOverview';
@@ -63,6 +64,7 @@ export default function ClinicManagementPortal() {
 
   const navigation = [
     { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
+    { id: 'outbreak-alerts', name: 'Outbreak Alerts', icon: ShieldAlert },
     { id: 'staff', name: 'Staff Management', icon: Users },
     { id: 'departments', name: 'Departments', icon: Grid },
     { id: 'operations', name: 'Operations', icon: Activity },
@@ -80,6 +82,7 @@ export default function ClinicManagementPortal() {
 
     switch (activeTab) {
       case 'dashboard': return <AnalyticsDashboard data={portalData.analytics} clinicId={clinicId} />;
+      case 'outbreak-alerts': return <OutbreakAlerts clinicId={clinicId} />;
       case 'staff': return <StaffManagement staff={portalData.staff} refreshData={fetchPortalData} clinicId={clinicId} />;
       case 'departments': return <DepartmentManager departments={portalData.departments} refreshData={fetchPortalData} clinicId={clinicId} />;
       case 'operations': return <OperationsOverview operations={portalData.operations} clinicId={clinicId} />;

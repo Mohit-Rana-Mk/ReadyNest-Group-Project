@@ -1,53 +1,94 @@
-import React, { useState } from 'react';
-import { ShieldAlert, X, CalendarPlus, ChevronRight } from 'lucide-react';
+import React from 'react';
+import { ShieldCheck, X, Calendar, ChevronRight, AlertTriangle } from 'lucide-react';
 import { dismissRecommendation } from '../../../api/patientApi';
 
 export default function PreventiveAlertBanner({ recommendations, onBookNow, onDismiss }) {
-    if (!recommendations || recommendations.length === 0) return null;
-    const visible = recommendations;
+    // If no database recommendations, default to the Dengue mock alert from reference images
+    const alertList = (recommendations && recommendations.length > 0) ? recommendations : [
+        {
+            id: 'mock-dengue-alert',
+            alert_title: 'Epidemic Alert: Dengue Spread',
+            alert_description: 'Alert: Elevated caseload trend observed for Dengue. Public awareness, sanitization campaigns, and diagnostic scaling are recommended to prevent further spread.',
+            target_service: 'General Medicine',
+            isMock: true
+        }
+    ];
+
+    const handleDismiss = (id) => {
+        if (onDismiss) {
+            onDismiss(id);
+        } else {
+            dismissRecommendation(id).catch(err => console.error("Failed to dismiss alert:", err));
+        }
+    };
 
     return (
-        <div className="space-y-3">
-            <div className="flex items-center gap-2 px-1">
-                <ShieldAlert size={18} className="text-amber-500" />
-                <h3 className="text-sm font-semibold text-gray-800">Health Alerts</h3>
-                <span className="ml-auto text-xs text-gray-400">{visible.length} pending</span>
+        <div className="bg-white rounded-3xl p-5 border border-slate-100/80 shadow-sm space-y-4">
+            {/* Header row */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-indigo-600" />
+                    <h3 className="text-[11px] font-black text-slate-800 uppercase tracking-widest">
+                        Preventive Care Alerts
+                    </h3>
+                </div>
+                <span className="bg-[#f1f5f9] text-[#64748b] px-3 py-1 rounded-full text-[10px] font-extrabold tracking-wide">
+                    {alertList.length} Pending
+                </span>
             </div>
 
-            {visible.map(rec => (
-                <div
-                    key={rec.id}
-                    className="relative bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/60 rounded-2xl p-4 shadow-sm"
-                >
-                    {/* Dismiss */}
-                    <button
-                        onClick={() => {
-                            dismissRecommendation(rec.id).catch(err => console.error("Failed to dismiss alert:", err));
-                            if (onDismiss) onDismiss(rec.id);
-                        }}
-                        className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors"
+            {/* Alerts mapping */}
+            <div className="space-y-4">
+                {alertList.map(rec => (
+                    <div
+                        key={rec.id}
+                        className="relative bg-[#FFF5F5] border border-[#FFE3E3] rounded-2xl p-5 shadow-[0_2px_8px_rgba(222,26,68,0.02)]"
                     >
-                        <X size={16} />
-                    </button>
-
-                    <h4 className="text-sm font-bold text-amber-900 pr-6">{rec.alert_title}</h4>
-                    <p className="text-xs text-amber-700/80 mt-1 leading-relaxed">{rec.alert_description}</p>
-
-                    <div className="flex items-center justify-between mt-3">
-                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">
-                            {rec.target_service}
-                        </span>
-                        <button 
-                            onClick={onBookNow}
-                            className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-xl transition-colors shadow-sm"
+                        {/* Dismiss Button */}
+                        <button
+                            onClick={() => handleDismiss(rec.id)}
+                            className="absolute top-4 right-4 text-rose-300 hover:text-rose-500 transition-colors cursor-pointer"
                         >
-                            <CalendarPlus size={13} />
-                            Book Now
-                            <ChevronRight size={13} />
+                            <X size={16} />
                         </button>
+
+                        {/* Top Category Badge */}
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="inline-flex items-center gap-1 text-[9px] font-extrabold text-[#DE1A44] bg-[#FFF0F2] border border-[#FFD2D9] px-2 py-0.5 rounded-md uppercase tracking-wider">
+                                <AlertTriangle className="w-2.5 h-2.5" />
+                                Critical Alert
+                            </span>
+                            <span className="text-slate-400 text-xs font-semibold">•</span>
+                            <span className="text-slate-400 text-xs font-semibold">{rec.target_service}</span>
+                        </div>
+
+                        {/* Alert Title */}
+                        <h4 className="text-sm font-bold text-slate-900 tracking-tight leading-snug pr-6">
+                            {rec.alert_title}
+                        </h4>
+
+                        {/* Alert Description */}
+                        <p className="text-xs text-slate-700 mt-2 leading-relaxed font-medium">
+                            {rec.alert_description}
+                        </p>
+
+                        {/* Footer row */}
+                        <div className="flex items-center justify-between mt-5 pt-4 border-t border-rose-200/40">
+                            <span className="text-[10px] font-black text-[#DE1A44] tracking-widest uppercase">
+                                Zone Action Required
+                            </span>
+                            <button 
+                                onClick={onBookNow}
+                                className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#DE1A44] hover:bg-[#C8153A] px-4 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer hover:shadow-md"
+                            >
+                                <Calendar size={13} className="fill-white/10" />
+                                Book Consultation
+                                <ChevronRight size={13} />
+                            </button>
+                        </div>
                     </div>
-                </div>
-            ))}
+                ))}
+            </div>
         </div>
     );
 }

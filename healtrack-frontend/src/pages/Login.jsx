@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axiosClient from '../api/axiosClient';
-import { LogIn, HeartPulse } from 'lucide-react';
+import { LogIn, Heart, Brain, Activity } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 export default function Login() {
+    const { t } = useTranslation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -52,80 +55,132 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-            <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="flex justify-center">
-                    <img src="/logo.png" alt="HealTrack Logo" className="w-16 h-16 object-contain" />
-                </div>
-                <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900">
-                    Sign in to HealTrack
-                </h2>
-                <p className="mt-2 text-center text-sm text-slate-600">
-                    Use your portal credentials
-                </p>
+        <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+            {/* Background Accent Grid / Glow */}
+            <div className="absolute top-0 right-0 -mt-20 -mr-20 w-[600px] h-[600px] bg-gradient-to-br from-indigo-500/5 to-purple-500/5 rounded-full blur-[100px] pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-[600px] h-[600px] bg-gradient-to-tr from-blue-500/5 to-cyan-500/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+            {/* Language Switcher */}
+            <div className="absolute top-6 right-6 z-20">
+                <LanguageSwitcher />
             </div>
 
-            <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-white py-8 px-4 shadow-xl sm:rounded-2xl sm:px-10 border border-slate-100">
-                    <form className="space-y-6" onSubmit={handleSubmit}>
-                        {error && (
-                            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
-                                <p className="text-sm text-red-700">{error}</p>
-                            </div>
-                        )}
-                        
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700">Email address</label>
-                            <div className="mt-1">
-                                <input
-                                    type="email"
-                                    required
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="appearance-none block w-full px-3 py-2.5 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700">Password</label>
-                            <div className="mt-1">
-                                <input
-                                    type="password"
-                                    required
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="appearance-none block w-full px-3 py-2.5 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50"
-                            >
-                                {loading ? 'Signing in...' : 'Sign in'}
-                            </button>
-                        </div>
-                    </form>
+            <div className="max-w-6xl mx-auto w-full z-10">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
                     
-                    <div className="mt-6">
-                        <div className="relative">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-slate-300" />
+                    {/* Left-Side: Brand Info Panel (6 columns) */}
+                    <div className="hidden lg:flex lg:col-span-6 flex-col space-y-7 text-left">
+                        {/* Logo header */}
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md">
+                                <Heart className="w-5.5 h-5.5 fill-white/20" />
                             </div>
-                            <div className="relative flex justify-center text-sm">
-                                <span className="px-2 bg-white text-slate-500">
-                                    New to HealTrack?
-                                </span>
+                            <div>
+                                <h1 className="text-xl font-bold text-slate-800 tracking-tight leading-tight">
+                                    HealTrack AI
+                                </h1>
+                                <p className="text-[9px] text-[#0ea5e9] font-extrabold tracking-widest uppercase">Healthcare Workspace</p>
                             </div>
                         </div>
-                        <div className="mt-6">
-                            <Link to="/signup" className="w-full flex justify-center py-2 px-4 border border-indigo-300 rounded-md shadow-sm text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition">
-                                Create an account
-                            </Link>
+
+                        <div>
+                            <h2 className="text-4xl font-extrabold text-slate-900 leading-[1.15] tracking-tight">
+                                Predictive clinical workflows powered by machine learning.
+                            </h2>
+                            <p className="mt-4 text-[13px] text-slate-500 font-medium leading-relaxed max-w-lg">
+                                Connect patients, doctors, and clinic operations onto a single intelligent platform designed for faster triage, automated scheduling, and outbreak prevention.
+                            </p>
+                        </div>
+
+                        {/* Feature Cards Showcase */}
+                        <div className="grid grid-cols-2 gap-4 pt-2">
+                            <div className="bg-white border border-slate-100/80 rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.01)]">
+                                <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center mb-3">
+                                    <Brain className="w-5 h-5" />
+                                </div>
+                                <h4 className="font-extrabold text-slate-800 text-[11px] uppercase tracking-wider">ML Triage Engine</h4>
+                                <p className="text-[11px] text-slate-400 mt-1 leading-normal font-medium">Predictive disease matching based on patient symptoms.</p>
+                            </div>
+                            <div className="bg-white border border-slate-100/80 rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.01)]">
+                                <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-500 flex items-center justify-center mb-3">
+                                    <Activity className="w-5 h-5" />
+                                </div>
+                                <h4 className="font-extrabold text-slate-800 text-[11px] uppercase tracking-wider">AuraCare AI</h4>
+                                <p className="text-[11px] text-slate-400 mt-1 leading-normal font-medium">Live analytics for no-shows, stock alerts, and disease spreads.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right-Side: Form Card (6 columns) */}
+                    <div className="lg:col-span-6 flex justify-center w-full">
+                        <div className="w-full max-w-[440px] bg-white p-8 sm:p-10 rounded-[32px] border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.02)]">
+                            <div className="mb-6">
+                                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">
+                                    Sign in
+                                </h2>
+                                <p className="mt-1 text-xs text-slate-400 leading-relaxed font-medium">
+                                    Welcome back! Enter your credentials to access your portal dashboard.
+                                </p>
+                            </div>
+
+                            <form className="space-y-5" onSubmit={handleSubmit}>
+                                {error && (
+                                    <div className="bg-rose-50 border border-rose-100 p-3.5 rounded-xl">
+                                        <p className="text-xs font-bold text-rose-700">{error}</p>
+                                    </div>
+                                )}
+                                
+                                <div>
+                                    <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-2">Email Address</label>
+                                    <input
+                                        type="email"
+                                        required
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        className="w-full px-4 py-3 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400"
+                                        placeholder="khina@gmail.com"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-2">Password</label>
+                                    <input
+                                        type="password"
+                                        required
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full px-4 py-3 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400"
+                                        placeholder="••••••••"
+                                    />
+                                </div>
+
+                                <div className="pt-2">
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full flex justify-center items-center gap-2 py-3.5 bg-[#6366f1] hover:bg-[#5558e6] rounded-xl font-bold text-white text-xs uppercase tracking-widest transition-all duration-200"
+                                    >
+                                        {loading ? (
+                                            <>
+                                                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                                Loading...
+                                            </>
+                                        ) : (
+                                            <>
+                                                Sign In
+                                                <LogIn className="w-4 h-4" />
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </form>
+                            
+                            <div className="mt-8 text-center text-xs font-bold text-slate-400">
+                                New to HealTrack?{' '}
+                                <Link to="/signup" className="text-indigo-600 hover:text-indigo-700 hover:underline">
+                                    Create an account
+                                </Link>
+                            </div>
                         </div>
                     </div>
 

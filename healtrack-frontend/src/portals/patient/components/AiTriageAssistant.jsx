@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, AlertTriangle, ShieldCheck, ShieldAlert, Loader2 } from 'lucide-react';
+import { Send, Bot, AlertTriangle, ShieldCheck, ShieldAlert, Loader2, Activity, Sparkles } from 'lucide-react';
 import { postTriage } from '../../../api/patientApi';
 
 const riskConfig = {
-    Low:      { color: 'emerald', icon: ShieldCheck, label: 'Low Risk' },
-    Moderate: { color: 'amber',   icon: ShieldAlert, label: 'Moderate Risk' },
-    Medium:   { color: 'amber',   icon: ShieldAlert, label: 'Medium Risk' },
-    High:     { color: 'red',     icon: AlertTriangle, label: 'High Risk' },
-    Urgent:   { color: 'red',     icon: AlertTriangle, label: 'Urgent Risk' },
+    Low:      { color: 'emerald', icon: ShieldCheck,  label: 'Low Risk',      ring: 'from-emerald-400 to-teal-400' },
+    Moderate: { color: 'amber',   icon: ShieldAlert,  label: 'Moderate Risk', ring: 'from-amber-400 to-orange-400' },
+    Medium:   { color: 'amber',   icon: ShieldAlert,  label: 'Medium Risk',   ring: 'from-amber-400 to-orange-400' },
+    High:     { color: 'red',     icon: AlertTriangle,label: 'High Risk',     ring: 'from-red-500 to-rose-500' },
+    Urgent:   { color: 'red',     icon: AlertTriangle,label: 'Urgent Risk',   ring: 'from-red-600 to-rose-600' },
 };
 
 export default function AiTriageAssistant() {
@@ -31,7 +31,6 @@ export default function AiTriageAssistant() {
         const trimmed = input.trim();
         if (!trimmed || isLoading) return;
 
-        // Add user message
         setChatHistory(prev => [...prev, { role: 'user', text: trimmed }]);
         setInput('');
         setIsLoading(true);
@@ -62,35 +61,37 @@ export default function AiTriageAssistant() {
     };
 
     return (
-        <div className="flex flex-col h-[calc(100vh-8rem)] md:h-[calc(100vh-6rem)] lg:h-[calc(100vh-5rem)] max-w-5xl mx-auto w-full bg-white md:border border-gray-200 md:shadow-lg rounded-3xl overflow-hidden">
-            {/* Chat header */}
-            <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl mx-1 mb-3 shadow-lg">
-                <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
-                    <Bot size={20} className="text-white" />
+        <div className="flex flex-col h-[calc(100vh-8rem)] md:h-[calc(100vh-5rem)] max-w-5xl mx-auto w-full">
+            {/* Chat Header */}
+            <div className="bg-gradient-to-r from-[#0B132B] to-[#1a2340] rounded-3xl px-5 py-4 mb-4 flex items-center gap-3 shadow-lg shrink-0 border border-slate-700/40">
+                <div className="w-10 h-10 rounded-2xl bg-[#38bdf8]/10 border border-[#38bdf8]/20 flex items-center justify-center">
+                    <Activity className="w-5 h-5 text-[#38bdf8]" />
                 </div>
                 <div>
-                    <h3 className="text-sm font-bold text-white">AI Symptom Checker</h3>
-                    <p className="text-[10px] text-indigo-100">Powered by HealTrack AI Engine</p>
+                    <h3 className="text-sm font-extrabold text-white tracking-tight">AI Symptom Checker</h3>
+                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Powered by HealTrack AI Engine</p>
                 </div>
-                <div className="ml-auto flex items-center gap-1.5">
-                    <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                    <span className="text-[10px] text-indigo-100">Online</span>
+                <div className="ml-auto flex items-center gap-1.5 bg-emerald-900/30 border border-emerald-800/40 px-3 py-1.5 rounded-xl">
+                    <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+                    <span className="text-[9px] font-bold text-emerald-300 uppercase tracking-wider">Online</span>
                 </div>
             </div>
 
-            {/* Chat messages */}
-            <div className="flex-1 overflow-y-auto px-2 space-y-3 pb-4">
+            {/* Chat Messages */}
+            <div className="flex-1 overflow-y-auto space-y-4 pb-4 px-1">
                 {chatHistory.map((msg, i) => (
                     <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                         {msg.role === 'ai' ? (
-                            <div className="max-w-[85%] flex gap-2">
-                                <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 mt-1">
-                                    <Bot size={14} className="text-indigo-600" />
+                            <div className="max-w-[85%] flex gap-3">
+                                <div className="w-8 h-8 rounded-full bg-[#0B132B] border border-slate-700/40 flex items-center justify-center flex-shrink-0 mt-1 shadow-sm">
+                                    <Bot className="w-4 h-4 text-[#38bdf8]" />
                                 </div>
                                 <div>
                                     {msg.type === 'greeting' || msg.type === 'error' ? (
-                                        <div className={`${msg.type === 'error' ? 'bg-red-50 border-red-100' : 'bg-white border-gray-100'} border rounded-2xl rounded-tl-md px-3.5 py-2.5 shadow-sm`}>
-                                            <p className={`text-sm ${msg.type === 'error' ? 'text-red-600' : 'text-gray-700'}`}>{msg.text}</p>
+                                        <div className={`${msg.type === 'error' ? 'bg-rose-50 border-rose-100' : 'bg-white border-slate-100'} border rounded-3xl rounded-tl-md px-4 py-3.5 shadow-sm`}>
+                                            <p className={`text-sm font-medium ${msg.type === 'error' ? 'text-rose-700' : 'text-slate-700'} leading-relaxed`}>
+                                                {msg.text}
+                                            </p>
                                         </div>
                                     ) : msg.type === 'triage' ? (
                                         <TriageCard
@@ -104,8 +105,8 @@ export default function AiTriageAssistant() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="max-w-[80%] bg-indigo-600 text-white rounded-2xl rounded-tr-md px-3.5 py-2.5 shadow-sm">
-                                <p className="text-sm">{msg.text}</p>
+                            <div className="max-w-[75%] bg-[#6366f1] text-white rounded-3xl rounded-tr-md px-4 py-3 shadow-md">
+                                <p className="text-sm font-medium leading-relaxed">{msg.text}</p>
                             </div>
                         )}
                     </div>
@@ -113,12 +114,13 @@ export default function AiTriageAssistant() {
 
                 {isLoading && (
                     <div className="flex justify-start">
-                        <div className="flex gap-2 items-center">
-                            <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center">
-                                <Bot size={14} className="text-indigo-600" />
+                        <div className="flex gap-3 items-center">
+                            <div className="w-8 h-8 rounded-full bg-[#0B132B] border border-slate-700/40 flex items-center justify-center shadow-sm">
+                                <Bot className="w-4 h-4 text-[#38bdf8]" />
                             </div>
-                            <div className="bg-white border border-gray-100 rounded-2xl rounded-tl-md px-4 py-3 shadow-sm">
-                                <Loader2 size={16} className="text-indigo-500 animate-spin" />
+                            <div className="bg-white border border-slate-100 rounded-3xl rounded-tl-md px-5 py-3.5 shadow-sm flex items-center gap-2">
+                                <Loader2 className="w-4 h-4 text-indigo-500 animate-spin" />
+                                <span className="text-xs text-slate-400 font-medium">Analyzing symptoms...</span>
                             </div>
                         </div>
                     </div>
@@ -127,25 +129,29 @@ export default function AiTriageAssistant() {
                 <div ref={chatEndRef} />
             </div>
 
-            {/* Input bar */}
-            <form onSubmit={handleSubmit} className="px-2 pb-2 pt-1">
-                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-2xl px-3 py-2 shadow-sm focus-within:border-indigo-300 focus-within:ring-2 focus-within:ring-indigo-100 transition-all">
+            {/* Input Bar */}
+            <form onSubmit={handleSubmit} className="pt-2 shrink-0">
+                <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-2xl px-4 py-3 shadow-sm focus-within:border-indigo-300 focus-within:ring-2 focus-within:ring-indigo-100/60 transition-all">
+                    <Sparkles className="w-4 h-4 text-slate-300 shrink-0" />
                     <input
                         type="text"
                         value={input}
                         onChange={e => setInput(e.target.value)}
-                        placeholder="Describe your symptoms..."
-                        className="flex-1 text-sm text-gray-800 placeholder-gray-400 outline-none bg-transparent"
+                        placeholder="Describe your symptoms (e.g. headache, fever, fatigue)..."
+                        className="flex-1 text-sm text-slate-800 placeholder-slate-400 outline-none bg-transparent font-medium"
                         disabled={isLoading}
                     />
                     <button
                         type="submit"
                         disabled={!input.trim() || isLoading}
-                        className="p-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 text-white rounded-xl transition-colors shadow-sm"
+                        className="p-2.5 bg-[#6366f1] hover:bg-[#5558e6] disabled:bg-slate-200 text-white rounded-xl transition-all shadow-sm cursor-pointer"
                     >
-                        <Send size={16} />
+                        <Send className="w-4 h-4" />
                     </button>
                 </div>
+                <p className="text-center text-[10px] text-slate-400 font-medium mt-2">
+                    AI triage assists diagnosis. Always consult a licensed physician for medical advice.
+                </p>
             </form>
         </div>
     );
@@ -157,33 +163,50 @@ function TriageCard({ risk, symptoms, disease, recommendation, predictions }) {
     const Icon = config.icon;
 
     const colorMap = {
-        emerald: { bg: 'bg-emerald-50', border: 'border-emerald-200', badge: 'bg-emerald-100 text-emerald-700', icon: 'text-emerald-600' },
-        amber:   { bg: 'bg-amber-50',   border: 'border-amber-200',   badge: 'bg-amber-100 text-amber-700',     icon: 'text-amber-600' },
-        red:     { bg: 'bg-red-50',      border: 'border-red-200',     badge: 'bg-red-100 text-red-700',         icon: 'text-red-600' },
+        emerald: {
+            bg: 'bg-emerald-50', border: 'border-emerald-200',
+            badge: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+            icon: 'text-emerald-600', symptomBg: 'bg-white border-emerald-100 text-emerald-800',
+            diseaseBar: 'bg-emerald-600'
+        },
+        amber: {
+            bg: 'bg-amber-50', border: 'border-amber-200',
+            badge: 'bg-amber-100 text-amber-700 border-amber-200',
+            icon: 'text-amber-600', symptomBg: 'bg-white border-amber-100 text-amber-800',
+            diseaseBar: 'bg-amber-500'
+        },
+        red: {
+            bg: 'bg-rose-50', border: 'border-rose-200',
+            badge: 'bg-rose-100 text-rose-700 border-rose-200',
+            icon: 'text-rose-600', symptomBg: 'bg-white border-rose-100 text-rose-800',
+            diseaseBar: 'bg-rose-600'
+        },
     };
     const c = colorMap[config.color];
 
-    const topPrediction = (predictions && predictions.length > 0) ? predictions[0] : null;
+    const topPrediction = predictions?.[0];
     const description = topPrediction?.description;
     const precautions = topPrediction?.precautions;
 
     return (
-        <div className={`${c.bg} border ${c.border} rounded-2xl rounded-tl-md p-3.5 shadow-sm space-y-2.5`}>
-            {/* Risk badge */}
+        <div className={`${c.bg} border ${c.border} rounded-3xl rounded-tl-md p-5 shadow-sm space-y-4 max-w-[480px]`}>
+            {/* Risk Badge */}
             <div className="flex items-center gap-2">
-                <Icon size={16} className={c.icon} />
-                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${c.badge}`}>
+                <div className={`w-8 h-8 rounded-xl ${c.badge.split(' ')[0]} flex items-center justify-center border ${c.badge.split(' ')[2]}`}>
+                    <Icon className={`w-4 h-4 ${c.icon}`} />
+                </div>
+                <span className={`text-xs font-extrabold px-2.5 py-1 rounded-xl border uppercase tracking-wider ${c.badge}`}>
                     {config.label}
                 </span>
             </div>
 
-            {/* Symptoms */}
-            {symptoms && symptoms.length > 0 && (
+            {/* Detected Symptoms */}
+            {symptoms?.length > 0 && (
                 <div>
-                    <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Detected Symptoms</p>
+                    <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Detected Symptoms</p>
                     <div className="flex flex-wrap gap-1.5">
                         {symptoms.map((s, i) => (
-                            <span key={i} className="text-xs bg-white/80 border border-gray-200 text-gray-700 px-2 py-0.5 rounded-lg">
+                            <span key={i} className={`text-[10px] font-bold px-2.5 py-1 rounded-xl border ${c.symptomBg}`}>
                                 {s}
                             </span>
                         ))}
@@ -191,33 +214,34 @@ function TriageCard({ risk, symptoms, disease, recommendation, predictions }) {
                 </div>
             )}
 
-            {/* Predicted Disease */}
+            {/* AI Prediction */}
             {disease && (
                 <div>
-                    <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">AI Prediction</p>
-                    <p className="text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-100 p-2 rounded-lg">
-                        {disease}
-                    </p>
+                    <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">AI Prediction</p>
+                    <div className="bg-white/70 border border-indigo-100 rounded-xl p-3 flex items-center gap-2">
+                        <div className="w-1.5 h-6 rounded-full bg-indigo-500 shrink-0"></div>
+                        <p className="text-xs font-bold text-indigo-800">{disease}</p>
+                    </div>
                 </div>
             )}
 
-            {/* Description */}
+            {/* Disease Description */}
             {description && (
                 <div>
-                    <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">About Disease</p>
-                    <p className="text-xs text-gray-600 leading-relaxed bg-white/60 p-2 rounded-lg border border-gray-200">
+                    <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">About</p>
+                    <p className="text-xs text-slate-600 leading-relaxed font-medium bg-white/60 p-3 rounded-xl border border-slate-100">
                         {description}
                     </p>
                 </div>
             )}
 
             {/* Precautions */}
-            {precautions && precautions.length > 0 && (
+            {precautions?.length > 0 && (
                 <div>
-                    <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Recommended Precautions</p>
+                    <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Recommended Precautions</p>
                     <div className="flex flex-wrap gap-1.5">
                         {precautions.map((p, i) => (
-                            <span key={i} className="text-xs bg-indigo-50/50 border border-indigo-100 text-indigo-700 px-2 py-0.5 rounded-lg font-medium">
+                            <span key={i} className="text-[10px] font-bold px-2.5 py-1 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-700">
                                 {p}
                             </span>
                         ))}
@@ -226,7 +250,11 @@ function TriageCard({ risk, symptoms, disease, recommendation, predictions }) {
             )}
 
             {/* Recommendation */}
-            <p className="text-xs text-gray-600 leading-relaxed font-medium">{recommendation}</p>
+            {recommendation && (
+                <p className="text-xs text-slate-600 leading-relaxed font-medium border-t border-slate-200/60 pt-3">
+                    {recommendation}
+                </p>
+            )}
         </div>
     );
 }

@@ -50,7 +50,8 @@ exports.login = async (req, res) => {
             role: user.role,
             service_id: user.service_id,
             clinic_id: user.resolved_clinic_id,
-            clinic_name: user.clinic_name
+            clinic_name: user.clinic_name,
+            language: user.language || 'en'
         };
 
         const token = jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '24h' });
@@ -109,7 +110,8 @@ exports.signupPatient = async (req, res) => {
             name: name,
             email: email,
             role: 'Patient',
-            service_id: null
+            service_id: null,
+            language: 'en'
         };
         const token = jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '24h' });
 
@@ -173,5 +175,27 @@ exports.registerClinic = async (req, res) => {
         await db.query('ROLLBACK');
         console.error("Clinic registration error:", error);
         res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+};
+
+exports.updateLanguage = async (req, res) => {
+    try {
+        const { language } = req.body;
+        const userId = req.user.id;
+
+        if (!language || !['en', 'hi', 'pa'].includes(language)) {
+            return res.status(400).json({ success: false, message: 'Invalid language preference. Allowed: en, hi, pa.' });
+        }
+
+        await db.execute('UPDATE users SET language = ? WHERE id = ?', [language, userId]);
+
+        res.json({
+            success: true,
+            message: 'Language preference updated successfully.',
+            data: { language }
+        });
+    } catch (error) {
+        console.error("Update language error:", error);
+        res.status(500).json({ success: false, message: 'Internal server error', error: error.message });
     }
 };
