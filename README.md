@@ -165,8 +165,6 @@ The platform offers intelligent healthcare services such as:
 
 # 📂 Project Structure
 
-# 📂 Project Structure
-
 ```text
 ReadyNest-Group-Project/
 │
