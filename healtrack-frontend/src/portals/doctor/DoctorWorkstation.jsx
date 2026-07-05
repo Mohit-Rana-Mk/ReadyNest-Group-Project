@@ -45,7 +45,7 @@ export default function DoctorWorkstation() {
         fetchAppointments();
         
         // Setup Socket.io connection
-        const socket = io('https://healtrack-backend-7h3o.onrender.com');
+        const socket = io(SOCKET_URL);
         
         socket.on('QUEUE_UPDATE', (data) => {
             console.log("Realtime event received: QUEUE_UPDATE", data);

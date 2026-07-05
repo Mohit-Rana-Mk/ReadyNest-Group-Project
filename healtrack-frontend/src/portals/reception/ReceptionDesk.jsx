@@ -3,7 +3,7 @@ import { KpiBanner } from './components/KpiBanner';
 import { OpdQueueTable } from './components/OpdQueueTable';
 import { WalkInModal } from './components/WalkInModal';
 import { UserPlus, Bell, LogOut, Activity, Clock, Users, CheckCircle, Search, Loader2 } from 'lucide-react';
-import axiosClient from '../../api/axiosClient';
+import axiosClient, { SOCKET_URL } from '../../api/axiosClient';
 import { io } from 'socket.io-client';
 import { useAuth } from '../../context/AuthContext';
 
@@ -52,7 +52,7 @@ export default function ReceptionDesk() {
 
   useEffect(() => {
     fetchQueue();
-    const socket = io('https://healtrack-backend-7h3o.onrender.com');
+    const socket = io(SOCKET_URL);
     socket.on('QUEUE_UPDATE', (data) => {
       if (data.message) {
         setNotification(data.message);

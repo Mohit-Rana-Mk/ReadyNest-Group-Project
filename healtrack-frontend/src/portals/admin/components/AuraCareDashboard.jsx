@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Chart, registerables } from 'chart.js';
 import { io } from 'socket.io-client';
-import axiosClient from '../../../api/axiosClient';
+import axiosClient, { SOCKET_URL } from '../../../api/axiosClient';
 import './AuraCareDashboard.css';
 
 // Import Icons from Lucide
@@ -382,7 +382,7 @@ export function AuraCareDashboard() {
 
     // Setup Socket.io listener for new alerts
     useEffect(() => {
-        const socket = io('https://healtrack-backend-7h3o.onrender.com');
+        const socket = io(SOCKET_URL);
         
         socket.on('NEW_ALERT', (data) => {
             console.log("AuraCare Dashboard received NEW_ALERT:", data);

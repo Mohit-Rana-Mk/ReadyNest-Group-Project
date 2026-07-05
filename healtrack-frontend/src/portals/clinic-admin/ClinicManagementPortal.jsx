@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LayoutDashboard, Users, Grid, Activity, FileText, Settings, LogOut, Menu, X, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import axiosClient from '../../api/axiosClient';
+import axiosClient, { SOCKET_URL } from '../../api/axiosClient';
 
 import { AnalyticsDashboard } from './components/AnalyticsDashboard';
 import { OutbreakAlerts } from './components/OutbreakAlerts';
@@ -52,7 +52,7 @@ export default function ClinicManagementPortal() {
   useEffect(() => {
     fetchPortalData();
     
-    const socket = io('https://healtrack-backend-7h3o.onrender.com');
+    const socket = io(SOCKET_URL);
     socket.on('QUEUE_UPDATE', (data) => {
         fetchPortalData();
     });

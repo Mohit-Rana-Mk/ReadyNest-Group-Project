@@ -108,7 +108,8 @@ async function runOutbreakCheck(io) {
                     // Check if pending alert already exists
                     const [existingAlert] = await db.query(
                         `SELECT id FROM preventive_recommendations 
-                         WHERE patient_id = ? AND alert_title = ? AND status = 'Pending'`,
+                         WHERE patient_id = ? AND alert_title = ? 
+                         AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)`,
                         [patient.id, alertTitle]
                     );
 

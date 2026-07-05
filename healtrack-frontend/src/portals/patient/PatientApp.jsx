@@ -11,6 +11,7 @@ import { fetchRecommendations, fetchClinics, fetchAppointments, dismissRecommend
 import { io } from 'socket.io-client';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
+import { SOCKET_URL } from '../../api/axiosClient';
 
 export default function PatientApp() {
     const { t } = useTranslation();
@@ -37,7 +38,7 @@ export default function PatientApp() {
         };
         loadData();
 
-        const socket = io('https://healtrack-backend-7h3o.onrender.com');
+        const socket = io(SOCKET_URL);
         socket.on('QUEUE_UPDATE', () => {
             loadData();
         });
