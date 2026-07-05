@@ -52,6 +52,7 @@ export default function PatientApp() {
 
     const handleDismissAlert = async (id) => {
         setRecommendations(prev => prev.filter(r => r.id !== id));
+        if (typeof id === 'string' && id.startsWith('mock-')) return;
         try {
             await dismissRecommendation(id);
         } catch (error) {

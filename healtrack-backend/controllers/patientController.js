@@ -32,6 +32,8 @@ exports.getRecommendations = async (req, res) => {
 exports.dismissRecommendation = async (req, res) => {
     try {
         const { id } = req.params;
+        if (isNaN(id)) return res.status(200).json({ success: true, message: 'Mock recommendation dismissed' });
+        
         const [patientRows] = await db.query('SELECT id FROM patients WHERE user_id = ?', [req.user.id]);
         if (patientRows.length === 0) return res.status(404).json({ message: 'Patient not found' });
         const actualPatientId = patientRows[0].id;
