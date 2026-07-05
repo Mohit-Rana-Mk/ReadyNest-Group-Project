@@ -3,16 +3,9 @@ import { ShieldCheck, X, Calendar, ChevronRight, AlertTriangle } from 'lucide-re
 import { dismissRecommendation } from '../../../api/patientApi';
 
 export default function PreventiveAlertBanner({ recommendations, onBookNow, onDismiss }) {
-    // If no database recommendations, default to the Dengue mock alert from reference images
-    const alertList = (recommendations && recommendations.length > 0) ? recommendations : [
-        {
-            id: 'mock-dengue-alert',
-            alert_title: 'Epidemic Alert: Dengue Spread',
-            alert_description: 'Alert: Elevated caseload trend observed for Dengue. Public awareness, sanitization campaigns, and diagnostic scaling are recommended to prevent further spread.',
-            target_service: 'General Medicine',
-            isMock: true
-        }
-    ];
+    const alertList = recommendations || [];
+
+    if (alertList.length === 0) return null;
 
     const handleDismiss = (id) => {
         if (onDismiss) {
