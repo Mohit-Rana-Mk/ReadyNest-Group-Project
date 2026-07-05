@@ -20,7 +20,8 @@ export default function ClinicDiscovery() {
         patient_id: '',
         appointment_date: '',
         doctor_id: '',
-        department_id: ''
+        department_id: '',
+        consultation_type: 'In-Person'
     });
     const [clinicDoctors, setClinicDoctors] = useState([]);
     
@@ -119,7 +120,8 @@ export default function ClinicDiscovery() {
                 ...prev, 
                 patient_id: family.length > 0 ? family[0].id : '',
                 doctor_id: doctors.length > 0 ? doctors[0].id : '',
-                department_id: ''
+                department_id: '',
+                consultation_type: 'In-Person'
             }));
             
             const waitData = await fetchClinicWaitTime(clinic.id);
@@ -150,7 +152,8 @@ export default function ClinicDiscovery() {
                 clinic_id: selectedClinic.id,
                 doctor_id: bookingData.doctor_id,
                 patient_id: finalPatientId,
-                appointment_date: bookingData.appointment_date
+                appointment_date: bookingData.appointment_date,
+                consultation_type: bookingData.consultation_type
             });
             setBookingSuccess(true);
             setTimeout(() => {
@@ -442,6 +445,33 @@ export default function ClinicDiscovery() {
                                 onChange={(e) => setBookingData({...bookingData, appointment_date: e.target.value})}
                                 className="w-full border border-gray-300 rounded-md py-2 px-3 text-sm focus:ring-indigo-500 focus:border-indigo-500"
                             />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Consultation Type</label>
+                            <div className="flex space-x-4">
+                                <label className="flex items-center space-x-2">
+                                    <input 
+                                        type="radio" 
+                                        name="consultation_type" 
+                                        value="In-Person" 
+                                        checked={bookingData.consultation_type === 'In-Person'}
+                                        onChange={(e) => setBookingData({...bookingData, consultation_type: e.target.value})}
+                                        className="text-indigo-600 focus:ring-indigo-500"
+                                    />
+                                    <span className="text-sm text-gray-700">In-Person</span>
+                                </label>
+                                <label className="flex items-center space-x-2">
+                                    <input 
+                                        type="radio" 
+                                        name="consultation_type" 
+                                        value="Teleconsultation" 
+                                        checked={bookingData.consultation_type === 'Teleconsultation'}
+                                        onChange={(e) => setBookingData({...bookingData, consultation_type: e.target.value})}
+                                        className="text-indigo-600 focus:ring-indigo-500"
+                                    />
+                                    <span className="text-sm text-gray-700">Teleconsultation</span>
+                                </label>
+                            </div>
                         </div>
                         <div className="pt-4 flex justify-end space-x-3 border-t border-gray-200">
                             <Button type="button" variant="outline" onClick={() => setIsBookingModalOpen(false)}>Cancel</Button>

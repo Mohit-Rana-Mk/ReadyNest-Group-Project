@@ -3,7 +3,7 @@ import axiosClient from '../../api/axiosClient';
 import { ENDPOINTS } from '../../api/endpoints';
 
 // Import Icons from Lucide
-import { Search, Monitor, CheckCircle2, LogOut, Users } from 'lucide-react';
+import { Search, Monitor, CheckCircle2, LogOut, Users, Video } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { io } from 'socket.io-client';
 
@@ -259,6 +259,12 @@ export default function DoctorWorkstation() {
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-3 text-sm font-semibold">
+                                        {selectedAppointment.consultation_type === 'Teleconsultation' && (
+                                            <span className="px-2 md:px-3 py-1 rounded-full border text-xs md:text-sm bg-blue-50 text-blue-700 border-blue-200 flex items-center gap-1">
+                                                <Video size={14} />
+                                                Teleconsultation
+                                            </span>
+                                        )}
                                         <span className={`px-2 md:px-3 py-1 rounded-full border text-xs md:text-sm ${
                                             selectedAppointment.status === 'Completed' 
                                                 ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
@@ -302,26 +308,37 @@ export default function DoctorWorkstation() {
                                 </div>
 
                                 {/* ATOMIC SIGN-OFF BAR */}
-                                <div className="sticky lg:absolute bottom-0 left-0 right-0 bg-white border-t border-[#e9ecef] p-3 md:p-4 flex flex-col sm:flex-row justify-between items-center gap-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-10">
-                                    <div className="text-sm font-medium">
+                                <div className="border-t border-slate-200 p-4 lg:p-6 bg-white flex flex-col sm:flex-row justify-between items-center gap-4">
+                                    <div className="text-sm font-semibold text-slate-500">
                                         {submitStatus.message && (
-                                            <span className={submitStatus.type === 'error' ? 'text-red-500' : 'text-emerald-600'}>
+                                            <span className={submitStatus.type === 'error' ? 'text-red-500' : 'text-indigo-600'}>
                                                 {submitStatus.message}
                                             </span>
                                         )}
                                     </div>
-                                    <button
-                                        onClick={handleSubmitConsultation}
-                                        disabled={selectedAppointment.status === 'Completed'}
-                                        className={`w-full sm:w-auto px-4 md:px-6 py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm ${
-                                            selectedAppointment.status === 'Completed'
-                                                ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
-                                                : 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-md'
-                                        }`}
-                                    >
-                                        <CheckCircle2 className="w-5 h-5" />
-                                        {selectedAppointment.status === 'Completed' ? 'Completed' : 'Sign & Complete'}
-                                    </button>
+                                    <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                                        {selectedAppointment.consultation_type === 'Teleconsultation' && selectedAppointment.meeting_link && selectedAppointment.status !== 'Completed' && (
+                                            <button 
+                                                onClick={() => window.open(selectedAppointment.meeting_link, '_blank')}
+                                                className="w-full sm:w-auto px-4 md:px-6 py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm bg-blue-600 hover:bg-blue-700 text-white shadow-md"
+                                            >
+                                                <Video className="w-5 h-5" />
+                                                Join Video Call
+                                            </button>
+                                        )}
+                                        <button 
+                                            onClick={handleSubmitConsultation}
+                                            disabled={selectedAppointment.status === 'Completed'}
+                                            className={`w-full sm:w-auto px-4 md:px-6 py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm ${
+                                                selectedAppointment.status === 'Completed'
+                                                    ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                                                    : 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-md'
+                                            }`}
+                                        >
+                                            <CheckCircle2 className="w-5 h-5" />
+                                            {selectedAppointment.status === 'Completed' ? 'Completed' : 'Sign & Complete'}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         )}

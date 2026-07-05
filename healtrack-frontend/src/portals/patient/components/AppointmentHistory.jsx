@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Clock, User, Building2, FileText } from 'lucide-react';
+import { Calendar, Clock, User, Building2, FileText, Video } from 'lucide-react';
 
 const statusColors = {
     'Scheduled':       'bg-indigo-50 text-indigo-700 border-indigo-200',
@@ -80,7 +80,7 @@ export default function AppointmentHistory({ appointments }) {
                                 </span>
                             </div>
 
-                            <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-50">
+                            <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-50 flex-wrap">
                                 <div className="flex items-center gap-1.5 text-xs text-gray-500">
                                     <Calendar size={12} />
                                     {date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -89,6 +89,12 @@ export default function AppointmentHistory({ appointments }) {
                                     <Clock size={12} />
                                     {date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                                 </div>
+                                {appt.consultation_type === 'Teleconsultation' && (
+                                    <div className="flex items-center gap-1 text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-200">
+                                        <Video size={10} />
+                                        Teleconsultation
+                                    </div>
+                                )}
                             </div>
 
                             {/* Pre Remarks */}
@@ -166,6 +172,19 @@ export default function AppointmentHistory({ appointments }) {
                                         <FileText size={14} />
                                         View Report
                                     </a>
+                                </div>
+                            )}
+
+                            {/* Join Call Button */}
+                            {appt.consultation_type === 'Teleconsultation' && appt.meeting_link && appt.status !== 'Completed' && appt.status !== 'Cancelled' && (
+                                <div className="pt-3">
+                                    <button 
+                                        onClick={() => window.open(appt.meeting_link, '_blank')}
+                                        className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-lg transition-colors"
+                                    >
+                                        <Video size={14} />
+                                        Join Video Call
+                                    </button>
                                 </div>
                             )}
                         </div>

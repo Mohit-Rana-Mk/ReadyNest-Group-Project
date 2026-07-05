@@ -83,6 +83,8 @@ CREATE TABLE appointments (
     appointment_date DATETIME NOT NULL,
     status ENUM('Scheduled', 'Checked-In', 'In Consultation', 'Completed', 'Cancelled') DEFAULT 'Scheduled',
     booking_source ENUM('App', 'Portal', 'Walk-in') DEFAULT 'App',
+    consultation_type ENUM('In-Person', 'Teleconsultation') DEFAULT 'In-Person',
+    meeting_link VARCHAR(255) NULL,
     pre_remarks TEXT NULL,  
     post_remarks TEXT NULL, 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

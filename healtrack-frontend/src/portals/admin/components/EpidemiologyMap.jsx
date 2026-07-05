@@ -15,7 +15,7 @@ L.Icon.Default.mergeOptions({
 const createGlowingIcon = (risk, count, diagnosis) => {
     const scale = Math.min(count * 4, 30); // Cap the scale
     const baseColor = risk === 'High' ? 'red' : 'yellow';
-    
+
     const htmlString = `
         <div class="relative flex items-center justify-center" style="width: 24px; height: 24px; transform: translate(-50%, -50%);">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-${baseColor}-400" style="width: ${scale * 2}px; height: ${scale * 2}px"></span>
@@ -47,8 +47,8 @@ export function EpidemiologyMap({ outbreakStats, filter, setFilter }) {
                         <h3 className="font-bold text-slate-800 text-base">Geospatial Outbreak Heatmap</h3>
                         <p className="text-xs text-slate-400">Platform-wide disease tracking based on active prescriptions and clinic coordinates (SRID 4326).</p>
                     </div>
-                    <select 
-                        value={filter} 
+                    <select
+                        value={filter}
                         onChange={(e) => setFilter(Number(e.target.value))}
                         className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-gray-50 text-gray-700 outline-none focus:border-indigo-500 font-semibold shadow-sm"
                     >
@@ -58,7 +58,7 @@ export function EpidemiologyMap({ outbreakStats, filter, setFilter }) {
                         <option value={365}>Last 1 Year</option>
                     </select>
                 </div>
-                
+
                 {/* Interactive Leaflet Map */}
                 <div className="flex-1 bg-slate-100 rounded-xl relative overflow-hidden border border-slate-200/50 flex items-center justify-center z-0">
                     <MapContainer center={mapCenter} zoom={mapZoom} style={{ height: '100%', width: '100%', zIndex: 0 }} zoomControl={false}>
@@ -69,17 +69,14 @@ export function EpidemiologyMap({ outbreakStats, filter, setFilter }) {
                         {outbreakStats.locations && outbreakStats.locations.map((loc, idx) => {
                             if (!loc.latitude || !loc.longitude) return null;
                             const customIcon = createGlowingIcon(loc.risk, loc.count, loc.diagnosis);
-                            
+
                             const lat = parseFloat(loc.latitude);
                             const lng = parseFloat(loc.longitude);
-                            // Add deterministic jitter so markers at the exact same location don't overlap text
-                            const jitterLat = (loc.diagnosis.charCodeAt(0) % 10 - 5) * 0.15;
-                            const jitterLng = (loc.diagnosis.charCodeAt(loc.diagnosis.length - 1) % 10 - 5) * 0.15;
-                            
+
                             return (
-                                <Marker 
+                                <Marker
                                     key={`${loc.id}-${idx}`}
-                                    position={[lat + jitterLat, lng + jitterLng]}
+                                    position={[lat, lng]}
                                     icon={customIcon}
                                 />
                             );
@@ -101,8 +98,8 @@ export function EpidemiologyMap({ outbreakStats, filter, setFilter }) {
                                     <span className="font-semibold text-slate-500">{t.count} cases</span>
                                 </div>
                                 <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                    <div 
-                                        className="bg-indigo-700 h-full rounded-full transition-all" 
+                                    <div
+                                        className="bg-indigo-700 h-full rounded-full transition-all"
                                         style={{ width: `${Math.min((t.count / filter) * 100, 100)}%` }}
                                     ></div>
                                 </div>

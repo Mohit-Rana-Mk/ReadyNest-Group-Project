@@ -27,6 +27,8 @@ exports.getAppointments = async (req, res) => {
                 a.appointment_date,
                 a.status,
                 a.booking_source,
+                a.consultation_type,
+                a.meeting_link,
                 a.pre_remarks,
                 a.post_remarks,
                 p.id AS patient_id,

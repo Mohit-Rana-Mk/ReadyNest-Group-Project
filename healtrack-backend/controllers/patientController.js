@@ -263,7 +263,9 @@ exports.submitTriage = async (req, res) => {
                             }];
 
                             let recommendation = '';
-                            if (isFollowUpCause) {
+                            if (isFollowUpCause && isFollowUpPrecaution) {
+                                recommendation = `Here is what causes ${infoData.disease}: ${infoData.description}\n\nTo manage/prevent it, you should follow these precautions: ${infoData.precautions.join(', ')}.`;
+                            } else if (isFollowUpCause) {
                                 recommendation = `Here is what causes ${infoData.disease}: ${infoData.description}`;
                             } else if (isFollowUpPrecaution) {
                                 recommendation = `To manage/prevent ${infoData.disease}, you should follow these precautions: ${infoData.precautions.join(', ')}.`;
@@ -339,7 +341,7 @@ exports.submitTriage = async (req, res) => {
                         }];
 
                         // Cache the disease name for context memory
-                        patientLastDiseaseCache[actualPatientId] = infoData.disease;
+                        patientLastDiseaseCache[`${req.user.id}_${actualPatientId}`] = infoData.disease;
 
                         let recommendation = 'Monitor your symptoms. If they persist for more than 48 hours, consider a visit.';
                         if (predictedRisk === 'Urgent') {
@@ -496,6 +498,7 @@ exports.getAppointments = async (req, res) => {
     try {
         const [appointments] = await db.query(
             `SELECT a.id, a.appointment_date, a.status, a.pre_remarks, a.post_remarks,
+                    a.consultation_type, a.meeting_link,
                     c.name AS clinic_name, du.name AS doctor_name,
                     v.weight_kg, v.height_cm, v.systolic_bp, v.diastolic_bp, v.blood_sugar_mgdl, v.pulse_rate,
                     pr.report_url, pr.file_name,
@@ -534,6 +537,7 @@ exports.getFamilyAppointments = async (req, res) => {
     try {
         const [appointments] = await db.query(
             `SELECT a.id, a.appointment_date, a.status, a.pre_remarks, a.post_remarks,
+                    a.consultation_type, a.meeting_link,
                     c.name AS clinic_name, du.name AS doctor_name,
                     p.id AS patient_id, p.name AS patient_name,
                     v.weight_kg, v.height_cm, v.systolic_bp, v.diastolic_bp, v.blood_sugar_mgdl, v.pulse_rate,
@@ -677,7 +681,7 @@ exports.getClinicDoctors = async (req, res) => {
 // F. Appointment Management (Book, Cancel, Reschedule)
 // ─────────────────────────────────────────────────────────────
 exports.bookAppointment = async (req, res) => {
-    const { clinic_id, doctor_id, patient_id, appointment_date } = req.body;
+    const { clinic_id, doctor_id, patient_id, appointment_date, consultation_type } = req.body;
     
     console.log("BOOK APPT PAYLOAD:", req.body);
     if (!clinic_id || !doctor_id || !patient_id || !appointment_date) {
@@ -690,10 +694,17 @@ exports.bookAppointment = async (req, res) => {
     }
 
     try {
+        const cType = consultation_type === 'Teleconsultation' ? 'Teleconsultation' : 'In-Person';
+        let meetingLink = null;
+        if (cType === 'Teleconsultation') {
+            const crypto = require('crypto');
+            meetingLink = `https://meet.jit.si/HealTrack_${crypto.randomUUID()}`;
+        }
+
         await db.execute(
-            `INSERT INTO appointments (clinic_id, doctor_id, patient_id, appointment_date, status, booking_source)
-             VALUES (?, ?, ?, ?, 'Scheduled', 'App')`,
-            [clinic_id, doctor_id, patient_id, appointment_date]
+            `INSERT INTO appointments (clinic_id, doctor_id, patient_id, appointment_date, status, booking_source, consultation_type, meeting_link)
+             VALUES (?, ?, ?, ?, 'Scheduled', 'App', ?, ?)`,
+            [clinic_id, doctor_id, patient_id, appointment_date, cType, meetingLink]
         );
         if (req.io) req.io.emit('QUEUE_UPDATE', { clinicId: clinic_id });
         res.status(201).json({ message: 'Appointment booked successfully' });
