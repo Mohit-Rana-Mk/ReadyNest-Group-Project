@@ -165,18 +165,33 @@ The platform offers intelligent healthcare services such as:
 
 # 📂 Project Structure
 
+# 📂 Project Structure
+
 ```text
 ReadyNest-Group-Project/
 │
-├── frontend/                 # React Frontend
-├── backend/                  # Node.js Backend
-├── healtrack-ml-service/     # FastAPI Machine Learning Service
-├── documentation/            # Project Documentation
-├── assets/                   # Images & Resources
-└── README.md
+├── healtrack-frontend/              # React.js Frontend (PWA)
+│
+├── healtrack-backend/               # Node.js + Express Backend APIs
+│
+├── healtrack-ml-service/            # FastAPI Machine Learning Service
+│
+├── healtrack-disease-prediction/    # ML Models & Disease Prediction Research
+│
+├── docker-compose.yml               # Multi-service Docker configuration
+│
+├── team_project.sql                 # Database schema & sample data
+│
+├── ReadyNest Team Project Report.pdf# Project documentation
+│
+├── app_instructions.md              # Application setup guide
+│
+├── README.md                        # Project overview
+│
+├── LICENSE                          # MIT License
+│
+└── .gitignore
 ```
-
----
 
 # ⚙️ Getting Started
 
