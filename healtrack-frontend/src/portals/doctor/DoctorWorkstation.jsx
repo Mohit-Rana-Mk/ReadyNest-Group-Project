@@ -278,7 +278,7 @@ export default function DoctorWorkstation() {
                                 {/* Split Panes — Stack on mobile, side-by-side on desktop */}
                                 <div className="flex-1 flex flex-col lg:flex-row gap-4 lg:gap-6 p-4 lg:p-6 overflow-y-auto lg:overflow-hidden">
                                     {/* Left Pane: History Timeline */}
-                                    <div className="lg:flex-1 min-w-0">
+                                    <div className="lg:flex-1 min-w-0 flex flex-col lg:h-full lg:overflow-hidden">
                                         <HistoryTimeline patientHistory={patientHistory} loadingHistory={loadingHistory} />
                                     </div>
                                     

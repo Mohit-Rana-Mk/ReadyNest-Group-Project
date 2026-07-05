@@ -21,7 +21,7 @@ export function HistoryTimeline({ patientHistory, loadingHistory }) {
     }
 
     return (
-        <div className="flex-1 bg-white border border-[#e9ecef] rounded-2xl shadow-sm flex flex-col overflow-hidden">
+        <div className="flex-1 w-full h-full bg-white border border-[#e9ecef] rounded-2xl shadow-sm flex flex-col overflow-hidden">
             <div className="p-5 border-b border-[#e9ecef] bg-slate-50 flex justify-between items-center shrink-0">
                 <h3 className="font-bold text-slate-800 flex items-center gap-2">
                     <Clock className="w-4 h-4 text-emerald-600" />
