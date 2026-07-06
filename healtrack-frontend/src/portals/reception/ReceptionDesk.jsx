@@ -6,6 +6,9 @@ import { UserPlus, Bell, LogOut, Activity, Clock, Users, CheckCircle, Search, Lo
 import axiosClient, { SOCKET_URL } from '../../api/axiosClient';
 import { io } from 'socket.io-client';
 import { useAuth } from '../../context/AuthContext';
+import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
+import { Select } from '../../components/ui/Select';
 
 export default function ReceptionDesk() {
   const { user, logout } = useAuth();
@@ -170,12 +173,13 @@ export default function ReceptionDesk() {
             <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
             {activeQueue.length} Active in Queue
           </div>
-          <button
+          <Button
+            variant="outline"
             onClick={logout}
-            className="p-2 text-slate-300 hover:text-white bg-slate-800/30 hover:bg-slate-800/60 rounded-xl transition border border-slate-800/40 cursor-pointer"
+            className="p-2 text-slate-300 hover:text-white bg-slate-800/30 hover:bg-slate-800/60 rounded-xl transition border-slate-800/40 cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
       </header>
 
@@ -236,7 +240,7 @@ export default function ReceptionDesk() {
               <div>
                 <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Phone (Patient Lookup)</label>
                 <div className="relative">
-                  <input
+                  <Input
                     type="tel"
                     value={walkInPhone}
                     onChange={(e) => setWalkInPhone(e.target.value)}
@@ -253,7 +257,7 @@ export default function ReceptionDesk() {
                 {existingPatients.length > 0 && (
                   <div className="mt-2 p-3 bg-indigo-50 border border-indigo-100 rounded-xl">
                     <label className="block text-[10px] font-extrabold uppercase tracking-wider text-indigo-500 mb-1.5">Select Family Member</label>
-                    <select
+                    <Select
                       value={selectedPatientId}
                       onChange={(e) => {
                         const val = e.target.value;
@@ -270,7 +274,7 @@ export default function ReceptionDesk() {
                         <option key={p.id} value={p.id}>{p.name} {p.mrn ? `(${p.mrn})` : ''}</option>
                       ))}
                       <option value="new">+ Add New Family Member</option>
-                    </select>
+                    </Select>
                   </div>
                 )}
               </div>
@@ -278,7 +282,7 @@ export default function ReceptionDesk() {
               {/* Patient Name */}
               <div>
                 <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Patient Name *</label>
-                <input
+                <Input
                   type="text"
                   required
                   value={walkInName}
@@ -293,7 +297,7 @@ export default function ReceptionDesk() {
               {(selectedPatientId === 'new' || existingPatients.length === 0) && (
                 <div>
                   <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Date of Birth</label>
-                  <input
+                  <Input
                     type="date"
                     value={walkInDob}
                     onChange={(e) => setWalkInDob(e.target.value)}
@@ -305,7 +309,7 @@ export default function ReceptionDesk() {
               {/* Assign Doctor */}
               <div>
                 <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Assign Doctor *</label>
-                <select
+                <Select
                   required
                   value={walkInDoctorId}
                   onChange={(e) => setWalkInDoctorId(e.target.value)}
@@ -315,7 +319,7 @@ export default function ReceptionDesk() {
                   {doctors.map(d => (
                     <option key={d.id} value={d.id}>Dr. {d.name} (₹{d.consultation_fee || 500})</option>
                   ))}
-                </select>
+                </Select>
               </div>
 
               {/* Pre-Consultation Remarks */}
@@ -330,16 +334,16 @@ export default function ReceptionDesk() {
                 />
               </div>
 
-              <button
+              <Button
                 type="submit"
                 disabled={walkInLoading}
-                className="w-full flex justify-center items-center gap-2 py-3.5 bg-[#6366f1] hover:bg-[#5558e6] disabled:bg-slate-300 text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all cursor-pointer"
+                className="w-full flex justify-center items-center gap-2 py-3.5 bg-[#6366f1] hover:bg-[#5558e6] disabled:bg-slate-300 text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all cursor-pointer border-none"
               >
                 {walkInLoading
                   ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> Registering...</>
                   : <><UserPlus className="w-4 h-4" /> Register & Add to Queue</>
                 }
-              </button>
+              </Button>
             </form>
           </div>
         </div>
@@ -355,7 +359,7 @@ export default function ReceptionDesk() {
               </div>
               <div className="relative w-full sm:w-56">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300" />
-                <input
+                <Input
                   type="text"
                   placeholder="Search patients..."
                   value={searchTerm}
@@ -393,14 +397,15 @@ export default function ReceptionDesk() {
                         {apt.status}
                       </span>
                       {(apt.status === 'Scheduled' || apt.status === 'Checked-In') && (
-                        <button
+                        <Button
+                          variant="outline"
                           onClick={() => handleStatusChange(apt.id, 'In Consultation')}
-                          className="px-3 py-1.5 bg-[#6366f1] hover:bg-[#5558e6] text-white text-[9px] font-extrabold uppercase tracking-wider rounded-lg transition cursor-pointer"
+                          className="px-3 py-1.5 bg-[#6366f1] hover:bg-[#5558e6] text-white text-[9px] font-extrabold uppercase tracking-wider rounded-lg transition cursor-pointer border-none"
                         >
                           Send In →
-                        </button>
+                        </Button>
                       )}
-                      <select
+                      <Select
                         value={apt.status}
                         onChange={(e) => handleStatusChange(apt.id, e.target.value)}
                         className="px-2 py-1.5 bg-[#F1F5F9] border-0 rounded-lg text-[9px] font-bold text-slate-600 focus:outline-none cursor-pointer"
@@ -408,7 +413,7 @@ export default function ReceptionDesk() {
                         {statusOptions.map(opt => (
                           <option key={opt} value={opt}>{opt}</option>
                         ))}
-                      </select>
+                      </Select>
                     </div>
                   </div>
                 ))}

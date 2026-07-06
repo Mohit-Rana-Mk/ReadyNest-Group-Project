@@ -5,6 +5,8 @@ import axiosClient from '../api/axiosClient';
 import { LogIn, Heart, Brain, Activity } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
 
 export default function Login() {
     const { t } = useTranslation();
@@ -113,7 +115,7 @@ export default function Login() {
 
                     {/* Right-Side: Form Card (6 columns) */}
                     <div className="lg:col-span-6 flex justify-center w-full">
-                        <div className="w-full max-w-[440px] bg-white p-8 sm:p-10 rounded-[32px] border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.02)]">
+                        <Card className="w-full max-w-[440px] p-8 sm:p-10 rounded-[32px] border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.02)]">
                             <div className="mb-6">
                                 <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">
                                     Sign in
@@ -155,10 +157,10 @@ export default function Login() {
                                 </div>
 
                                 <div className="pt-2">
-                                    <button
+                                    <Button
                                         type="submit"
                                         disabled={loading}
-                                        className="w-full flex justify-center items-center gap-2 py-3.5 bg-[#6366f1] hover:bg-[#5558e6] rounded-xl font-bold text-white text-xs uppercase tracking-widest transition-all duration-200"
+                                        className="w-full gap-2 py-3.5 bg-[#6366f1] hover:bg-[#5558e6] rounded-xl font-bold text-xs uppercase tracking-widest border-none"
                                     >
                                         {loading ? (
                                             <>
@@ -171,7 +173,7 @@ export default function Login() {
                                                 <LogIn className="w-4 h-4" />
                                             </>
                                         )}
-                                    </button>
+                                    </Button>
                                 </div>
                             </form>
                             
@@ -181,7 +183,7 @@ export default function Login() {
                                     Create an account
                                 </Link>
                             </div>
-                        </div>
+                        </Card>
                     </div>
 
                 </div>

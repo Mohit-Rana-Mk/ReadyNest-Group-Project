@@ -13,6 +13,7 @@ import { io } from 'socket.io-client';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
 import { SOCKET_URL } from '../../api/axiosClient';
+import { Button } from '../../components/ui/Button';
 
 export default function PatientApp() {
     const { t } = useTranslation();
@@ -140,13 +141,14 @@ export default function PatientApp() {
                             </p>
                         </div>
                     </div>
-                    <button 
+                    <Button 
+                        variant="outline"
                         onClick={logout} 
-                        className="w-full flex items-center justify-center gap-2 p-3 text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-white bg-slate-800/20 hover:bg-slate-800/40 rounded-xl transition-colors border border-slate-800/40 cursor-pointer"
+                        className="w-full flex items-center justify-center gap-2 p-3 text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-white bg-slate-800/20 hover:bg-slate-800/40 rounded-xl transition-colors border-slate-800/40"
                     >
                         <LogOut size={14} />
                         Sign Out
-                    </button>
+                    </Button>
                 </div>
             </aside>
 
@@ -170,12 +172,13 @@ export default function PatientApp() {
                         </div>
                         <div className="flex items-center gap-3">
                             <LanguageSwitcher />
-                            <button 
+                            <Button 
+                                variant="outline"
                                 onClick={logout} 
-                                className="p-2 text-slate-300 hover:text-white bg-slate-800/30 rounded-xl transition-colors border border-slate-800/40 cursor-pointer"
+                                className="p-2 text-slate-300 hover:text-white bg-slate-800/30 rounded-xl transition-colors border-slate-800/40"
                             >
                                 <LogOut size={16} />
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </header>

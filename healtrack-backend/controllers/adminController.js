@@ -1,17 +1,11 @@
 const db = require('../config/db');
+const adminService = require('../services/adminService');
 const outbreakNewsService = require('../services/outbreakNewsService');
 
 // 1. Clinic Onboarding & Verification Engine
 exports.getPendingClinics = async (req, res) => {
     try {
-        const [clinics] = await db.query(
-            `SELECT c.id, c.name, c.license_number, c.address, c.city, c.postal_code, c.created_at, c.latitude, c.longitude,
-                    u.name as admin_name, u.email as admin_email, u.phone as admin_phone
-             FROM clinics c
-             LEFT JOIN users u ON c.id = u.clinic_id AND u.role = 'ClinicAdmin'
-             WHERE c.verification_status = 'Pending' 
-             ORDER BY c.created_at DESC`
-        );
+        const clinics = await adminService.getPendingClinics();
         res.json({ success: true, data: clinics });
     } catch (error) {
         console.error("Error fetching pending clinics:", error);
@@ -21,36 +15,12 @@ exports.getPendingClinics = async (req, res) => {
 
 exports.verifyClinic = async (req, res) => {
     try {
-        const { clinicId, status } = req.body;
-        
-        if (!clinicId || !['Approved', 'Delisted', 'Suspended'].includes(status)) {
-            return res.status(400).json({ success: false, message: "Invalid clinicId or status parameter" });
-        }
-
-        await db.query('START TRANSACTION');
-
-        await db.query(
-            `UPDATE clinics SET verification_status = ? WHERE id = ?`,
-            [status, clinicId]
-        );
-
-        if (status === 'Approved') {
-            await db.query(
-                `UPDATE users SET status = 'Active' WHERE clinic_id = ?`,
-                [clinicId]
-            );
-        } else if (status === 'Delisted' || status === 'Suspended') {
-            await db.query(
-                `UPDATE users SET status = 'Suspended' WHERE clinic_id = ?`,
-                [clinicId]
-            );
-        }
-
-        await db.query('COMMIT');
-
-        res.json({ success: true, message: `Clinic status successfully updated to ${status}!` });
+        const result = await adminService.verifyClinic(req.body);
+        res.json(result);
     } catch (error) {
-        await db.query('ROLLBACK');
+        if (error.message === "Invalid clinicId or status parameter") {
+            return res.status(400).json({ success: false, message: error.message });
+        }
         console.error("Error updating clinic status:", error);
         res.status(500).json({ success: false, message: "Failed to update clinic status", error: error.message });
     }
@@ -58,23 +28,12 @@ exports.verifyClinic = async (req, res) => {
 
 exports.createClinic = async (req, res) => {
     try {
-        const { name, license_number, address, city, postal_code, latitude, longitude } = req.body;
-
-        if (!name || !license_number || !address || !city || !postal_code) {
-            return res.status(400).json({ success: false, message: "Missing required clinic information." });
-        }
-
-        const latVal = latitude ? parseFloat(latitude) : 0.0;
-        const lngVal = longitude ? parseFloat(longitude) : 0.0;
-
-        await db.query(
-            `INSERT INTO clinics (name, license_number, address, city, postal_code, latitude, longitude, verification_status) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, 'Approved')`,
-            [name, license_number, address, city, postal_code, latVal, lngVal]
-        );
-
-        res.json({ success: true, message: "Clinic successfully onboarded and set to Approved!" });
+        const result = await adminService.createClinic(req.body);
+        res.json(result);
     } catch (error) {
+        if (error.message === "Missing required clinic information.") {
+            return res.status(400).json({ success: false, message: error.message });
+        }
         console.error("Error creating clinic:", error);
         res.status(500).json({ success: false, message: "Failed to onboard clinic", error: error.message });
     }
@@ -83,43 +42,8 @@ exports.createClinic = async (req, res) => {
 // 2. Epidemiological Intelligence
 exports.getEpidemiologyTrends = async (req, res) => {
     try {
-        const days = parseInt(req.query.days) || 30;
-
-        // Fetch clinic locations for outbreak mapping
-        const [locations] = await db.query(
-            `SELECT c.id, c.name, 
-                    COALESCE(c.latitude, 28.6139) as latitude, 
-                    COALESCE(c.longitude, 77.2090) as longitude, 
-                    p.diagnosis, COUNT(p.id) as count,
-                    CASE WHEN COUNT(p.id) > 10 THEN 'High' ELSE 'Medium' END as risk
-             FROM clinics c
-             JOIN appointments a ON c.id = a.clinic_id
-             JOIN prescriptions p ON a.id = p.appointment_id
-             WHERE p.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
-             GROUP BY c.id, c.name, latitude, longitude, p.diagnosis
-             HAVING count > 0
-             ORDER BY count DESC`,
-            [days]
-        );
-
-        // Fetch top diagnosis counts in past X days
-        const [trends] = await db.query(
-            `SELECT diagnosis as label, COUNT(id) as count 
-             FROM prescriptions 
-             WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY) 
-             GROUP BY diagnosis 
-             ORDER BY count DESC 
-             LIMIT 5`,
-            [days]
-        );
-
-        res.json({
-            success: true,
-            data: {
-                locations,
-                trends: trends
-            }
-        });
+        const data = await adminService.getEpidemiologyTrends(req.query.days);
+        res.json({ success: true, data });
     } catch (error) {
         console.error("Error fetching epidemiology trends:", error);
         res.status(500).json({ success: false, message: "Failed to fetch epidemiology trends", error: error.message });
@@ -129,34 +53,8 @@ exports.getEpidemiologyTrends = async (req, res) => {
 // 3. Global AI System Health
 exports.getAiSystemHealth = async (req, res) => {
     try {
-        // Triage engine stats
-        const [triageStats] = await db.query(
-            `SELECT predicted_risk, COUNT(id) as count 
-             FROM ai_triage_logs 
-             GROUP BY predicted_risk`
-        );
-
-        // Proactive recommendations generated
-        const [[recommendationsCount]] = await db.query(
-            `SELECT COUNT(id) as count 
-             FROM preventive_recommendations`
-        );
-
-        // Map predicted risks
-        const riskMap = { Low: 0, Medium: 0, High: 0 };
-        triageStats.forEach(row => {
-            if (riskMap[row.predicted_risk] !== undefined) {
-                riskMap[row.predicted_risk] = row.count;
-            }
-        });
-
-        res.json({
-            success: true,
-            data: {
-                triageRiskRatios: riskMap,
-                preventiveRecsSent: recommendationsCount.count || 0
-            }
-        });
+        const data = await adminService.getAiSystemHealth();
+        res.json({ success: true, data });
     } catch (error) {
         console.error("Error fetching AI system health stats:", error);
         res.status(500).json({ success: false, message: "Failed to fetch AI system health stats", error: error.message });
@@ -166,34 +64,8 @@ exports.getAiSystemHealth = async (req, res) => {
 // 4. Multi-Tenant Platform Analytics
 exports.getEcosystemKpis = async (req, res) => {
     try {
-        const [[{ totalPatients }]] = await db.query(`SELECT COUNT(*) as totalPatients FROM patients`);
-        const [[{ totalClinics }]] = await db.query(`SELECT COUNT(*) as totalClinics FROM clinics WHERE verification_status = 'Approved'`);
-        const [[{ totalAppointments }]] = await db.query(`SELECT COUNT(*) as totalAppointments FROM appointments`);
-
-        // Clinic performance reviews list
-        const [reviews] = await db.query(
-            `SELECT c.id, c.name, c.verification_status, AVG(cr.rating) as rating, COUNT(cr.id) as review_count 
-             FROM clinics c
-             LEFT JOIN clinic_reviews cr ON c.id = cr.clinic_id 
-             WHERE c.verification_status IN ('Approved', 'Suspended')
-             GROUP BY c.id, c.name, c.verification_status
-             ORDER BY rating DESC`
-        );
-
-        res.json({
-            success: true,
-            data: {
-                kpis: {
-                    totalPatients,
-                    totalClinics,
-                    totalAppointments
-                },
-                reviews: reviews.map(r => ({
-                    ...r,
-                    rating: r.rating ? parseFloat(parseFloat(r.rating).toFixed(1)) : 0
-                }))
-            }
-        });
+        const data = await adminService.getEcosystemKpis();
+        res.json({ success: true, data });
     } catch (error) {
         console.error("Error fetching ecosystem KPIs:", error);
         res.status(500).json({ success: false, message: "Failed to fetch ecosystem KPIs", error: error.message });

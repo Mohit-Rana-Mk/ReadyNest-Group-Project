@@ -1,4 +1,6 @@
 const db = require('../config/db');
+const patientService = require('../services/patientService');
+const appointmentService = require('../services/appointmentService');
 
 // In-memory cache for tracking the last queried/predicted disease per patient ID
 const patientLastDiseaseCache = {};
@@ -8,22 +10,12 @@ const patientLastDiseaseCache = {};
 // ─────────────────────────────────────────────────────────────
 exports.getRecommendations = async (req, res) => {
     try {
-        const [patientRows] = await db.query('SELECT id FROM patients WHERE user_id = ?', [req.user.id]);
-        if (patientRows.length === 0) return res.status(404).json({ message: 'Patient not found' });
-        const actualPatientId = patientRows[0].id;
-
-        const [recommendations] = await db.query(
-            `SELECT pr.id, pr.alert_title, pr.alert_description, pr.status, pr.generated_by,
-                    s.name AS target_service, pr.created_at
-             FROM preventive_recommendations pr
-             JOIN services s ON pr.target_service_id = s.id
-             WHERE pr.patient_id = ? AND pr.status = 'Pending'
-             ORDER BY pr.created_at DESC`,
-            [actualPatientId]
-        );
-
+        const recommendations = await patientService.getRecommendations(req.user.id);
         res.status(200).json(recommendations);
     } catch (error) {
+        if (error.message === 'Patient not found') {
+            return res.status(404).json({ message: 'Patient not found' });
+        }
         console.error('Recommendations Error:', error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
@@ -31,19 +23,12 @@ exports.getRecommendations = async (req, res) => {
 
 exports.dismissRecommendation = async (req, res) => {
     try {
-        const { id } = req.params;
-        if (isNaN(id)) return res.status(200).json({ success: true, message: 'Mock recommendation dismissed' });
-        
-        const [patientRows] = await db.query('SELECT id FROM patients WHERE user_id = ?', [req.user.id]);
-        if (patientRows.length === 0) return res.status(404).json({ message: 'Patient not found' });
-        const actualPatientId = patientRows[0].id;
-
-        await db.query(
-            `UPDATE preventive_recommendations SET status = 'Read' WHERE id = ? AND patient_id = ?`,
-            [id, actualPatientId]
-        );
-        res.status(200).json({ success: true, message: 'Recommendation dismissed' });
+        const result = await patientService.dismissRecommendation(req.user.id, req.params.id);
+        res.status(200).json(result);
     } catch (error) {
+        if (error.message === 'Patient not found') {
+            return res.status(404).json({ message: 'Patient not found' });
+        }
         console.error('Dismiss Recommendations Error:', error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
@@ -51,7 +36,7 @@ exports.dismissRecommendation = async (req, res) => {
 
 exports.getServices = async (req, res) => {
     try {
-        const [services] = await db.query(`SELECT id, name FROM services ORDER BY name ASC`);
+        const services = await patientService.getServices();
         res.status(200).json(services);
     } catch (error) {
         console.error('Fetch Services Error:', error);
@@ -64,7 +49,7 @@ exports.getServices = async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 exports.getClinicCities = async (req, res) => {
     try {
-        const [cities] = await db.query(`SELECT DISTINCT city FROM clinics WHERE verification_status = 'Approved' AND city IS NOT NULL ORDER BY city ASC`);
+        const cities = await patientService.getClinicCities();
         res.status(200).json(cities);
     } catch (error) {
         console.error('Fetch Cities Error:', error);
@@ -545,37 +530,8 @@ exports.predictParkinsons = async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 exports.getAppointments = async (req, res) => {
     const { patientId } = req.params;
-
     try {
-        const [appointments] = await db.query(
-            `SELECT a.id, a.appointment_date, a.status, a.pre_remarks, a.post_remarks,
-                    a.consultation_type, a.meeting_link,
-                    c.name AS clinic_name, du.name AS doctor_name,
-                    v.weight_kg, v.height_cm, v.systolic_bp, v.diastolic_bp, v.blood_sugar_mgdl, v.pulse_rate,
-                    pr.report_url, pr.file_name,
-                    (
-                        SELECT JSON_ARRAYAGG(JSON_OBJECT(
-                            'medicine_name', pi.medicine_name,
-                            'dosage', pi.dosage,
-                            'frequency', pi.frequency,
-                            'duration', pi.duration,
-                            'instructions', pi.instructions
-                        ))
-                        FROM prescriptions pres
-                        JOIN prescription_items pi ON pres.id = pi.prescription_id
-                        WHERE pres.appointment_id = a.id
-                    ) AS prescriptions
-             FROM appointments a
-             JOIN clinics c ON a.clinic_id = c.id
-             JOIN users du ON a.doctor_id = du.id
-             LEFT JOIN patient_vitals v ON a.id = v.appointment_id
-             LEFT JOIN patient_reports pr ON a.id = pr.appointment_id
-             WHERE a.patient_id = ?
-             ORDER BY a.appointment_date DESC
-             LIMIT 20`,
-            [patientId]
-        );
-
+        const appointments = await appointmentService.getAppointments(patientId);
         res.status(200).json(appointments);
     } catch (error) {
         console.error('Fetch Appointments Error:', error);
@@ -586,37 +542,7 @@ exports.getAppointments = async (req, res) => {
 exports.getFamilyAppointments = async (req, res) => {
     const userId = req.user?.id || req.query.user_id || 1;
     try {
-        const [appointments] = await db.query(
-            `SELECT a.id, a.appointment_date, a.status, a.pre_remarks, a.post_remarks,
-                    a.consultation_type, a.meeting_link,
-                    c.name AS clinic_name, du.name AS doctor_name,
-                    p.id AS patient_id, p.name AS patient_name,
-                    v.weight_kg, v.height_cm, v.systolic_bp, v.diastolic_bp, v.blood_sugar_mgdl, v.pulse_rate,
-                    pr.report_url, pr.file_name,
-                    (
-                        SELECT JSON_ARRAYAGG(JSON_OBJECT(
-                            'medicine_name', pi.medicine_name,
-                            'dosage', pi.dosage,
-                            'frequency', pi.frequency,
-                            'duration', pi.duration,
-                            'instructions', pi.instructions
-                        ))
-                        FROM prescriptions pres
-                        JOIN prescription_items pi ON pres.id = pi.prescription_id
-                        WHERE pres.appointment_id = a.id
-                    ) AS prescriptions
-             FROM appointments a
-             JOIN clinics c ON a.clinic_id = c.id
-             JOIN users du ON a.doctor_id = du.id
-             JOIN patients p ON a.patient_id = p.id
-             LEFT JOIN patient_vitals v ON a.id = v.appointment_id
-             LEFT JOIN patient_reports pr ON a.id = pr.appointment_id
-             WHERE p.user_id = ?
-             ORDER BY a.appointment_date DESC
-             LIMIT 50`,
-            [userId]
-        );
-
+        const appointments = await appointmentService.getFamilyAppointments(userId);
         res.status(200).json(appointments);
     } catch (error) {
         console.error('Fetch Family Appointments Error:', error);
@@ -628,17 +554,9 @@ exports.getFamilyAppointments = async (req, res) => {
 // E. Family Members (Dependents)
 // ─────────────────────────────────────────────────────────────
 exports.getFamilyMembers = async (req, res) => {
-    // We expect the logged in user id, but we'll accept it via query for flexibility
     const userId = req.user?.id || req.query.user_id || 1;
-    
     try {
-        const [patients] = await db.query(
-            `SELECT id, name, date_of_birth, gender, mrn 
-             FROM patients 
-             WHERE user_id = ?
-             ORDER BY id ASC`,
-            [userId]
-        );
+        const patients = await patientService.getFamilyMembers(userId);
         res.status(200).json(patients);
     } catch (error) {
         console.error('Fetch Family Members Error:', error);
@@ -648,23 +566,13 @@ exports.getFamilyMembers = async (req, res) => {
 
 exports.addFamilyMember = async (req, res) => {
     const userId = req.user?.id || req.query.user_id || 1;
-    const { name, date_of_birth, gender, blood_group } = req.body;
-    
-    if (!name || !gender) {
-        return res.status(400).json({ message: 'Name and gender are required' });
-    }
-    
-    // Generate mock MRN
-    const mrn = 'MRN-' + Math.floor(100000 + Math.random() * 900000);
-    
     try {
-        const [result] = await db.execute(
-            `INSERT INTO patients (user_id, mrn, name, date_of_birth, gender, blood_group)
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            [userId, mrn, name, date_of_birth || null, gender, blood_group || null]
-        );
-        res.status(201).json({ message: 'Family member added successfully', patient_id: result.insertId });
+        const result = await patientService.addFamilyMember(userId, req.body);
+        res.status(201).json(result);
     } catch (error) {
+        if (error.message === 'Name and gender are required') {
+            return res.status(400).json({ message: error.message });
+        }
         console.error('Add Family Member Error:', error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
@@ -732,34 +640,14 @@ exports.getClinicDoctors = async (req, res) => {
 // F. Appointment Management (Book, Cancel, Reschedule)
 // ─────────────────────────────────────────────────────────────
 exports.bookAppointment = async (req, res) => {
-    const { clinic_id, doctor_id, patient_id, appointment_date, consultation_type } = req.body;
-    
-    console.log("BOOK APPT PAYLOAD:", req.body);
-    if (!clinic_id || !doctor_id || !patient_id || !appointment_date) {
-        const missing = [];
-        if (!clinic_id) missing.push('clinic_id');
-        if (!doctor_id) missing.push('doctor_id');
-        if (!patient_id) missing.push('patient_id');
-        if (!appointment_date) missing.push('appointment_date');
-        return res.status(400).json({ message: `Missing required booking fields: ${missing.join(', ')}` });
-    }
-
     try {
-        const cType = consultation_type === 'Teleconsultation' ? 'Teleconsultation' : 'In-Person';
-        let meetingLink = null;
-        if (cType === 'Teleconsultation') {
-            const crypto = require('crypto');
-            meetingLink = `https://meet.jit.si/HealTrack_${crypto.randomUUID()}`;
-        }
-
-        await db.execute(
-            `INSERT INTO appointments (clinic_id, doctor_id, patient_id, appointment_date, status, booking_source, consultation_type, meeting_link)
-             VALUES (?, ?, ?, ?, 'Scheduled', 'App', ?, ?)`,
-            [clinic_id, doctor_id, patient_id, appointment_date, cType, meetingLink]
-        );
-        if (req.io) req.io.emit('QUEUE_UPDATE', { clinicId: clinic_id });
+        const result = await appointmentService.bookAppointment(req.body);
+        if (req.io) req.io.emit('QUEUE_UPDATE', { clinicId: result.clinicId });
         res.status(201).json({ message: 'Appointment booked successfully' });
     } catch (error) {
+        if (error.message.startsWith('Missing required booking fields')) {
+            return res.status(400).json({ message: error.message });
+        }
         console.error('Book Appointment Error:', error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
@@ -768,11 +656,8 @@ exports.bookAppointment = async (req, res) => {
 exports.cancelAppointment = async (req, res) => {
     const { appointmentId } = req.params;
     try {
-        await db.execute(
-            `UPDATE appointments SET status = 'Canceled' WHERE id = ?`,
-            [appointmentId]
-        );
-        if (req.io) req.io.emit('QUEUE_UPDATE', {}); // Ideally fetch clinic_id before emitting, but broad emit works for MVP
+        await appointmentService.cancelAppointment(appointmentId);
+        if (req.io) req.io.emit('QUEUE_UPDATE', {}); 
         res.status(200).json({ message: 'Appointment canceled successfully' });
     } catch (error) {
         console.error('Cancel Appointment Error:', error);
@@ -782,20 +667,14 @@ exports.cancelAppointment = async (req, res) => {
 
 exports.rescheduleAppointment = async (req, res) => {
     const { appointmentId } = req.params;
-    const { new_date } = req.body;
-    
-    if (!new_date) {
-        return res.status(400).json({ message: 'New date is required' });
-    }
-
     try {
-        await db.execute(
-            `UPDATE appointments SET appointment_date = ?, status = 'Scheduled' WHERE id = ?`,
-            [new_date, appointmentId]
-        );
+        await appointmentService.rescheduleAppointment(appointmentId, req.body.new_date);
         if (req.io) req.io.emit('QUEUE_UPDATE', {});
         res.status(200).json({ message: 'Appointment rescheduled successfully' });
     } catch (error) {
+        if (error.message === 'New date is required') {
+            return res.status(400).json({ message: error.message });
+        }
         console.error('Reschedule Appointment Error:', error);
         res.status(500).json({ message: 'Internal Server Error' });
     }

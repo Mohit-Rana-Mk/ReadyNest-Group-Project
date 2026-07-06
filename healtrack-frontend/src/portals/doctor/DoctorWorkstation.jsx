@@ -13,6 +13,8 @@ import { VitalsCard } from './components/VitalsCard';
 import { HistoryTimeline } from './components/HistoryTimeline';
 import { PrescriptionBuilder } from './components/PrescriptionBuilder';
 import { ReportUpload } from './components/ReportUpload';
+import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
 
 export default function DoctorWorkstation() {
     const { logout, user } = useAuth();
@@ -179,9 +181,9 @@ export default function DoctorWorkstation() {
             {/* TOP BAR */}
             <header className="h-14 bg-white border-b border-[#e9ecef] px-3 md:px-6 flex justify-between items-center shrink-0">
                 <div className="flex items-center gap-2 md:gap-4">
-                    <button onClick={() => setShowQueue(!showQueue)} className="lg:hidden p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg">
+                    <Button variant="outline" onClick={() => setShowQueue(!showQueue)} className="lg:hidden p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg border-none bg-transparent">
                         <Users className="w-5 h-5" />
-                    </button>
+                    </Button>
                     <div className="flex items-center gap-2">
                         <img src="/logo.png" alt="HealTrack Logo" className="w-7 h-7 md:w-8 md:h-8 object-contain" />
                         <h2 className="font-bold text-slate-800 text-sm md:text-base leading-none">HealTrack <span className="text-indigo-700">Doctor</span></h2>
@@ -202,12 +204,12 @@ export default function DoctorWorkstation() {
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                             <Search className="w-4 h-4 stroke-[2.2]" />
                         </span>
-                            <input 
+                            <Input 
                                 type="text" 
                                 placeholder="Search patient..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-[#f1f3f5] border-0 rounded-full pl-9 pr-4 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-700 transition"
+                                className="w-full bg-[#f1f3f5] rounded-full pl-9 pr-4 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-700 transition"
                             />
                     </div>
                     <div className="h-6 w-px bg-[#e9ecef] hidden md:block"></div>
@@ -216,9 +218,9 @@ export default function DoctorWorkstation() {
                             DR
                         </div>
                         <span className="text-xs font-semibold text-slate-800 hidden lg:block">Doctor Portal</span>
-                        <button onClick={logout} className="ml-1 md:ml-2 p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition" title="Logout">
+                        <Button variant="outline" onClick={logout} className="ml-1 md:ml-2 p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition border-none bg-transparent" title="Logout">
                             <LogOut className="w-4 h-4" />
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </header>
@@ -243,9 +245,9 @@ export default function DoctorWorkstation() {
                             <div className="flex-1 flex items-center justify-center text-slate-400 flex-col p-4">
                                 <Monitor className="w-12 h-12 mb-4 text-slate-300" />
                                 <p className="text-center">Select a patient from the queue to start session.</p>
-                                <button onClick={() => setShowQueue(true)} className="lg:hidden mt-4 px-4 py-2 bg-indigo-700 text-white rounded-xl text-sm font-bold">
+                                <Button onClick={() => setShowQueue(true)} className="lg:hidden mt-4 bg-indigo-700 text-white border-none">
                                     Open Patient Queue
-                                </button>
+                                </Button>
                             </div>
                         ) : (
                             <div className="flex-1 flex flex-col relative overflow-hidden">
@@ -318,26 +320,26 @@ export default function DoctorWorkstation() {
                                     </div>
                                     <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                                         {selectedAppointment.consultation_type === 'Teleconsultation' && selectedAppointment.meeting_link && selectedAppointment.status !== 'Completed' && (
-                                            <button 
+                                            <Button 
                                                 onClick={() => window.open(selectedAppointment.meeting_link, '_blank')}
-                                                className="w-full sm:w-auto px-4 md:px-6 py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm bg-blue-600 hover:bg-blue-700 text-white shadow-md"
+                                                className="w-full sm:w-auto px-4 md:px-6 py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm bg-blue-600 hover:bg-blue-700 text-white shadow-md border-none"
                                             >
                                                 <Video className="w-5 h-5" />
                                                 Join Video Call
-                                            </button>
+                                            </Button>
                                         )}
-                                        <button 
+                                        <Button 
                                             onClick={handleSubmitConsultation}
                                             disabled={selectedAppointment.status === 'Completed'}
-                                            className={`w-full sm:w-auto px-4 md:px-6 py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm ${
+                                            className={`w-full sm:w-auto px-4 md:px-6 py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm border-none ${
                                                 selectedAppointment.status === 'Completed'
-                                                    ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                                                     : 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-md'
                                             }`}
                                         >
                                             <CheckCircle2 className="w-5 h-5" />
                                             {selectedAppointment.status === 'Completed' ? 'Completed' : 'Sign & Complete'}
-                                        </button>
+                                        </Button>
                                     </div>
                                 </div>
                             </div>

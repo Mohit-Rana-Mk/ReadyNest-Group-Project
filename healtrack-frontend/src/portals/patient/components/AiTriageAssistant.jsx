@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, AlertTriangle, ShieldCheck, ShieldAlert, Loader2, Activity, Sparkles } from 'lucide-react';
 import { postTriage } from '../../../api/patientApi';
+import { Button } from '../../../components/ui/Button';
+import { Badge } from '../../../components/ui/Badge';
 
 const riskConfig = {
     Low:      { color: 'emerald', icon: ShieldCheck,  label: 'Low Risk',      ring: 'from-emerald-400 to-teal-400' },
@@ -141,13 +143,13 @@ export default function AiTriageAssistant() {
                         className="flex-1 text-sm text-slate-800 placeholder-slate-400 outline-none bg-transparent font-medium"
                         disabled={isLoading}
                     />
-                    <button
+                    <Button
                         type="submit"
                         disabled={!input.trim() || isLoading}
-                        className="p-2.5 bg-[#6366f1] hover:bg-[#5558e6] disabled:bg-slate-200 text-white rounded-xl transition-all shadow-sm cursor-pointer"
+                        className="p-2.5 bg-[#6366f1] hover:bg-[#5558e6] disabled:bg-slate-200 text-white rounded-xl transition-all shadow-sm cursor-pointer border-none"
                     >
                         <Send className="w-4 h-4" />
-                    </button>
+                    </Button>
                 </div>
                 <p className="text-center text-[10px] text-slate-400 font-medium mt-2">
                     AI triage assists diagnosis. Always consult a licensed physician for medical advice.
@@ -195,9 +197,9 @@ function TriageCard({ risk, symptoms, disease, recommendation, predictions }) {
                 <div className={`w-8 h-8 rounded-xl ${c.badge.split(' ')[0]} flex items-center justify-center border ${c.badge.split(' ')[2]}`}>
                     <Icon className={`w-4 h-4 ${c.icon}`} />
                 </div>
-                <span className={`text-xs font-extrabold px-2.5 py-1 rounded-xl border uppercase tracking-wider ${c.badge}`}>
+                <Badge colorClasses={c.badge} className="text-xs font-extrabold px-2.5 py-1 rounded-xl border uppercase tracking-wider">
                     {config.label}
-                </span>
+                </Badge>
             </div>
 
             {/* Detected Symptoms */}
@@ -206,9 +208,9 @@ function TriageCard({ risk, symptoms, disease, recommendation, predictions }) {
                     <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Detected Symptoms</p>
                     <div className="flex flex-wrap gap-1.5">
                         {symptoms.map((s, i) => (
-                            <span key={i} className={`text-[10px] font-bold px-2.5 py-1 rounded-xl border ${c.symptomBg}`}>
+                            <Badge key={i} colorClasses={c.symptomBg} className="text-[10px] font-bold px-2.5 py-1 rounded-xl border">
                                 {s}
-                            </span>
+                            </Badge>
                         ))}
                     </div>
                 </div>

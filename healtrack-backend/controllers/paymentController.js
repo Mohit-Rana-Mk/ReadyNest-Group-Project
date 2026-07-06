@@ -1,83 +1,17 @@
 const db = require('../config/db');
-const Razorpay = require('razorpay');
-const crypto = require('crypto');
-
-// Initialize Razorpay
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID || 'rzp_live_TA71n8rCCwsUJj',
-    key_secret: process.env.RAZORPAY_KEY_SECRET || '793jidqYIv9NU1upGmNzJHgq'
-});
+const paymentService = require('../services/paymentService');
 
 // A. PATIENT PAYMENT WORKFLOW
 
 // 1. Create Razorpay Order & Pending Appointment
 exports.createOrder = async (req, res) => {
-    const { clinic_id, doctor_id, patient_id, appointment_date, consultation_type } = req.body;
-
-    if (!clinic_id || !doctor_id || !patient_id || !appointment_date) {
-        return res.status(400).json({ message: 'Missing required fields for appointment booking' });
-    }
-
     try {
-        // Fetch doctor's fee or use fallback
-        const [feeRows] = await db.query(
-            `SELECT COALESCE(cs.consultation_fee, 500.00) AS fee 
-             FROM users u 
-             LEFT JOIN clinic_services cs ON u.service_id = cs.service_id AND cs.clinic_id = ?
-             WHERE u.id = ? AND u.role = 'Doctor'`,
-            [clinic_id, doctor_id]
-        );
-        
-        const fee = feeRows.length > 0 ? parseFloat(feeRows[0].fee) : 500.00;
-
-        // Generate meeting link if teleconsultation
-        let meetingLink = null;
-        if (consultation_type === 'Teleconsultation') {
-            meetingLink = `https://meet.jit.si/HealTrack_${crypto.randomUUID()}`;
-        }
-
-        // Insert appointment with 'Pending Payment' status
-        const [appResult] = await db.execute(
-            `INSERT INTO appointments (clinic_id, doctor_id, patient_id, appointment_date, status, booking_source, consultation_type, meeting_link)
-             VALUES (?, ?, ?, ?, 'Pending Payment', 'App', ?, ?)`,
-            [clinic_id, doctor_id, patient_id, appointment_date, consultation_type || 'In-Person', meetingLink]
-        );
-
-        const appointmentId = appResult.insertId;
-
-        // Create Razorpay Order
-        const rzpOrder = await razorpay.orders.create({
-            amount: Math.round(fee * 100), // in paise
-            currency: 'INR',
-            receipt: `receipt_apt_${appointmentId}`
-        });
-
-        // Insert order details
-        await db.execute(
-            `INSERT INTO razorpay_orders (appointment_id, order_id, amount, status)
-             VALUES (?, ?, ?, 'created')`,
-            [appointmentId, rzpOrder.id, fee]
-        );
-
-        // Insert initial pending payment record
-        const receipt_id = `REC-${Date.now()}-${appointmentId}`;
-        const invoice_id = `INV-${Date.now()}-${appointmentId}`;
-        await db.execute(
-            `INSERT INTO payments (patient_id, doctor_id, clinic_id, appointment_id, razorpay_order_id, amount, status, receipt_id, invoice_id)
-             VALUES (?, ?, ?, ?, ?, ?, 'Pending', ?, ?)`,
-            [patient_id, doctor_id, clinic_id, appointmentId, rzpOrder.id, fee, receipt_id, invoice_id]
-        );
-
-        res.status(201).json({
-            success: true,
-            appointmentId,
-            orderId: rzpOrder.id,
-            amount: rzpOrder.amount,
-            currency: rzpOrder.currency,
-            keyId: process.env.RAZORPAY_KEY_ID || 'rzp_live_TA71n8rCCwsUJj'
-        });
-
+        const result = await paymentService.createOrder(req.body);
+        res.status(201).json({ success: true, ...result });
     } catch (error) {
+        if (error.message === 'Missing required fields for appointment booking') {
+            return res.status(400).json({ message: error.message });
+        }
         console.error('Create Order Error:', error);
         res.status(500).json({ message: 'Error initiating payment: ' + error.message });
     }
@@ -85,96 +19,31 @@ exports.createOrder = async (req, res) => {
 
 // 2. Verify Payment Signature
 exports.verifyPayment = async (req, res) => {
-    const { appointment_id, razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
-
-    if (!appointment_id || !razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
-        return res.status(400).json({ message: 'Missing payment verification tokens' });
-    }
-
     try {
-        // Validate signature
-        const secret = process.env.RAZORPAY_KEY_SECRET || '793jidqYIv9NU1upGmNzJHgq';
-        const body = razorpay_order_id + "|" + razorpay_payment_id;
-        const expectedSignature = crypto
-            .createHmac("sha256", secret)
-            .update(body.toString())
-            .digest("hex");
-
-        if (expectedSignature !== razorpay_signature) {
-            await db.execute(
-                `UPDATE payments SET status = 'Failed' WHERE appointment_id = ?`,
-                [appointment_id]
-            );
-            return res.status(400).json({ message: 'Invalid payment signature verification' });
-        }
-
-        // Fetch payment status to prevent duplicate processing
-        const [paymentRows] = await db.query(
-            `SELECT id, status, clinic_id FROM payments WHERE appointment_id = ?`,
-            [appointment_id]
-        );
-
-        if (paymentRows.length === 0) {
-            return res.status(404).json({ message: 'Payment record not found' });
-        }
-
-        const payment = paymentRows[0];
-        if (payment.status === 'Paid') {
+        const result = await paymentService.verifyPayment(req.body, req.user?.id);
+        
+        if (result.alreadyProcessed) {
             return res.status(200).json({ success: true, message: 'Payment already processed' });
         }
 
-        // Start database transaction
-        const connection = await db.getConnection();
-        try {
-            await connection.beginTransaction();
-
-            // Mark appointment as Confirmed
-            await connection.execute(
-                `UPDATE appointments SET status = 'Confirmed' WHERE id = ?`,
-                [appointment_id]
-            );
-
-            // Update payments record
-            await connection.execute(
-                `UPDATE payments 
-                 SET status = 'Paid', razorpay_payment_id = ?, razorpay_signature = ? 
-                 WHERE appointment_id = ?`,
-                [razorpay_payment_id, razorpay_signature, appointment_id]
-            );
-
-            // Update razorpay_orders record
-            await connection.execute(
-                `UPDATE razorpay_orders SET status = 'paid' WHERE order_id = ?`,
-                [razorpay_order_id]
-            );
-
-            // Log Audit
-            await connection.execute(
-                `INSERT INTO payment_audit_logs (user_id, action, details)
-                 VALUES (?, 'PAYMENT_VERIFIED', ?)`,
-                [req.user?.id || null, JSON.stringify({ appointment_id, razorpay_payment_id, razorpay_order_id })]
-            );
-
-            await connection.commit();
-
-            // Emit socket update for clinic queue
-            if (req.io) {
-                req.io.emit('QUEUE_UPDATE', { clinicId: payment.clinic_id });
-            }
-
-            res.status(200).json({
-                success: true,
-                message: 'Payment verified and appointment confirmed successfully'
-            });
-
-        } catch (trxErr) {
-            await connection.rollback();
-            throw trxErr;
-        } finally {
-            connection.release();
+        if (req.io) {
+            req.io.emit('QUEUE_UPDATE', { clinicId: result.clinicId });
         }
 
+        res.status(200).json({
+            success: true,
+            message: 'Payment verified and appointment confirmed successfully'
+        });
     } catch (error) {
+        if (error.message === 'Missing payment verification tokens') {
+            return res.status(400).json({ message: error.message });
+        }
+        if (error.message === 'Invalid payment signature verification') {
+            return res.status(400).json({ message: error.message });
+        }
+        if (error.message === 'Payment record not found') {
+            return res.status(404).json({ message: error.message });
+        }
         console.error('Verify Payment Error:', error);
         res.status(500).json({ message: 'Payment verification failed: ' + error.message });
     }
@@ -278,29 +147,12 @@ exports.handleWebhook = async (req, res) => {
 // 4. Patient Payment History
 exports.getPatientPayments = async (req, res) => {
     try {
-        const [patientRows] = await db.query('SELECT id FROM patients WHERE user_id = ?', [req.user.id]);
-        if (patientRows.length === 0) {
-            return res.status(404).json({ message: 'Patient profile not found' });
-        }
-        const patientId = patientRows[0].id;
-
-        const [payments] = await db.query(
-            `SELECT p.id, p.amount, p.status, p.receipt_id, p.invoice_id, p.created_at, p.razorpay_payment_id,
-                    c.name AS clinic_name, du.name AS doctor_name, a.appointment_date,
-                    a.id AS appointment_id,
-                    rr.status AS refund_status
-             FROM payments p
-             JOIN clinics c ON p.clinic_id = c.id
-             JOIN users du ON p.doctor_id = du.id
-             JOIN appointments a ON p.appointment_id = a.id
-             LEFT JOIN refund_requests rr ON p.id = rr.payment_id
-             WHERE p.patient_id = ?
-             ORDER BY p.created_at DESC`,
-            [patientId]
-        );
-
+        const payments = await paymentService.getPatientPayments(req.user.id);
         res.status(200).json(payments);
     } catch (error) {
+        if (error.message === 'Patient profile not found') {
+            return res.status(404).json({ message: error.message });
+        }
         console.error('Fetch Patient Payments Error:', error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
@@ -310,27 +162,12 @@ exports.getPatientPayments = async (req, res) => {
 exports.getPaymentDetails = async (req, res) => {
     const { paymentId } = req.params;
     try {
-        const [rows] = await db.query(
-            `SELECT p.id, p.amount, p.status, p.receipt_id, p.invoice_id, p.created_at, p.razorpay_payment_id, p.razorpay_order_id,
-                    c.name AS clinic_name, c.address AS clinic_address, c.city AS clinic_city, c.license_number AS clinic_license,
-                    du.name AS doctor_name, 
-                    pat.name AS patient_name, pat.mrn AS patient_mrn,
-                    a.appointment_date, a.consultation_type
-             FROM payments p
-             JOIN clinics c ON p.clinic_id = c.id
-             JOIN users du ON p.doctor_id = du.id
-             JOIN patients pat ON p.patient_id = pat.id
-             JOIN appointments a ON p.appointment_id = a.id
-             WHERE p.id = ?`,
-            [paymentId]
-        );
-
-        if (rows.length === 0) {
-            return res.status(404).json({ message: 'Payment record not found' });
-        }
-
-        res.status(200).json(rows[0]);
+        const details = await paymentService.getPaymentDetails(paymentId);
+        res.status(200).json(details);
     } catch (error) {
+        if (error.message === 'Payment record not found') {
+            return res.status(404).json({ message: error.message });
+        }
         console.error('Fetch Payment Details Error:', error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
@@ -338,47 +175,16 @@ exports.getPaymentDetails = async (req, res) => {
 
 // 6. Request Refund
 exports.requestRefund = async (req, res) => {
-    const { payment_id, reason } = req.body;
-
-    if (!payment_id || !reason) {
-        return res.status(400).json({ message: 'Payment ID and reason are required' });
-    }
-
     try {
-        // Verify payment belongs to patient
-        const [patientRows] = await db.query('SELECT id FROM patients WHERE user_id = ?', [req.user.id]);
-        if (patientRows.length === 0) return res.status(404).json({ message: 'Patient not found' });
-        const patientId = patientRows[0].id;
-
-        const [paymentRows] = await db.query(
-            `SELECT id, amount, status FROM payments WHERE id = ? AND patient_id = ?`,
-            [payment_id, patientId]
-        );
-
-        if (paymentRows.length === 0) {
-            return res.status(404).json({ message: 'Payment not found or unauthorized' });
-        }
-
-        const payment = paymentRows[0];
-        if (payment.status !== 'Paid') {
-            return res.status(400).json({ message: 'Only successful paid payments can be refunded' });
-        }
-
-        // Check if refund already exists
-        const [existingRefund] = await db.query(`SELECT id FROM refund_requests WHERE payment_id = ?`, [payment_id]);
-        if (existingRefund.length > 0) {
-            return res.status(400).json({ message: 'Refund request already submitted for this payment' });
-        }
-
-        await db.execute(
-            `INSERT INTO refund_requests (payment_id, amount, reason, status)
-             VALUES (?, ?, ?, 'Pending')`,
-            [payment_id, payment.amount, reason]
-        );
-
-        res.status(201).json({ success: true, message: 'Refund request submitted successfully' });
-
+        const result = await paymentService.requestRefund(req.user.id, req.body);
+        res.status(201).json(result);
     } catch (error) {
+        if (['Payment ID and reason are required', 'Only successful paid payments can be refunded', 'Refund request already submitted for this payment'].includes(error.message)) {
+            return res.status(400).json({ message: error.message });
+        }
+        if (['Patient not found', 'Payment not found or unauthorized'].includes(error.message)) {
+            return res.status(404).json({ message: error.message });
+        }
         console.error('Request Refund Error:', error);
         res.status(500).json({ message: 'Internal Server Error' });
     }

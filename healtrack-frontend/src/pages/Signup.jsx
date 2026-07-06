@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import { UserPlus, Building, Heart, Brain, Activity } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
 
 export default function Signup() {
     const { t } = useTranslation();
@@ -126,7 +128,7 @@ export default function Signup() {
 
                     {/* Right-Side: Form Card (6 columns) */}
                     <div className="lg:col-span-6 flex justify-center w-full">
-                        <div className="w-full max-w-[480px] bg-white p-8 sm:p-10 rounded-[32px] border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.02)]">
+                        <Card className="w-full max-w-[480px] p-8 sm:p-10 rounded-[32px] border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.02)]">
                             <div className="mb-6">
                                 <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">
                                     Sign up
@@ -138,20 +140,22 @@ export default function Signup() {
 
                             {/* Clinic / Patient Switcher */}
                             <div className="flex bg-[#eef2f6] p-1 rounded-xl mb-6">
-                                <button
+                                <Button
                                     type="button"
+                                    variant="outline"
                                     onClick={() => setIsClinic(false)}
-                                    className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-150 flex items-center justify-center gap-1.5 ${!isClinic ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400 hover:text-slate-600'}`}
+                                    className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-150 flex items-center justify-center gap-1.5 border-none ${!isClinic ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400 hover:text-slate-600 bg-transparent'}`}
                                 >
                                     <UserPlus className="w-4 h-4" /> Patient
-                                </button>
-                                <button
+                                </Button>
+                                <Button
                                     type="button"
+                                    variant="outline"
                                     onClick={() => setIsClinic(true)}
-                                    className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-150 flex items-center justify-center gap-1.5 ${isClinic ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400 hover:text-slate-600'}`}
+                                    className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-150 flex items-center justify-center gap-1.5 border-none ${isClinic ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400 hover:text-slate-600 bg-transparent'}`}
                                 >
                                     <Building className="w-4 h-4" /> Clinic
-                                </button>
+                                </Button>
                             </div>
 
                             {error && (
@@ -236,10 +240,10 @@ export default function Signup() {
                                     </div>
 
                                     <div className="pt-4">
-                                        <button
+                                        <Button
                                             type="submit"
                                             disabled={loading}
-                                            className="w-full flex justify-center items-center gap-2 py-3.5 bg-[#6366f1] hover:bg-[#5558e6] rounded-xl font-bold text-white text-xs uppercase tracking-widest transition-all duration-200"
+                                            className="w-full flex justify-center items-center gap-2 py-3.5 bg-[#6366f1] hover:bg-[#5558e6] rounded-xl font-bold text-xs uppercase tracking-widest border-none"
                                         >
                                             {loading ? (
                                                 <>
@@ -249,7 +253,7 @@ export default function Signup() {
                                             ) : (
                                                 isClinic ? 'Register Clinic' : 'Create Account'
                                             )}
-                                        </button>
+                                        </Button>
                                     </div>
                                 </form>
                             )}
@@ -260,7 +264,7 @@ export default function Signup() {
                                     Sign In
                                 </Link>
                             </div>
-                        </div>
+                        </Card>
                     </div>
 
                 </div>

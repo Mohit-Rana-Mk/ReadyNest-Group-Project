@@ -25,6 +25,7 @@ import { EcosystemAnalytics } from './components/EcosystemAnalytics';
 import { AuraCareDashboard } from './components/AuraCareDashboard';
 import { PatientAnalytics } from './components/PatientAnalytics';
 import { AdminPaymentsDashboard } from './components/AdminPaymentsDashboard';
+import { Button } from '../../components/ui/Button';
 
 export default function AdminDashboard() {
     const { logout } = useAuth();
@@ -144,9 +145,9 @@ export default function AdminDashboard() {
                     <h2 className="font-bold text-base leading-none text-slate-800">HealTrack</h2>
                     <span className="text-[10px] text-indigo-700 font-bold uppercase tracking-wider">Super Admin</span>
                 </div>
-                <button onClick={() => setSidebarOpen(false)} className="lg:hidden ml-auto p-1 text-slate-400 hover:text-slate-600">
+                <Button variant="outline" onClick={() => setSidebarOpen(false)} className="lg:hidden ml-auto p-1 text-slate-400 hover:text-slate-600 border-none bg-transparent">
                     <X className="w-5 h-5" />
-                </button>
+                </Button>
             </div>
 
             <nav className="flex-1 p-3 space-y-1 mt-4 overflow-y-auto">
@@ -156,10 +157,11 @@ export default function AdminDashboard() {
                         ? 'bg-cyan-50 text-cyan-700 border-r-4 border-cyan-500'
                         : 'bg-indigo-50 text-indigo-800 border-r-4 border-indigo-700';
                     return (
-                        <button
+                        <Button
+                            variant="outline"
                             key={item.id}
                             onClick={() => handleTabChange(item.id)}
-                            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-sm font-semibold ${
+                            className={`w-full flex justify-start items-center gap-3 px-4 py-2.5 rounded-xl transition text-sm font-semibold border-none bg-transparent ${
                                 isActive 
                                     ? activeClass 
                                     : 'text-slate-500 hover:bg-[#f1f3f5] hover:text-slate-800'
@@ -167,7 +169,7 @@ export default function AdminDashboard() {
                         >
                             <item.icon className="w-4 h-4" />
                             {item.name}
-                        </button>
+                        </Button>
                     );
                 })}
             </nav>
@@ -196,30 +198,31 @@ export default function AdminDashboard() {
                 {/* HEADER */}
                 <header className="h-14 lg:h-16 border-b px-4 lg:px-8 flex justify-between items-center shrink-0 bg-white border-[#e9ecef]">
                     <div className="flex items-center gap-3">
-                        <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg">
+                        <Button variant="outline" onClick={() => setSidebarOpen(true)} className="lg:hidden p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg border-none bg-transparent">
                             <Menu className="w-5 h-5" />
-                        </button>
+                        </Button>
                         <h2 className={`text-xs lg:text-sm font-bold uppercase tracking-wider flex items-center gap-2 ${activeTab === 'auracare' ? 'text-cyan-600' : 'text-slate-800'}`}>
                             {activeTab.replace('-', ' ')} Workstation
                         </h2>
                     </div>
                     <div className="flex items-center gap-2 lg:gap-4">
                         {activeTab !== 'auracare' && activeTab !== 'payments' && (
-                            <button 
+                            <Button 
+                                variant="outline"
                                 onClick={loadDashboardData}
-                                className="p-2 hover:bg-slate-100 text-slate-500 rounded-full transition"
+                                className="p-2 hover:bg-slate-100 text-slate-500 rounded-full transition border-none bg-transparent"
                                 title="Refresh dashboard stats"
                             >
                                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                            </button>
+                            </Button>
                         )}
                         <div className="w-7 h-7 rounded-full bg-indigo-700 flex items-center justify-center font-bold text-white text-[11px]">
                             SA
                         </div>
                         <span className="text-xs font-semibold text-slate-800 hidden md:block">Platform Owner</span>
-                        <button onClick={logout} className="ml-1 lg:ml-2 p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition" title="Logout">
+                        <Button variant="outline" onClick={logout} className="ml-1 lg:ml-2 p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition border-none bg-transparent" title="Logout">
                             <LogOut className="w-4 h-4" />
-                        </button>
+                        </Button>
                     </div>
                 </header>
 

@@ -12,6 +12,7 @@ import { ReportsAndLogs } from './components/ReportsAndLogs';
 import { ClinicSettings } from './components/ClinicSettings';
 import ClinicFinancials from './components/ClinicFinancials';
 import { io } from 'socket.io-client';
+import { Button } from '../../components/ui/Button';
 
 export default function ClinicManagementPortal() {
   const { user, logout } = useAuth();
@@ -101,9 +102,9 @@ export default function ClinicManagementPortal() {
         <div className="flex items-center gap-3 mb-1">
           <img src="/logo.png" alt="HealTrack Logo" className="w-8 h-8 object-contain" />
           <h1 className="text-xl md:text-2xl font-bold text-white tracking-wide">HealTrack AI</h1>
-          <button onClick={() => setSidebarOpen(false)} className="md:hidden ml-auto p-1 text-indigo-300 hover:text-white">
+          <Button variant="outline" onClick={() => setSidebarOpen(false)} className="md:hidden ml-auto p-1 text-indigo-300 hover:text-white border-none bg-transparent">
             <X className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
         <p className="text-indigo-300 text-sm pl-11 mt-1">Admin Portal</p>
         {user?.clinic_name && (
@@ -117,24 +118,25 @@ export default function ClinicManagementPortal() {
         {navigation.map((item) => {
           const isActive = activeTab === item.id;
           return (
-            <button
+            <Button
+              variant="outline"
               key={item.id}
               onClick={() => handleTabChange(item.id)}
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+              className={`w-full flex justify-start items-center space-x-3 px-4 py-3 rounded-lg transition-colors border-none bg-transparent ${
                 isActive ? 'bg-indigo-800 text-white' : 'text-indigo-100 hover:bg-indigo-800/50 hover:text-white'
               }`}
             >
               <item.icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-indigo-300'}`} />
               <span className="font-medium">{item.name}</span>
-            </button>
+            </Button>
           );
         })}
       </nav>
       <div className="p-4 border-t border-indigo-800">
-        <button onClick={logout} className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-100 hover:bg-indigo-800/50 hover:text-white transition-colors">
+        <Button variant="outline" onClick={logout} className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-100 hover:bg-indigo-800/50 hover:text-white transition-colors border-none bg-transparent">
           <LogOut className="w-5 h-5" />
           <span className="font-medium">Sign Out</span>
-        </button>
+        </Button>
       </div>
     </>
   );
@@ -160,14 +162,14 @@ export default function ClinicManagementPortal() {
         {/* MOBILE HEADER */}
         <div className="md:hidden bg-indigo-900 p-4 text-white flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <button onClick={() => setSidebarOpen(true)} className="p-1.5 text-indigo-200 hover:text-white">
+            <Button variant="outline" onClick={() => setSidebarOpen(true)} className="p-1.5 text-indigo-200 hover:text-white border-none bg-transparent">
               <Menu className="w-5 h-5" />
-            </button>
+            </Button>
             <h1 className="text-lg font-bold">HealTrack Admin</h1>
           </div>
-          <button onClick={logout} className="p-1.5 text-indigo-200 hover:text-white">
+          <Button variant="outline" onClick={logout} className="p-1.5 text-indigo-200 hover:text-white border-none bg-transparent">
             <LogOut className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
         <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
           {renderContent()}
