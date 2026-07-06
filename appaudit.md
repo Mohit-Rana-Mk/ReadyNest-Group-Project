@@ -1,7 +1,6 @@
 # HealTrack Technical Audit & Startup Review
 **Document Version:** 1.0.0  
-**Audit Date:** July 6, 2026  
-**Auditor:** Antigravity AI  
+**Audit Date:** July 6, 2026   
 **Scope:** Full-Stack Codebase (React Frontend, Express Backend, FastAPI ML Service, MySQL DB Schema, Razorpay Payments)
 
 ---
