@@ -254,7 +254,7 @@ git push origin feature/your-feature-name
 - ✅ Database Integration
 - ✅ Machine Learning Service
 - 🚧 Continuous Improvements & Testing
-
+- Enhancing AI Model & code readability 
 ---
 
 # 🎯 Project Vision
