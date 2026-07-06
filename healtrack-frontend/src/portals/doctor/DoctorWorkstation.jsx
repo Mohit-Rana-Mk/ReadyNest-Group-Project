@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axiosClient from '../../api/axiosClient';
+import axiosClient, { SOCKET_URL } from '../../api/axiosClient';
 import { ENDPOINTS } from '../../api/endpoints';
 
 // Import Icons from Lucide
