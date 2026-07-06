@@ -18,6 +18,7 @@
     "multer": "^2.2.0",
     "mysql2": "^3.6.3",
     "nodemailer": "^9.0.3",
+    "razorpay": "^2.9.6",
     "socket.io": "^4.8.3",
     "streamifier": "^0.1.1"
   }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, Clock, ChevronRight, Building2, Star, Search, Filter, Navigation } from 'lucide-react';
 import { fetchClinics, fetchFamilyMembers, addFamilyMember, bookAppointment, submitClinicReview, fetchClinicWaitTime } from '../../../api/patientApi';
+import { createPaymentOrder, verifyPaymentSignature } from '../../../api/paymentApi';
 import { Modal } from '../../../components/ui/Modal';
 import { Button } from '../../../components/ui/Button';
 
@@ -148,19 +149,85 @@ export default function ClinicDiscovery() {
                 finalPatientId = addRes.patient_id;
             }
 
-            await bookAppointment({
+            // Load Razorpay script dynamically
+            const rzpLoaded = await new Promise((resolve) => {
+                if (window.Razorpay) {
+                    resolve(true);
+                    return;
+                }
+                const script = document.createElement('script');
+                script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+                script.onload = () => resolve(true);
+                script.onerror = () => resolve(false);
+                document.body.appendChild(script);
+            });
+
+            if (!rzpLoaded) {
+                alert('Failed to load payment gateway. Please check your internet connection.');
+                return;
+            }
+
+            // Create Order
+            const orderData = await createPaymentOrder({
                 clinic_id: selectedClinic.id,
                 doctor_id: bookingData.doctor_id,
                 patient_id: finalPatientId,
                 appointment_date: bookingData.appointment_date,
                 consultation_type: bookingData.consultation_type
             });
-            setBookingSuccess(true);
-            setTimeout(() => {
-                setIsBookingModalOpen(false);
-            }, 2000);
+
+            if (!orderData || !orderData.orderId) {
+                alert('Failed to create payment order.');
+                return;
+            }
+
+            // Trigger Razorpay Checkout
+            const selectedDoctor = clinicDoctors.find(d => d.id === bookingData.doctor_id);
+            const options = {
+                key: orderData.keyId,
+                amount: orderData.amount,
+                currency: orderData.currency,
+                name: 'HealTrack',
+                description: `Consultation with Dr. ${selectedDoctor ? selectedDoctor.name : 'Doctor'}`,
+                order_id: orderData.orderId,
+                handler: async function (response) {
+                    try {
+                        const verifyRes = await verifyPaymentSignature({
+                            appointment_id: orderData.appointmentId,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_signature: response.razorpay_signature
+                        });
+                        if (verifyRes.success) {
+                            setBookingSuccess(true);
+                            setTimeout(() => {
+                                setIsBookingModalOpen(false);
+                            }, 2000);
+                        } else {
+                            alert('Signature verification failed.');
+                        }
+                    } catch (err) {
+                        console.error('Verify error:', err);
+                        alert('Verification error: ' + (err.response?.data?.message || err.message));
+                    }
+                },
+                prefill: {
+                    name: familyMembers.find(f => f.id === finalPatientId)?.name || '',
+                },
+                theme: {
+                    color: '#6366f1'
+                }
+            };
+
+            const rzp = new window.Razorpay(options);
+            rzp.on('payment.failed', function (response) {
+                alert('Payment failed: ' + response.error.description);
+            });
+            rzp.open();
+
         } catch (error) {
             console.error('Error booking:', error);
+            alert('Error creating booking/order: ' + (error.response?.data?.message || error.message));
         }
     };
 

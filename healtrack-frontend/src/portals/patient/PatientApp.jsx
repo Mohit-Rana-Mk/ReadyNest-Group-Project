@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, Loader2, LogOut, Home, Search, Activity, FileText, BookOpen } from 'lucide-react';
+import { Heart, Loader2, LogOut, Home, Search, Activity, FileText, BookOpen, CreditCard } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import BottomNav from './components/BottomNav';
 import PreventiveAlertBanner from './components/PreventiveAlertBanner';
@@ -7,6 +7,7 @@ import ClinicDiscovery from './components/ClinicDiscovery';
 import AiTriageAssistant from './components/AiTriageAssistant';
 import AppointmentHistory from './components/AppointmentHistory';
 import GeneralAwareness from './components/GeneralAwareness';
+import PatientPayments from './components/PatientPayments';
 import { fetchRecommendations, fetchClinics, fetchAppointments, dismissRecommendation } from '../../api/patientApi';
 import { io } from 'socket.io-client';
 import { useTranslation } from 'react-i18next';
@@ -67,6 +68,7 @@ export default function PatientApp() {
         { id: 'triage', name: t('nav.aiTriage'), icon: Activity },
         { id: 'awareness', name: t('nav.generalAwareness'), icon: BookOpen },
         { id: 'records', name: t('nav.records'), icon: FileText },
+        { id: 'payments', name: 'Payments', icon: CreditCard },
     ];
 
     if (loading) {
@@ -227,7 +229,7 @@ export default function PatientApp() {
                                         onDismiss={handleDismissAlert}
                                     />
                                     
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6">
                                         <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all group cursor-pointer" onClick={() => setActiveTab('records')}>
                                             <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center mb-4 border border-slate-100">
                                                 <FileText className="w-6 h-6 text-indigo-500" />
@@ -243,6 +245,13 @@ export default function PatientApp() {
                                                 {recommendations.length > 0 ? recommendations.length : 1}
                                             </p>
                                             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1.5">Pending Care Alerts</p>
+                                        </div>
+                                        <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all group cursor-pointer" onClick={() => setActiveTab('payments')}>
+                                            <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 border border-blue-100">
+                                                <CreditCard className="w-6 h-6 text-blue-500" />
+                                            </div>
+                                            <p className="text-sm font-black text-slate-800 mt-2">Payments & Bills</p>
+                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1.5">View and request refunds</p>
                                         </div>
                                     </div>
                                 </div>
@@ -319,6 +328,12 @@ export default function PatientApp() {
                     {activeTab === 'awareness' && (
                         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <GeneralAwareness />
+                        </div>
+                    )}
+
+                    {activeTab === 'payments' && (
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <PatientPayments />
                         </div>
                     )}
                 </div>

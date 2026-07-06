@@ -12,7 +12,8 @@ import {
     LogOut,
     Menu,
     X,
-    Users
+    Users,
+    Coins
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -23,6 +24,7 @@ import { AiHealthLogs } from './components/AiHealthLogs';
 import { EcosystemAnalytics } from './components/EcosystemAnalytics';
 import { AuraCareDashboard } from './components/AuraCareDashboard';
 import { PatientAnalytics } from './components/PatientAnalytics';
+import { AdminPaymentsDashboard } from './components/AdminPaymentsDashboard';
 
 export default function AdminDashboard() {
     const { logout } = useAuth();
@@ -43,7 +45,7 @@ export default function AdminDashboard() {
     }, [activeTab, epiFilter]);
 
     const loadDashboardData = async () => {
-        if (activeTab === 'auracare' || activeTab === 'patient-analytics') return; // Handled internally by component
+        if (activeTab === 'auracare' || activeTab === 'patient-analytics' || activeTab === 'payments') return; // Handled internally by component
         setLoading(true);
         try {
             if (activeTab === 'onboarding') {
@@ -104,7 +106,8 @@ export default function AdminDashboard() {
         { id: 'ai-health', name: 'AI System Health', icon: Activity },
         { id: 'analytics', name: 'Ecosystem Analytics', icon: PieChart },
         { id: 'patient-analytics', name: 'Patient Analytics', icon: Users },
-        { id: 'auracare', name: 'AuraCare Predictive AI', icon: Globe }
+        { id: 'auracare', name: 'AuraCare Predictive AI', icon: Globe },
+        { id: 'payments', name: 'Payments & Settlements', icon: Coins }
     ];
 
     const handleTabChange = (tabId) => {
@@ -124,7 +127,8 @@ export default function AdminDashboard() {
                 return <EcosystemAnalytics ecosystemStats={ecosystemStats} onVerify={handleVerifyClinic} />;
             case 'patient-analytics':
                 return <PatientAnalytics />;
-
+            case 'payments':
+                return <AdminPaymentsDashboard />;
             case 'auracare':
                 return <AuraCareDashboard />;
             default:
@@ -200,7 +204,7 @@ export default function AdminDashboard() {
                         </h2>
                     </div>
                     <div className="flex items-center gap-2 lg:gap-4">
-                        {activeTab !== 'auracare' && (
+                        {activeTab !== 'auracare' && activeTab !== 'payments' && (
                             <button 
                                 onClick={loadDashboardData}
                                 className="p-2 hover:bg-slate-100 text-slate-500 rounded-full transition"
@@ -229,7 +233,7 @@ export default function AdminDashboard() {
                     )}
 
                     {/* Metrics Ribbon Grid */}
-                    {activeTab !== 'auracare' && activeTab !== 'patient-analytics' && (
+                    {activeTab !== 'auracare' && activeTab !== 'patient-analytics' && activeTab !== 'payments' && (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                             <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
                                 <div>

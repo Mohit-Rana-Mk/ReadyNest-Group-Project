@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Users, Grid, Activity, FileText, Settings, LogOut, Menu, X, ShieldAlert } from 'lucide-react';
+import { LayoutDashboard, Users, Grid, Activity, FileText, Settings, LogOut, Menu, X, ShieldAlert, Banknote } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import axiosClient, { SOCKET_URL } from '../../api/axiosClient';
 
@@ -10,6 +10,7 @@ import { DepartmentManager } from './components/DepartmentManager';
 import { OperationsOverview } from './components/OperationsOverview';
 import { ReportsAndLogs } from './components/ReportsAndLogs';
 import { ClinicSettings } from './components/ClinicSettings';
+import ClinicFinancials from './components/ClinicFinancials';
 import { io } from 'socket.io-client';
 
 export default function ClinicManagementPortal() {
@@ -64,6 +65,7 @@ export default function ClinicManagementPortal() {
 
   const navigation = [
     { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
+    { id: 'financials', name: 'Earnings & Settlements', icon: Banknote },
     { id: 'outbreak-alerts', name: 'Outbreak Alerts', icon: ShieldAlert },
     { id: 'staff', name: 'Staff Management', icon: Users },
     { id: 'departments', name: 'Departments', icon: Grid },
@@ -82,6 +84,7 @@ export default function ClinicManagementPortal() {
 
     switch (activeTab) {
       case 'dashboard': return <AnalyticsDashboard data={portalData.analytics} clinicId={clinicId} />;
+      case 'financials': return <ClinicFinancials clinicId={clinicId} />;
       case 'outbreak-alerts': return <OutbreakAlerts clinicId={clinicId} />;
       case 'staff': return <StaffManagement staff={portalData.staff} refreshData={fetchPortalData} clinicId={clinicId} />;
       case 'departments': return <DepartmentManager departments={portalData.departments} refreshData={fetchPortalData} clinicId={clinicId} />;
