@@ -85,6 +85,8 @@ class PaymentService {
         );
 
         return { alreadyProcessed: false, clinicId: payment.clinic_id };
+    }
+    
     async getPatientPayments(userId) {
         const patientId = await paymentRepository.getPatientIdByUserId(userId);
         if (!patientId) {
