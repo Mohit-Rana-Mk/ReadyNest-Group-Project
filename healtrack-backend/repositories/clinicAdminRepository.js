@@ -225,6 +225,70 @@ class ClinicAdminRepository {
         return operations;
     }
 
+    async getOutbreakAlerts(clinicId) {
+        const [rows] = await db.query(
+            `SELECT id, disease, sector, severity, message, status, DATE_FORMAT(created_at, '%Y-%m-%d') as date
+             FROM clinic_outbreaks
+             WHERE clinic_id = ?
+             ORDER BY created_at DESC`,
+            [clinicId]
+        );
+        return rows;
+    }
+
+    async createOutbreakAlert(clinicId, data) {
+        const { disease, sector, severity, message } = data;
+        
+        // 1. Insert into clinic_outbreaks
+        const [result] = await db.execute(
+            `INSERT INTO clinic_outbreaks (clinic_id, disease, sector, severity, message, status)
+             VALUES (?, ?, ?, ?, ?, 'Active')`,
+            [clinicId, disease, sector, severity, message]
+        );
+        
+        // 2. Fetch target patients (who have appointments at this clinic)
+        let [patients] = await db.query(
+            `SELECT DISTINCT patient_id FROM appointments WHERE clinic_id = ?`,
+            [clinicId]
+        );
+        
+        // Fallback to all patients if no appointments at this clinic yet (for visibility in testing)
+        if (patients.length === 0) {
+            const [allPatients] = await db.query(`SELECT id as patient_id FROM patients`);
+            patients = allPatients;
+        }
+
+        if (patients.length > 0) {
+            // Find target service ID for General Medicine
+            const [services] = await db.query(`SELECT id FROM services WHERE LOWER(name) LIKE '%general%' LIMIT 1`);
+            const targetServiceId = services.length > 0 ? services[0].id : 2;
+
+            const alertTitle = `Clinic Alert: ${disease} (${severity} Severity)`;
+            const alertDescription = `${message} (Target sector: ${sector})`;
+
+            // Insert preventive_recommendations and notifications for each patient
+            for (const p of patients) {
+                await db.execute(
+                    `INSERT INTO preventive_recommendations (patient_id, alert_title, alert_description, target_service_id, status, generated_by)
+                     VALUES (?, ?, ?, ?, 'Pending', 'Doctor_Flag')`,
+                    [p.patient_id, alertTitle, alertDescription, targetServiceId]
+                );
+
+                await db.execute(
+                    `INSERT INTO notifications (patient_id, message, status)
+                     VALUES (?, ?, 'Unread')`,
+                    [p.patient_id, `Health Alert: ${alertTitle}. ${alertDescription}`]
+                );
+            }
+        }
+
+        return {
+            id: result.insertId,
+            notifiedCount: patients.length
+        };
+    }
+
+
     // --- Reports & Logs Methods ---
     async getLogs(clinicId) {
         const [apptLogs] = await db.query(

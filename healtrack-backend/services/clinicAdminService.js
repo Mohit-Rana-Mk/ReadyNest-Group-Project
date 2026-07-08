@@ -126,6 +126,14 @@ class ClinicAdminService {
     async updateStaff(staffId, payload) {
         await clinicAdminRepository.updateStaffMember(staffId, payload);
     }
+
+    async getOutbreakAlerts(clinicId) {
+        return await clinicAdminRepository.getOutbreakAlerts(clinicId);
+    }
+
+    async broadcastOutbreakAlert(clinicId, payload) {
+        return await clinicAdminRepository.createOutbreakAlert(clinicId, payload);
+    }
 }
 
 module.exports = new ClinicAdminService();

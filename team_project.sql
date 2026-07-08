@@ -5,6 +5,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS doctor_schedules;
 DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS preventive_recommendations;
+DROP TABLE IF EXISTS clinic_outbreaks;
 DROP TABLE IF EXISTS patient_vitals;
 DROP TABLE IF EXISTS ai_triage_logs;
 DROP TABLE IF EXISTS clinic_services;
@@ -254,3 +255,19 @@ CREATE TABLE IF NOT EXISTS patient_reports (
     file_name VARCHAR(255) NOT NULL,
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- -------------------------------------------------------------------------
+-- 15. CLINIC_OUTBREAKS (Registry for Clinic Admin Regional Broadcasts)
+-- -------------------------------------------------------------------------
+CREATE TABLE clinic_outbreaks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    clinic_id INT NOT NULL,
+    disease VARCHAR(255) NOT NULL,
+    sector VARCHAR(255) NOT NULL,
+    severity ENUM('Low', 'Medium', 'High') DEFAULT 'Medium',
+    message TEXT NOT NULL,
+    status ENUM('Active', 'Monitored', 'Resolved') DEFAULT 'Active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (clinic_id) REFERENCES clinics(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+

@@ -31,6 +31,8 @@ router.delete('/:clinicId/departments/:serviceId', departmentController.deleteDe
 
 // D. Operations
 router.get('/:clinicId/operations', operationsController.getOperations);
+router.get('/:clinicId/outbreak-alerts', operationsController.getOutbreakAlerts);
+router.post('/:clinicId/outbreak-alerts', operationsController.broadcastOutbreakAlert);
 
 // E. Clinic Settings
 router.get('/:clinicId/settings', settingsController.getClinicSettings);
