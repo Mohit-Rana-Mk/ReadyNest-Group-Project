@@ -151,7 +151,8 @@ exports.submitTriage = async (req, res) => {
         
         let validSymptoms = [];
         try {
-            const mlServiceUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
+            let mlServiceUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
+            mlServiceUrl = mlServiceUrl.replace(/\/+$/, '');
             const symResponse = await fetch(`${mlServiceUrl}/api/v1/symptoms`);
             if (symResponse.ok) {
                 validSymptoms = await symResponse.json();
@@ -233,7 +234,8 @@ exports.submitTriage = async (req, res) => {
             if ((isFollowUpCause || isFollowUpPrecaution || isGenericFollowUp) && patientLastDiseaseCache[cacheKey]) {
                 const cachedDisease = patientLastDiseaseCache[cacheKey];
                 try {
-                    const mlServiceUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
+                    let mlServiceUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
+                    mlServiceUrl = mlServiceUrl.replace(/\/+$/, '');
                     const infoResponse = await fetch(`${mlServiceUrl}/api/v1/disease-info/${encodeURIComponent(cachedDisease)}`);
                     if (infoResponse.ok) {
                         const infoData = await infoResponse.json();
@@ -311,7 +313,8 @@ exports.submitTriage = async (req, res) => {
 
         if (directDiseaseMatch) {
             try {
-                const mlServiceUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
+                let mlServiceUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
+                mlServiceUrl = mlServiceUrl.replace(/\/+$/, '');
                 const infoResponse = await fetch(`${mlServiceUrl}/api/v1/disease-info/${encodeURIComponent(directDiseaseMatch)}`);
                 if (infoResponse.ok) {
                     const infoData = await infoResponse.json();
@@ -389,7 +392,8 @@ exports.submitTriage = async (req, res) => {
         if (matchedSymptoms.length > 0) {
             // 2. Call ML Service disease prediction endpoint
             try {
-                const mlServiceUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
+                let mlServiceUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
+                mlServiceUrl = mlServiceUrl.replace(/\/+$/, '');
                 const mlResponse = await fetch(`${mlServiceUrl}/api/v1/predict/disease`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
