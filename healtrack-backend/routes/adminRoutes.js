@@ -16,4 +16,9 @@ router.post('/broadcast-awareness', adminController.broadcastAwareness);
 router.get('/outbreak-news', adminController.getOutbreakNews);
 router.get('/patient-analytics', adminController.getPatientAnalytics);
 
+router.get('/patients', adminController.getAllPatients);
+router.post('/patients/:userId/status', adminController.updatePatientStatus);
+router.delete('/patients/:patientId', adminController.deletePatient);
+router.delete('/clinics/:clinicId', adminController.deleteClinic);
+
 module.exports = router;

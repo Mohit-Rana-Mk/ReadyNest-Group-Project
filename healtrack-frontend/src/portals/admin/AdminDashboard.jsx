@@ -103,6 +103,23 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleDeleteClinic = async (clinicId) => {
+        if (!window.confirm("Are you sure you want to permanently delete this clinic facility? This action will permanently remove all associated appointments, reviews, outbreaks, and administrator accounts and cannot be undone.")) {
+            return;
+        }
+        try {
+            const res = await axiosClient.delete(`/admin/clinics/${clinicId}`);
+            if (res.data.success) {
+                setActionMessage(res.data.message);
+                loadDashboardData();
+                setTimeout(() => setActionMessage(''), 3000);
+            }
+        } catch (error) {
+            console.error("Failed to delete clinic:", error);
+            alert("Failed to delete clinic.");
+        }
+    };
+
     const navigation = [
         { id: 'onboarding', name: 'Onboarding & Queue', icon: ShieldCheck },
         { id: 'epidemiology', name: 'Epidemiology Map', icon: Map },
@@ -127,7 +144,7 @@ export default function AdminDashboard() {
             case 'ai-health':
                 return <AiHealthLogs aiHealthStats={aiHealthStats} />;
             case 'analytics':
-                return <EcosystemAnalytics ecosystemStats={ecosystemStats} onVerify={handleVerifyClinic} />;
+                return <EcosystemAnalytics ecosystemStats={ecosystemStats} onVerify={handleVerifyClinic} onDeleteClinic={handleDeleteClinic} />;
             case 'patient-analytics':
                 return <PatientAnalytics />;
             case 'payments':

@@ -101,6 +101,31 @@ class AdminService {
             }))
         };
     }
+
+    async getAllPatients() {
+        return await adminRepository.getAllPatients();
+    }
+
+    async updatePatientStatus(userId, status) {
+        if (!userId || !['Active', 'Suspended'].includes(status)) {
+            throw new Error("Invalid userId or status parameter");
+        }
+        await adminRepository.updatePatientStatus(userId, status);
+    }
+
+    async deletePatient(patientId) {
+        if (!patientId) {
+            throw new Error("Invalid patientId parameter");
+        }
+        await adminRepository.deletePatient(patientId);
+    }
+
+    async deleteClinic(clinicId) {
+        if (!clinicId) {
+            throw new Error("Invalid clinicId parameter");
+        }
+        await adminRepository.deleteClinic(clinicId);
+    }
 }
 
 module.exports = new AdminService();

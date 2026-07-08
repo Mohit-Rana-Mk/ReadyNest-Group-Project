@@ -714,3 +714,47 @@ exports.getPatientAnalytics = async (req, res) => {
         res.status(500).json({ success: false, message: "Server error fetching patient analytics", error: error.message });
     }
 };
+
+exports.getAllPatients = async (req, res) => {
+    try {
+        const patients = await adminService.getAllPatients();
+        res.json({ success: true, data: patients });
+    } catch (error) {
+        console.error("Error fetching patients:", error);
+        res.status(500).json({ success: false, message: "Failed to fetch patients", error: error.message });
+    }
+};
+
+exports.updatePatientStatus = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { status } = req.body;
+        await adminService.updatePatientStatus(userId, status);
+        res.json({ success: true, message: `Patient status successfully updated to ${status}!` });
+    } catch (error) {
+        console.error("Error updating patient status:", error);
+        res.status(500).json({ success: false, message: "Failed to update patient status", error: error.message });
+    }
+};
+
+exports.deletePatient = async (req, res) => {
+    try {
+        const { patientId } = req.params;
+        await adminService.deletePatient(patientId);
+        res.json({ success: true, message: "Patient account permanently deleted." });
+    } catch (error) {
+        console.error("Error deleting patient:", error);
+        res.status(500).json({ success: false, message: "Failed to delete patient account", error: error.message });
+    }
+};
+
+exports.deleteClinic = async (req, res) => {
+    try {
+        const { clinicId } = req.params;
+        await adminService.deleteClinic(clinicId);
+        res.json({ success: true, message: "Clinic facility permanently deleted." });
+    } catch (error) {
+        console.error("Error deleting clinic:", error);
+        res.status(500).json({ success: false, message: "Failed to delete clinic", error: error.message });
+    }
+};

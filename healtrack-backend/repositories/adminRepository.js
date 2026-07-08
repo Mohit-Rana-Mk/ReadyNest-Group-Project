@@ -144,6 +144,104 @@ class AdminRepository {
         );
         return reviews;
     }
+    async getAllPatients() {
+        const [patients] = await db.query(
+            `SELECT p.id as patient_id, p.mrn, p.name, p.gender, p.date_of_birth,
+                    u.id as user_id, u.email, u.phone, u.status as user_status, u.created_at
+             FROM patients p
+             JOIN users u ON p.user_id = u.id
+             ORDER BY u.created_at DESC`
+        );
+        return patients;
+    }
+
+    async updatePatientStatus(userId, status) {
+        await db.query(
+            `UPDATE users SET status = ? WHERE id = ? AND role = 'Patient'`,
+            [status, userId]
+        );
+    }
+
+    async deletePatient(patientId) {
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+
+            const [patients] = await connection.execute(
+                `SELECT user_id FROM patients WHERE id = ?`,
+                [patientId]
+            );
+
+            if (patients.length > 0) {
+                const userId = patients[0].user_id;
+
+                await connection.execute(`
+                    DELETE rf FROM refund_requests rf 
+                    JOIN payments py ON rf.payment_id = py.id 
+                    WHERE py.patient_id = ?
+                `, [patientId]);
+
+                await connection.execute(`DELETE FROM payments WHERE patient_id = ?`, [patientId]);
+                await connection.execute(`DELETE FROM patient_reports WHERE patient_id = ?`, [patientId]);
+                await connection.execute(`DELETE FROM appointments WHERE patient_id = ?`, [patientId]);
+                await connection.execute(`DELETE FROM users WHERE id = ?`, [userId]);
+            }
+
+            await connection.commit();
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
+
+    async deleteClinic(clinicId) {
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+
+            const [appts] = await connection.execute(
+                `SELECT id FROM appointments WHERE clinic_id = ?`,
+                [clinicId]
+            );
+            const apptIds = appts.map(a => a.id);
+
+            if (apptIds.length > 0) {
+                await connection.execute(`
+                    DELETE rf FROM refund_requests rf
+                    JOIN payments py ON rf.payment_id = py.id
+                    WHERE py.appointment_id IN (${apptIds.join(',')})
+                `);
+
+                await connection.execute(`
+                    DELETE FROM payments WHERE appointment_id IN (${apptIds.join(',')})
+                `);
+
+                await connection.execute(`
+                    DELETE FROM patient_reports WHERE appointment_id IN (${apptIds.join(',')})
+                `);
+
+                await connection.execute(`
+                    DELETE FROM appointments WHERE clinic_id = ?
+                `, [clinicId]);
+            }
+
+            await connection.execute(`DELETE FROM settlement_records WHERE clinic_id = ?`, [clinicId]);
+            await connection.execute(`DELETE FROM clinic_bank_accounts WHERE clinic_id = ?`, [clinicId]);
+            await connection.execute(`DELETE FROM clinic_outbreaks WHERE clinic_id = ?`, [clinicId]);
+            await connection.execute(`DELETE FROM clinic_services WHERE clinic_id = ?`, [clinicId]);
+            await connection.execute(`DELETE FROM clinic_reviews WHERE clinic_id = ?`, [clinicId]);
+            await connection.execute(`DELETE FROM clinics WHERE id = ?`, [clinicId]);
+
+            await connection.commit();
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
 }
 
 module.exports = new AdminRepository();
