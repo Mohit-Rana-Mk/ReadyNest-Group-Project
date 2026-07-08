@@ -195,8 +195,8 @@ exports.requestRefund = async (req, res) => {
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const razorpayInstance = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET
+    key_id: process.env.RAZORPAY_KEY_ID || 'rzp_live_TA71n8rCCwsUJj',
+    key_secret: process.env.RAZORPAY_KEY_SECRET || '793jidqYIv9NU1upGmNzJHgq'
 });
 
 // Creates a Razorpay order for an existing walk-in appointment
