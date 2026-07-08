@@ -14,8 +14,18 @@ exports.getQueue = async (req, res) => {
 exports.checkIn = async (req, res) => {
     try {
         const { clinicId, appointmentId } = req.params;
-        await receptionService.checkIn(clinicId, appointmentId);
-        if (req.io) req.io.emit('QUEUE_UPDATE', { clinicId });
+        const details = await receptionService.checkIn(clinicId, appointmentId);
+        if (req.io) {
+            req.io.emit('QUEUE_UPDATE', { clinicId });
+            if (details) {
+                req.io.emit('PATIENT_COMING', {
+                    doctorId: details.doctor_id,
+                    patientName: details.patientName,
+                    status: 'Checked-In',
+                    appointmentId
+                });
+            }
+        }
         res.status(200).json({ message: 'Patient Checked-In Successfully' });
     } catch (error) {
         console.error('checkIn Error:', error);
@@ -26,8 +36,19 @@ exports.checkIn = async (req, res) => {
 exports.updateStatus = async (req, res) => {
     try {
         const { clinicId, appointmentId } = req.params;
-        await receptionService.updateStatus(clinicId, appointmentId, req.body.status);
-        if (req.io) req.io.emit('QUEUE_UPDATE', { clinicId });
+        const { status } = req.body;
+        const details = await receptionService.updateStatus(clinicId, appointmentId, status);
+        if (req.io) {
+            req.io.emit('QUEUE_UPDATE', { clinicId });
+            if (details && (status === 'Checked-In' || status === 'In Consultation')) {
+                req.io.emit('PATIENT_COMING', {
+                    doctorId: details.doctor_id,
+                    patientName: details.patientName,
+                    status,
+                    appointmentId
+                });
+            }
+        }
         res.status(200).json({ message: 'Status Updated Successfully' });
     } catch (error) {
         if (error.message === 'Status is required') {
@@ -54,7 +75,7 @@ exports.lookupPatient = async (req, res) => {
 exports.registerWalkIn = async (req, res) => {
     try {
         const { clinicId } = req.params;
-        await receptionService.registerWalkIn(clinicId, req.body);
+        const details = await receptionService.registerWalkIn(clinicId, req.body);
         
         if (req.io) {
             req.io.emit('QUEUE_UPDATE', {
@@ -62,6 +83,14 @@ exports.registerWalkIn = async (req, res) => {
                 doctorId: req.body.doctor_id,
                 message: 'A new walk-in patient has been registered'
             });
+            if (details) {
+                req.io.emit('PATIENT_COMING', {
+                    doctorId: details.doctor_id,
+                    patientName: details.patientName,
+                    status: 'Checked-In',
+                    appointmentId: details.appointmentId
+                });
+            }
         }
         res.status(201).json({ message: 'Walk-In Registered Successfully' });
     } catch (error) {

@@ -42,6 +42,7 @@ export default function DoctorWorkstation() {
         { medicine_name: '', dosage: '', frequency: '1-0-1 (Morning/Night)', duration: '' }
     ]);
     const [submitStatus, setSubmitStatus] = useState({ type: '', message: '' });
+    const [incomingNotifications, setIncomingNotifications] = useState([]);
 
     useEffect(() => {
         fetchAppointments();
@@ -54,10 +55,26 @@ export default function DoctorWorkstation() {
             fetchAppointments(true); // pass true to indicate it's a background refresh
         });
 
+        socket.on('PATIENT_COMING', (data) => {
+            console.log("Realtime event received: PATIENT_COMING", data);
+            if (data.doctorId === user?.id) {
+                const newNotification = {
+                    id: Date.now() + Math.random(),
+                    patientName: data.patientName,
+                    status: data.status
+                };
+                setIncomingNotifications(prev => [newNotification, ...prev]);
+                setTimeout(() => {
+                    setIncomingNotifications(prev => prev.filter(n => n.id !== newNotification.id));
+                }, 8000);
+                fetchAppointments(true);
+            }
+        });
+
         return () => {
             socket.disconnect();
         };
-    }, [dateFilter]); // re-fetch if filter changes
+    }, [dateFilter, user]); // re-fetch if filter or user changes
 
     const fetchAppointments = async (isBackgroundRefresh = false) => {
         if (!isBackgroundRefresh) setLoading(true);
@@ -345,6 +362,32 @@ export default function DoctorWorkstation() {
                             </div>
                         )}
             </main>
+
+            {/* FLOATING NOTIFICATIONS */}
+            <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none">
+                {incomingNotifications.map(notification => (
+                    <div 
+                        key={notification.id}
+                        className="pointer-events-auto bg-white border-l-4 border-[#6366f1] rounded-xl shadow-2xl p-4 flex items-start gap-3 transition-all duration-300 border border-slate-100"
+                    >
+                        <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-[#6366f1] shrink-0">
+                            <Users className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1">
+                            <h4 className="text-xs font-bold text-slate-800">Patient Coming</h4>
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                                <span className="font-semibold text-[#6366f1]">{notification.patientName}</span> is coming to your workstation. Status: <span className="font-semibold text-amber-600">{notification.status}</span>.
+                            </p>
+                        </div>
+                        <button 
+                            onClick={() => setIncomingNotifications(prev => prev.filter(n => n.id !== notification.id))}
+                            className="text-slate-400 hover:text-slate-600 text-xs font-bold px-1"
+                        >
+                            ×
+                        </button>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }

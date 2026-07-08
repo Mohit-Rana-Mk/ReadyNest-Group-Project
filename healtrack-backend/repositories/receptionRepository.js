@@ -97,11 +97,27 @@ class ReceptionRepository {
 
         const finalPreRemarks = pre_remarks || 'Walk-In Registration';
 
-        await db.execute(
+        const [result] = await db.execute(
             `INSERT INTO appointments (clinic_id, patient_id, doctor_id, appointment_date, status, booking_source, pre_remarks) 
              VALUES (?, ?, ?, NOW(), 'Checked-In', 'Walk-in', ?)`,
             [clinicId, finalPatientId, doctor_id, finalPreRemarks]
         );
+        return {
+            appointmentId: result.insertId,
+            doctor_id,
+            patientName: new_patient_name || (await db.query(`SELECT name FROM patients WHERE id = ?`, [finalPatientId]))[0][0]?.name
+        };
+    }
+
+    async getAppointmentDetails(appointmentId) {
+        const [rows] = await db.query(
+            `SELECT a.doctor_id, p.name as patientName, a.status 
+             FROM appointments a
+             JOIN patients p ON a.patient_id = p.id
+             WHERE a.id = ?`,
+            [appointmentId]
+        );
+        return rows[0];
     }
 }
 

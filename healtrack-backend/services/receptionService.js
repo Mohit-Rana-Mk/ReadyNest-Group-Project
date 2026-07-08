@@ -31,11 +31,13 @@ class ReceptionService {
 
     async checkIn(clinicId, appointmentId) {
         await receptionRepository.checkInPatient(appointmentId, clinicId);
+        return await receptionRepository.getAppointmentDetails(appointmentId);
     }
 
     async updateStatus(clinicId, appointmentId, status) {
         if (!status) throw new Error('Status is required');
         await receptionRepository.updateStatus(appointmentId, clinicId, status);
+        return await receptionRepository.getAppointmentDetails(appointmentId);
     }
 
     async lookupPatient(phone) {
@@ -54,7 +56,7 @@ class ReceptionService {
             throw new Error('Name is required for new patient');
         }
 
-        await receptionRepository.registerWalkIn(clinicId, payload);
+        return await receptionRepository.registerWalkIn(clinicId, payload);
     }
 }
 
