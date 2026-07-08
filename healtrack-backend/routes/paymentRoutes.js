@@ -15,6 +15,11 @@ router.post('/verify', authMiddleware(['Patient']), paymentController.verifyPaym
 router.get('/history', authMiddleware(['Patient']), paymentController.getPatientPayments);
 router.post('/refund-request', authMiddleware(['Patient']), paymentController.requestRefund);
 
+// 3b. RECEPTION WALK-IN PAYMENT ENDPOINTS (ClinicStaff)
+router.post('/reception/walkin-order', authMiddleware(['ClinicStaff']), paymentController.createWalkInOrder);
+router.post('/reception/walkin-verify', authMiddleware(['ClinicStaff']), paymentController.verifyWalkInPayment);
+router.post('/reception/walkin-cash', authMiddleware(['ClinicStaff']), paymentController.recordWalkInCash);
+
 // 4. CLINIC ADMIN ENDPOINTS
 router.get('/clinic/financials', authMiddleware(['ClinicAdmin']), paymentController.getClinicFinancials);
 router.get('/clinic/bank-details', authMiddleware(['ClinicAdmin']), paymentController.getClinicBankDetails);

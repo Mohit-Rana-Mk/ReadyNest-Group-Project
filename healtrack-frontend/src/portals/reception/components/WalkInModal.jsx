@@ -4,7 +4,7 @@ import { Button } from '../../../components/ui/Button';
 import { Search, Loader2 } from 'lucide-react';
 import axiosClient from '../../../api/axiosClient';
 
-export function WalkInModal({ isOpen, onClose, onRegister, doctors = [] }) {
+export function WalkInModal({ isOpen, onClose, onRegister, doctors = [], clinicId = 1 }) {
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [dob, setDob] = useState('');
@@ -40,7 +40,7 @@ export function WalkInModal({ isOpen, onClose, onRegister, doctors = [] }) {
       if (phone.length >= 5) {
         setIsLookingUp(true);
         try {
-          const res = await axiosClient.get(`/reception/1/lookup?phone=${phone}`);
+          const res = await axiosClient.get(`/reception/${clinicId}/lookup?phone=${phone}`);
           if (res.data.exists && res.data.patients) {
              setExistingPatients(res.data.patients);
              if (res.data.patients.length > 0) {
@@ -70,7 +70,7 @@ export function WalkInModal({ isOpen, onClose, onRegister, doctors = [] }) {
     }, 500); // 500ms debounce
 
     return () => clearTimeout(timer);
-  }, [phone]);
+  }, [phone, clinicId]);
 
   // Handle dropdown change
   const handlePatientSelect = (e) => {
@@ -92,14 +92,15 @@ export function WalkInModal({ isOpen, onClose, onRegister, doctors = [] }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!doctor_id) return;
-    if (selectedPatientId === 'new' && !name) return;
+    const isNew = selectedPatientId === 'new' || !selectedPatientId;
+    if (isNew && !name) return;
 
     onRegister({ 
       phone, 
       doctor_id, 
-      patient_id: selectedPatientId === 'new' ? null : selectedPatientId,
-      new_patient_name: selectedPatientId === 'new' ? name : null,
-      dob: selectedPatientId === 'new' ? dob : null,
+      patient_id: isNew ? null : selectedPatientId,
+      new_patient_name: isNew ? name : null,
+      dob: isNew ? dob : null,
       pre_remarks: preRemarks
     });
     

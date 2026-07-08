@@ -191,6 +191,164 @@ exports.requestRefund = async (req, res) => {
 };
 
 
+// B-RECEPTION. WALK-IN PAYMENT ENDPOINTS (ClinicStaff)
+const Razorpay = require('razorpay');
+const crypto = require('crypto');
+const razorpayInstance = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
+});
+
+// Creates a Razorpay order for an existing walk-in appointment
+exports.createWalkInOrder = async (req, res) => {
+    const { appointment_id, patient_id, doctor_id, clinic_id } = req.body;
+    if (!appointment_id || !patient_id || !doctor_id || !clinic_id) {
+        return res.status(400).json({ message: 'appointment_id, patient_id, doctor_id and clinic_id are required' });
+    }
+    try {
+        // Get consultation fee
+        const [feeRows] = await db.query(
+            `SELECT COALESCE(cs.consultation_fee, 500.00) AS fee 
+             FROM users u 
+             LEFT JOIN clinic_services cs ON u.service_id = cs.service_id AND cs.clinic_id = ?
+             WHERE u.id = ? AND u.role = 'Doctor'`,
+            [clinic_id, doctor_id]
+        );
+        const fee = feeRows.length > 0 ? parseFloat(feeRows[0].fee) : 500.00;
+
+        // Create Razorpay order
+        const rzpOrder = await razorpayInstance.orders.create({
+            amount: Math.round(fee * 100),
+            currency: 'INR',
+            receipt: `walkin_${appointment_id}`
+        });
+
+        // Create payment record
+        const receipt_id = `REC-WLK-${Date.now()}-${appointment_id}`;
+        const invoice_id = `INV-WLK-${Date.now()}-${appointment_id}`;
+        await db.execute(
+            `INSERT INTO payments (patient_id, doctor_id, clinic_id, appointment_id, razorpay_order_id, amount, status, receipt_id, invoice_id)
+             VALUES (?, ?, ?, ?, ?, ?, 'Pending', ?, ?)`,
+            [patient_id, doctor_id, clinic_id, appointment_id, rzpOrder.id, fee, receipt_id, invoice_id]
+        );
+        await db.execute(
+            `INSERT INTO razorpay_orders (appointment_id, order_id, amount, status) VALUES (?, ?, ?, 'created')`,
+            [appointment_id, rzpOrder.id, fee]
+        );
+
+        res.status(201).json({
+            success: true,
+            orderId: rzpOrder.id,
+            amount: rzpOrder.amount,
+            currency: rzpOrder.currency,
+            keyId: process.env.RAZORPAY_KEY_ID,
+            fee
+        });
+    } catch (error) {
+        console.error('Create WalkIn Order Error:', error);
+        res.status(500).json({ message: 'Error creating payment order: ' + error.message });
+    }
+};
+
+// Verifies Razorpay payment signature for a walk-in appointment
+exports.verifyWalkInPayment = async (req, res) => {
+    const { appointment_id, razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+    if (!appointment_id || !razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
+        return res.status(400).json({ message: 'Missing payment verification tokens' });
+    }
+    try {
+        const secret = process.env.RAZORPAY_KEY_SECRET;
+        const body = razorpay_order_id + '|' + razorpay_payment_id;
+        const expectedSignature = crypto.createHmac('sha256', secret).update(body).digest('hex');
+        if (expectedSignature !== razorpay_signature) {
+            return res.status(400).json({ message: 'Invalid payment signature' });
+        }
+
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+            await connection.execute(`UPDATE appointments SET status = 'Checked-In' WHERE id = ?`, [appointment_id]);
+            await connection.execute(
+                `UPDATE payments SET status = 'Paid', razorpay_payment_id = ?, razorpay_signature = ? WHERE appointment_id = ?`,
+                [razorpay_payment_id, razorpay_signature, appointment_id]
+            );
+            await connection.execute(`UPDATE razorpay_orders SET status = 'paid' WHERE order_id = ?`, [razorpay_order_id]);
+            await connection.execute(
+                `INSERT INTO payment_audit_logs (user_id, action, details) VALUES (?, 'WALKIN_ONLINE_PAYMENT', ?)`,
+                [req.user?.id || null, JSON.stringify({ appointment_id, razorpay_payment_id })]
+            );
+            await connection.commit();
+        } catch (err) {
+            await connection.rollback();
+            throw err;
+        } finally {
+            connection.release();
+        }
+
+        if (req.io) req.io.emit('QUEUE_UPDATE', { message: 'Walk-in payment confirmed' });
+        res.status(200).json({ success: true, message: 'Payment verified and appointment confirmed' });
+    } catch (error) {
+        console.error('Verify WalkIn Payment Error:', error);
+        res.status(500).json({ message: 'Payment verification failed: ' + error.message });
+    }
+};
+
+// Records a cash payment for a walk-in appointment
+exports.recordWalkInCash = async (req, res) => {
+    const { appointment_id, patient_id, doctor_id, clinic_id } = req.body;
+    if (!appointment_id || !patient_id || !doctor_id || !clinic_id) {
+        return res.status(400).json({ message: 'appointment_id, patient_id, doctor_id and clinic_id are required' });
+    }
+    try {
+        // Get fee
+        const [feeRows] = await db.query(
+            `SELECT COALESCE(cs.consultation_fee, 500.00) AS fee 
+             FROM users u 
+             LEFT JOIN clinic_services cs ON u.service_id = cs.service_id AND cs.clinic_id = ?
+             WHERE u.id = ? AND u.role = 'Doctor'`,
+            [clinic_id, doctor_id]
+        );
+        const fee = feeRows.length > 0 ? parseFloat(feeRows[0].fee) : 500.00;
+
+        const receipt_id = `REC-CASH-${Date.now()}-${appointment_id}`;
+        const invoice_id = `INV-CASH-${Date.now()}-${appointment_id}`;
+
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+            // Check if payment record already exists
+            const [existing] = await connection.query(`SELECT id FROM payments WHERE appointment_id = ?`, [appointment_id]);
+            if (existing.length > 0) {
+                await connection.execute(`UPDATE payments SET status = 'Paid' WHERE appointment_id = ?`, [appointment_id]);
+            } else {
+                await connection.execute(
+                    `INSERT INTO payments (patient_id, doctor_id, clinic_id, appointment_id, razorpay_order_id, amount, status, receipt_id, invoice_id)
+                     VALUES (?, ?, ?, ?, ?, ?, 'Paid', ?, ?)`,
+                    [patient_id, doctor_id, clinic_id, appointment_id, `CASH-${appointment_id}`, fee, receipt_id, invoice_id]
+                );
+            }
+            await connection.execute(`UPDATE appointments SET status = 'Checked-In' WHERE id = ?`, [appointment_id]);
+            await connection.execute(
+                `INSERT INTO payment_audit_logs (user_id, action, details) VALUES (?, 'WALKIN_CASH_PAYMENT', ?)`,
+                [req.user?.id || null, JSON.stringify({ appointment_id, amount: fee, receipt_id })]
+            );
+            await connection.commit();
+        } catch (err) {
+            await connection.rollback();
+            throw err;
+        } finally {
+            connection.release();
+        }
+
+        if (req.io) req.io.emit('QUEUE_UPDATE', { message: 'Walk-in cash payment recorded' });
+        res.status(200).json({ success: true, message: 'Cash payment recorded successfully', receipt_id, fee });
+    } catch (error) {
+        console.error('Record WalkIn Cash Error:', error);
+        res.status(500).json({ message: 'Error recording cash payment: ' + error.message });
+    }
+};
+
+
 // B. CLINIC BANK DETAILS MODULE
 
 // 1. Get Clinic Bank Details

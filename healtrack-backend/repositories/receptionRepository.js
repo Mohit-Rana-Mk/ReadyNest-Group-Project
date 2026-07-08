@@ -61,8 +61,9 @@ class ReceptionRepository {
     }
 
     async registerWalkIn(clinicId, payload) {
-        const { phone, doctor_id, patient_id, new_patient_name, dob, pre_remarks } = payload;
+        let { phone, doctor_id, patient_id, new_patient_name, dob, pre_remarks } = payload;
         let finalPatientId = patient_id;
+        if (finalPatientId === '') finalPatientId = null;
 
         if (!finalPatientId) {
             let userId;
@@ -74,14 +75,23 @@ class ReceptionRepository {
                 }
             }
 
+            let finalPatientName = new_patient_name;
+
             if (!userId) {
+                const resolvedName = finalPatientName || 'Walk-In Patient';
                 const email = `walkin_${Date.now()}@temp.com`;
                 const finalPhone = phone || `walkin_${Date.now()}`;
                 const [userResult] = await db.execute(
                     `INSERT INTO users (name, email, phone, password, role, status) VALUES (?, ?, ?, 'walkin123', 'Patient', 'Active')`,
-                    [new_patient_name, email, finalPhone]
+                    [resolvedName, email, finalPhone]
                 );
                 userId = userResult.insertId;
+                if (!finalPatientName) finalPatientName = resolvedName;
+            } else {
+                if (!finalPatientName) {
+                    const [userRows] = await db.query(`SELECT name FROM users WHERE id = ?`, [userId]);
+                    finalPatientName = userRows[0]?.name || 'Walk-In Patient';
+                }
             }
 
             const [maxIdResult] = await db.query(`SELECT MAX(id) as maxId FROM patients`);
@@ -90,9 +100,10 @@ class ReceptionRepository {
 
             const [patientResult] = await db.execute(
                 `INSERT INTO patients (user_id, name, date_of_birth, gender, mrn) VALUES (?, ?, ?, 'Other', ?)`,
-                [userId, new_patient_name, dob || null, mrn]
+                [userId, finalPatientName, dob || null, mrn]
             );
             finalPatientId = patientResult.insertId;
+            new_patient_name = finalPatientName;
         }
 
         const finalPreRemarks = pre_remarks || 'Walk-In Registration';
@@ -105,6 +116,7 @@ class ReceptionRepository {
         return {
             appointmentId: result.insertId,
             doctor_id,
+            patientId: finalPatientId,
             patientName: new_patient_name || (await db.query(`SELECT name FROM patients WHERE id = ?`, [finalPatientId]))[0][0]?.name
         };
     }

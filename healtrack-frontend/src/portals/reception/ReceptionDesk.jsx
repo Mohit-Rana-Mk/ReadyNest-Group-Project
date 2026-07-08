@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { KpiBanner } from './components/KpiBanner';
 import { OpdQueueTable } from './components/OpdQueueTable';
 import { WalkInModal } from './components/WalkInModal';
-import { UserPlus, Bell, LogOut, Activity, Clock, Users, CheckCircle, Search, Loader2 } from 'lucide-react';
+import { UserPlus, Bell, LogOut, Activity, Clock, Users, CheckCircle, Search, Loader2, Banknote, CreditCard, X } from 'lucide-react';
 import axiosClient, { SOCKET_URL } from '../../api/axiosClient';
 import { io } from 'socket.io-client';
 import { useAuth } from '../../context/AuthContext';
@@ -32,6 +32,11 @@ export default function ReceptionDesk() {
   const [lookingUp, setLookingUp] = useState(false);
   const [existingPatients, setExistingPatients] = useState([]);
   const [selectedPatientId, setSelectedPatientId] = useState('');
+
+  // Payment modal state
+  const [paymentModal, setPaymentModal] = useState(null); // { appointmentId, patientId, doctorId, clinicId, doctorName }
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentDone, setPaymentDone] = useState(null); // { method, receipt_id, fee }
 
   const clinicId = user?.clinic_id || 1;
 
@@ -72,7 +77,7 @@ export default function ReceptionDesk() {
       if (walkInPhone.length >= 5) {
         setLookingUp(true);
         try {
-          const res = await axiosClient.get(`/reception/1/lookup?phone=${walkInPhone}`);
+          const res = await axiosClient.get(`/reception/${clinicId}/lookup?phone=${walkInPhone}`);
           if (res.data.exists && res.data.patients?.length > 0) {
             setExistingPatients(res.data.patients);
             setSelectedPatientId(res.data.patients[0].id.toString());
@@ -94,7 +99,7 @@ export default function ReceptionDesk() {
       }
     }, 500);
     return () => clearTimeout(timer);
-  }, [walkInPhone]);
+  }, [walkInPhone, clinicId]);
 
   const handleStatusChange = async (id, newStatus) => {
     try {
@@ -111,23 +116,109 @@ export default function ReceptionDesk() {
     setWalkInLoading(true);
     setWalkInError('');
     try {
-      await axiosClient.post(`/reception/${clinicId}/walk-in`, {
+      const isNew = selectedPatientId === 'new' || !selectedPatientId;
+      const res = await axiosClient.post(`/reception/${clinicId}/walk-in`, {
         phone: walkInPhone,
         doctor_id: walkInDoctorId,
-        patient_id: selectedPatientId === 'new' ? null : selectedPatientId,
-        new_patient_name: selectedPatientId === 'new' ? walkInName : null,
-        dob: selectedPatientId === 'new' ? walkInDob : null,
+        patient_id: isNew ? null : selectedPatientId,
+        new_patient_name: isNew ? walkInName : null,
+        dob: isNew ? walkInDob : null,
         pre_remarks: walkInRemarks
       });
-      setWalkInSuccess('Patient registered and added to queue!');
+      // Show payment modal
+      const { appointmentId, doctor_id: aptDoctorId, patientId: aptPatientId } = res.data;
+      const selectedDoctor = doctors.find(d => d.id.toString() === walkInDoctorId.toString());
+      setPaymentModal({
+        appointmentId,
+        patientId: aptPatientId,
+        doctorId: walkInDoctorId,
+        clinicId,
+        doctorName: selectedDoctor?.name || 'Doctor',
+        fee: selectedDoctor?.consultation_fee || 500
+      });
+      setPaymentDone(null);
       setWalkInPhone(''); setWalkInName(''); setWalkInDob(''); setWalkInDoctorId(''); setWalkInRemarks('');
       setExistingPatients([]); setSelectedPatientId('');
-      setTimeout(() => setWalkInSuccess(''), 4000);
       fetchQueue();
     } catch (err) {
       setWalkInError('Failed to register walk-in patient.');
     } finally {
       setWalkInLoading(false);
+    }
+  };
+
+  const handleCashPayment = async () => {
+    if (!paymentModal) return;
+    setPaymentLoading(true);
+    try {
+      const res = await axiosClient.post('/payments/reception/walkin-cash', {
+        appointment_id: paymentModal.appointmentId,
+        patient_id: paymentModal.patientId,
+        doctor_id: paymentModal.doctorId,
+        clinic_id: paymentModal.clinicId
+      });
+      setPaymentDone({ method: 'Cash', receipt_id: res.data.receipt_id, fee: res.data.fee });
+      fetchQueue();
+    } catch (err) {
+      alert('Failed to record cash payment: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
+  const handleOnlinePayment = async () => {
+    if (!paymentModal) return;
+    setPaymentLoading(true);
+    try {
+      // Load Razorpay script
+      const rzpLoaded = await new Promise((resolve) => {
+        if (window.Razorpay) { resolve(true); return; }
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+      });
+      if (!rzpLoaded) { alert('Failed to load payment gateway.'); setPaymentLoading(false); return; }
+
+      // Create order
+      const orderRes = await axiosClient.post('/payments/reception/walkin-order', {
+        appointment_id: paymentModal.appointmentId,
+        patient_id: paymentModal.patientId,
+        doctor_id: paymentModal.doctorId,
+        clinic_id: paymentModal.clinicId
+      });
+
+      const options = {
+        key: orderRes.data.keyId,
+        amount: orderRes.data.amount,
+        currency: orderRes.data.currency,
+        name: 'HealTrack',
+        description: `Consultation with Dr. ${paymentModal.doctorName}`,
+        order_id: orderRes.data.orderId,
+        handler: async function (response) {
+          try {
+            await axiosClient.post('/payments/reception/walkin-verify', {
+              appointment_id: paymentModal.appointmentId,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature
+            });
+            setPaymentDone({ method: 'Online', receipt_id: response.razorpay_payment_id, fee: orderRes.data.fee });
+            fetchQueue();
+          } catch (err) {
+            alert('Payment verification failed: ' + (err.response?.data?.message || err.message));
+          }
+        },
+        theme: { color: '#6366f1' }
+      };
+      setPaymentLoading(false);
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', (resp) => alert('Payment failed: ' + resp.error.description));
+      rzp.open();
+    } catch (err) {
+      alert('Error initiating payment: ' + (err.response?.data?.message || err.message));
+      setPaymentLoading(false);
     }
   };
 
@@ -460,6 +551,101 @@ export default function ReceptionDesk() {
           </div>
         </div>
       </div>
+
+      {/* PAYMENT MODAL */}
+      {paymentModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100">
+            {/* Header */}
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-[#f8fafc]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center">
+                  <CreditCard className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-slate-800 text-sm">Collect Payment</h3>
+                  <p className="text-[10px] text-slate-400 font-semibold">Dr. {paymentModal.doctorName} · ₹{paymentModal.fee}</p>
+                </div>
+              </div>
+              {paymentDone && (
+                <button onClick={() => setPaymentModal(null)} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition">
+                  <X className="w-4 h-4 text-slate-500" />
+                </button>
+              )}
+            </div>
+
+            <div className="p-6">
+              {paymentDone ? (
+                /* Success state */
+                <div className="text-center py-4">
+                  <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-100">
+                    <CheckCircle className="w-8 h-8 text-emerald-500" />
+                  </div>
+                  <h4 className="text-sm font-extrabold text-slate-800 mb-1">Payment Confirmed!</h4>
+                  <p className="text-xs text-slate-500 mb-1">Method: <span className="font-bold text-slate-700">{paymentDone.method}</span></p>
+                  <p className="text-xs text-slate-500 mb-4">Ref: <span className="font-mono text-slate-700 text-[10px]">{paymentDone.receipt_id}</span></p>
+                  <button
+                    onClick={() => setPaymentModal(null)}
+                    className="px-6 py-2.5 bg-[#6366f1] hover:bg-[#5558e6] text-white rounded-xl text-xs font-bold uppercase tracking-widest transition"
+                  >
+                    Done
+                  </button>
+                </div>
+              ) : (
+                /* Payment selection */
+                <div className="space-y-4">
+                  <p className="text-xs text-slate-500 text-center">Patient has been registered. How would they like to pay?</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Cash */}
+                    <button
+                      onClick={handleCashPayment}
+                      disabled={paymentLoading}
+                      className="flex flex-col items-center gap-3 p-5 bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-200 hover:border-emerald-400 rounded-2xl transition-all group disabled:opacity-60"
+                    >
+                      <div className="w-12 h-12 rounded-xl bg-emerald-100 group-hover:bg-emerald-200 flex items-center justify-center transition">
+                        <Banknote className="w-6 h-6 text-emerald-700" />
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm font-extrabold text-emerald-800">Pay Cash</p>
+                        <p className="text-[10px] text-emerald-600 font-medium mt-0.5">Record cash collected</p>
+                      </div>
+                    </button>
+
+                    {/* Online */}
+                    <button
+                      onClick={handleOnlinePayment}
+                      disabled={paymentLoading}
+                      className="flex flex-col items-center gap-3 p-5 bg-indigo-50 hover:bg-indigo-100 border-2 border-indigo-200 hover:border-indigo-400 rounded-2xl transition-all group disabled:opacity-60"
+                    >
+                      <div className="w-12 h-12 rounded-xl bg-indigo-100 group-hover:bg-indigo-200 flex items-center justify-center transition">
+                        <CreditCard className="w-6 h-6 text-indigo-700" />
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm font-extrabold text-indigo-800">Pay Online</p>
+                        <p className="text-[10px] text-indigo-600 font-medium mt-0.5">Razorpay gateway</p>
+                      </div>
+                    </button>
+                  </div>
+
+                  {paymentLoading && (
+                    <div className="flex items-center justify-center gap-2 pt-2">
+                      <span className="w-4 h-4 border-2 border-indigo-300 border-t-indigo-600 rounded-full animate-spin"></span>
+                      <span className="text-xs text-slate-500 font-medium">Processing...</span>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => setPaymentModal(null)}
+                    className="w-full text-center text-xs text-slate-400 hover:text-slate-600 font-medium pt-2 transition"
+                  >
+                    Skip — collect payment later
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

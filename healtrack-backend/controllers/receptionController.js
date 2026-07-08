@@ -92,7 +92,7 @@ exports.registerWalkIn = async (req, res) => {
                 });
             }
         }
-        res.status(201).json({ message: 'Walk-In Registered Successfully' });
+        res.status(201).json({ message: 'Walk-In Registered Successfully', appointmentId: details.appointmentId, patientId: details.patientId, doctor_id: details.doctor_id });
     } catch (error) {
         if (['doctor_id is required', 'Name is required for new patient'].includes(error.message)) {
             return res.status(400).json({ message: error.message });
