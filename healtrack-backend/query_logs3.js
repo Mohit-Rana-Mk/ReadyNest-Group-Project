@@ -1,0 +1,14 @@
+require('dotenv').config();
+const db = require('./config/db');
+
+async function test() {
+    try {
+        const [rows] = await db.query('SELECT user_input, predicted_risk, extracted_symptoms FROM ai_triage_logs ORDER BY created_at DESC LIMIT 5');
+        console.log(rows);
+    } catch(err) {
+        console.error("DB Error:", err.message);
+    }
+    process.exit(0);
+}
+
+test().catch(e => console.error(e));

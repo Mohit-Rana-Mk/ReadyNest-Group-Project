@@ -315,7 +315,14 @@ exports.submitTriage = async (req, res) => {
             try {
                 let mlServiceUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
                 mlServiceUrl = mlServiceUrl.replace(/\/+$/, '');
-                const infoResponse = await fetch(`${mlServiceUrl}/api/v1/disease-info/${encodeURIComponent(directDiseaseMatch)}`);
+                let infoResponse;
+                for (let attempt = 1; attempt <= 3; attempt++) {
+                    infoResponse = await fetch(`${mlServiceUrl}/api/v1/disease-info/${encodeURIComponent(directDiseaseMatch)}`);
+                    if (infoResponse.ok) break;
+                    console.warn(`ML service disease-info attempt ${attempt} failed with status: ${infoResponse.status}`);
+                    if (attempt < 3) await new Promise(res => setTimeout(res, 2000));
+                }
+
                 if (infoResponse.ok) {
                     const infoData = await infoResponse.json();
                     if (infoData.success) {
@@ -394,11 +401,17 @@ exports.submitTriage = async (req, res) => {
             try {
                 let mlServiceUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
                 mlServiceUrl = mlServiceUrl.replace(/\/+$/, '');
-                const mlResponse = await fetch(`${mlServiceUrl}/api/v1/predict/disease`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ symptoms: matchedSymptoms })
-                });
+                let mlResponse;
+                for (let attempt = 1; attempt <= 3; attempt++) {
+                    mlResponse = await fetch(`${mlServiceUrl}/api/v1/predict/disease`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ symptoms: matchedSymptoms })
+                    });
+                    if (mlResponse.ok) break;
+                    console.warn(`ML service prediction attempt ${attempt} failed with status: ${mlResponse.status}`);
+                    if (attempt < 3) await new Promise(res => setTimeout(res, 2000));
+                }
 
                 if (mlResponse.ok) {
                     const mlData = await mlResponse.json();
