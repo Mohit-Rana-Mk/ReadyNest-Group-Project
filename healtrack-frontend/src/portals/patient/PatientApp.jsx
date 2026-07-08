@@ -23,6 +23,27 @@ export default function PatientApp() {
     const [loading, setLoading] = useState(true);
     const { logout, user } = useAuth();
 
+    const now = new Date();
+    const upcomingAppointments = appointments
+        .filter(apt => {
+            const aptDate = new Date(apt.appointment_date);
+            return aptDate >= now && 
+                   apt.status !== 'Completed' && 
+                   apt.status !== 'Cancelled' && 
+                   apt.status !== 'Canceled';
+        })
+        .sort((a, b) => new Date(a.appointment_date) - new Date(b.appointment_date));
+
+    const recentVisits = appointments
+        .filter(apt => {
+            const aptDate = new Date(apt.appointment_date);
+            return aptDate < now || 
+                   apt.status === 'Completed' || 
+                   apt.status === 'Cancelled' || 
+                   apt.status === 'Canceled';
+        })
+        .sort((a, b) => new Date(b.appointment_date) - new Date(a.appointment_date));
+
     useEffect(() => {
         const loadData = async () => {
             try {
@@ -137,7 +158,7 @@ export default function PatientApp() {
                         <div>
                             <p className="text-xs font-bold text-white">My Health</p>
                             <p className="text-[10px] text-slate-400 font-medium mt-0.5">
-                                {recommendations.length > 0 ? recommendations.length : 1} Care Alerts
+                                {recommendations.length} Care Alerts
                             </p>
                         </div>
                     </div>
@@ -237,7 +258,7 @@ export default function PatientApp() {
                                             <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center mb-4 border border-slate-100">
                                                 <FileText className="w-6 h-6 text-indigo-500" />
                                             </div>
-                                            <p className="text-4xl font-black text-slate-800 tracking-tight">{appointments.length}</p>
+                                            <p className="text-4xl font-black text-slate-800 tracking-tight">{recentVisits.length}</p>
                                             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1.5">Total Clinic Visits</p>
                                         </div>
                                         <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all group cursor-pointer" onClick={() => setActiveTab('records')}>
@@ -245,7 +266,7 @@ export default function PatientApp() {
                                                 <Heart className="w-6 h-6 text-emerald-500 fill-emerald-500/10" />
                                             </div>
                                             <p className="text-4xl font-black text-slate-800 tracking-tight">
-                                                {recommendations.length > 0 ? recommendations.length : 1}
+                                                {recommendations.length}
                                             </p>
                                             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1.5">Pending Care Alerts</p>
                                         </div>
@@ -259,49 +280,117 @@ export default function PatientApp() {
                                     </div>
                                 </div>
 
-                                {/* Right Column: Recent Appointments Preview (4 columns) */}
-                                <div className="lg:col-span-4">
-                                    <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm h-full flex flex-col min-h-[300px]">
-                                        <div className="flex items-center justify-between mb-6">
+                                {/* Right Column: Appointments Preview (4 columns) */}
+                                <div className="lg:col-span-4 space-y-6">
+                                    {/* Upcoming Appointments Card */}
+                                    <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm flex flex-col min-h-[220px]">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider">Upcoming Appointments</h3>
+                                            <span className="bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wide">
+                                                {upcomingAppointments.length}
+                                            </span>
+                                        </div>
+                                        {upcomingAppointments.length > 0 ? (
+                                            <div className="space-y-4 overflow-y-auto max-h-[280px] pr-1">
+                                                {upcomingAppointments.slice(0, 3).map((apt, idx) => {
+                                                    const aptDate = new Date(apt.appointment_date);
+                                                    const isTele = apt.consultation_type === 'Teleconsultation';
+                                                    return (
+                                                        <div key={idx} className="p-3.5 rounded-2xl bg-indigo-50/30 border border-indigo-100/30 hover:border-indigo-100 hover:bg-indigo-50/50 transition-all space-y-2.5">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-10 h-10 rounded-xl bg-[#7F3DEC] flex flex-col items-center justify-center shrink-0 text-white shadow-sm shadow-[#7F3DEC]/20">
+                                                                    <span className="text-[8px] font-bold uppercase tracking-wider">{aptDate.toLocaleString('default', { month: 'short' })}</span>
+                                                                    <span className="text-xs font-black leading-none">{aptDate.getDate()}</span>
+                                                                </div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className="text-xs font-bold text-slate-800 truncate">{apt.clinic_name}</p>
+                                                                    <p className="text-[10px] font-medium text-slate-500 truncate mt-0.5">{apt.doctor_name}</p>
+                                                                </div>
+                                                                <div>
+                                                                    <span className={`px-2 py-0.5 text-[8px] font-extrabold rounded-md uppercase tracking-wider ${
+                                                                        apt.status === 'Confirmed' 
+                                                                            ? 'bg-emerald-50 text-emerald-600' 
+                                                                            : apt.status === 'Pending Payment'
+                                                                            ? 'bg-amber-50 text-amber-600'
+                                                                            : 'bg-blue-50 text-blue-600'
+                                                                    }`}>
+                                                                        {apt.status}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center justify-between text-[10px] font-medium text-slate-500 bg-white/60 px-3 py-1.5 rounded-lg">
+                                                                <span>{aptDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                                <span className="font-bold text-indigo-600">{apt.consultation_type}</span>
+                                                            </div>
+                                                            {isTele && apt.meeting_link && (
+                                                                <a 
+                                                                    href={apt.meeting_link}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="w-full flex items-center justify-center gap-1.5 p-2 bg-[#7F3DEC] hover:bg-[#6c2ed2] text-white text-[10px] font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm cursor-pointer"
+                                                                >
+                                                                    Join Video Call
+                                                                </a>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        ) : (
+                                            <div className="flex-1 flex flex-col items-center justify-center py-6 text-center">
+                                                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">No upcoming visits</p>
+                                                <p className="text-[10px] text-slate-400 mt-1 max-w-[200px] leading-relaxed">Book a new appointment to schedule your next visit.</p>
+                                                <button
+                                                    onClick={() => setActiveTab('find-care')}
+                                                    className="mt-3 text-[9px] text-white bg-[#7F3DEC] hover:bg-[#6c2ed2] font-extrabold uppercase tracking-widest px-4 py-2 rounded-xl transition-all shadow-sm cursor-pointer"
+                                                >
+                                                    Book Now
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Recent Visits Card */}
+                                    <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm flex flex-col min-h-[220px]">
+                                        <div className="flex items-center justify-between mb-4">
                                             <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider">Recent Visits</h3>
                                             <button
                                                 onClick={() => setActiveTab('records')}
-                                                className="text-[10px] text-indigo-600 font-extrabold uppercase tracking-widest hover:text-indigo-800 transition-colors bg-indigo-50 px-3 py-1.5 rounded-lg cursor-pointer"
+                                                className="text-[9px] text-indigo-600 font-extrabold uppercase tracking-widest hover:text-indigo-800 transition-colors bg-indigo-50 px-2.5 py-1.5 rounded-lg cursor-pointer"
                                             >
                                                 View All
                                             </button>
                                         </div>
-                                        {appointments.length > 0 ? (
-                                            <div className="flex-1 space-y-4">
-                                                {appointments.slice(0, 4).map((apt, idx) => (
-                                                    <div key={idx} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all">
-                                                        <div className="w-11 h-11 rounded-xl bg-slate-50 flex flex-col items-center justify-center shrink-0 border border-slate-100">
-                                                            <span className="text-[9px] font-bold text-slate-400 uppercase">{new Date(apt.appointment_date).toLocaleString('default', { month: 'short' })}</span>
-                                                            <span className="text-sm font-black text-slate-800 leading-none">{new Date(apt.appointment_date).getDate()}</span>
+                                        {recentVisits.length > 0 ? (
+                                            <div className="space-y-3 overflow-y-auto max-h-[280px] pr-1">
+                                                {recentVisits.slice(0, 3).map((apt, idx) => {
+                                                    const aptDate = new Date(apt.appointment_date);
+                                                    return (
+                                                        <div key={idx} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all">
+                                                            <div className="w-9 h-9 rounded-lg bg-slate-50 flex flex-col items-center justify-center shrink-0 border border-slate-100">
+                                                                <span className="text-[8px] font-bold text-slate-400 uppercase">{aptDate.toLocaleString('default', { month: 'short' })}</span>
+                                                                <span className="text-xs font-black text-slate-800 leading-none">{aptDate.getDate()}</span>
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-xs font-bold text-slate-800 truncate">{apt.clinic_name}</p>
+                                                                <p className="text-[10px] font-medium text-slate-400 truncate mt-0.5">{apt.doctor_name}</p>
+                                                            </div>
+                                                            <div>
+                                                                <span className={`px-2 py-0.5 text-[8px] font-extrabold rounded-md uppercase tracking-wider ${
+                                                                    apt.status === 'Completed' 
+                                                                        ? 'bg-emerald-50 text-emerald-600' 
+                                                                        : 'bg-amber-50 text-amber-600'
+                                                                }`}>
+                                                                    {apt.status}
+                                                                </span>
+                                                            </div>
                                                         </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-xs font-bold text-slate-800 truncate">{apt.clinic_name}</p>
-                                                            <p className="text-[10px] font-medium text-slate-400 truncate mt-0.5">{apt.doctor_name}</p>
-                                                        </div>
-                                                        <div>
-                                                            <span className={`px-2 py-0.5 text-[9px] font-extrabold rounded-md uppercase tracking-wider ${
-                                                                apt.status === 'Completed' 
-                                                                    ? 'bg-emerald-50 text-emerald-600' 
-                                                                    : 'bg-amber-50 text-amber-600'
-                                                            }`}>
-                                                                {apt.status}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                                    );
+                                                })}
                                             </div>
                                         ) : (
-                                            <div className="flex-1 flex flex-col items-center justify-center py-10 text-center">
-                                                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3 border border-slate-100">
-                                                    <FileText className="w-8 h-8 text-slate-300" />
-                                                </div>
-                                                <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">No recent visits</p>
-                                                <p className="text-[11px] text-slate-400 mt-1 max-w-[200px]">Book an appointment to see it here.</p>
+                                            <div className="flex-1 flex flex-col items-center justify-center py-6 text-center">
+                                                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">No recent visits</p>
                                             </div>
                                         )}
                                     </div>
