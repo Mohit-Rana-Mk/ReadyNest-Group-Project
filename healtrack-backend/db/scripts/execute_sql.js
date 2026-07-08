@@ -11,7 +11,7 @@ async function run() {
         ssl: { minVersion: 'TLSv1.2', rejectUnauthorized: true }
     });
     
-    const sql = fs.readFileSync('../team_project.sql', 'utf8');
+    const sql = fs.readFileSync('../../team_project.sql', 'utf8');
     const statements = sql.split(';').filter(stmt => stmt.trim() !== '');
     
     for (let stmt of statements) {

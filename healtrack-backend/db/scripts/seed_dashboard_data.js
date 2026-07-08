@@ -2,7 +2,7 @@ require('dotenv').config();
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
 
-const db = require('./config/db');
+const db = require('../../config/db');
 
 async function seed() {
     console.log('Connected to DB. Starting high-fidelity dashboard seeding...');

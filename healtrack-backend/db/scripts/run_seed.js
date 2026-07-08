@@ -1,10 +1,10 @@
 const fs = require('fs');
 require('dotenv').config();
-const db = require('./config/db');
+const db = require('../../config/db');
 
 async function runSeed() {
     try {
-        const sql = fs.readFileSync('../mock_ml_data.sql', 'utf8');
+        const sql = fs.readFileSync('../../mock_ml_data.sql', 'utf8');
         const statements = sql.split(';').filter(stmt => stmt.trim() !== '');
         
         for (let stmt of statements) {
