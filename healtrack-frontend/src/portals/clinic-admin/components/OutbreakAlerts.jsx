@@ -199,22 +199,7 @@ export function OutbreakAlerts({ clinicId = 1 }) {
                             {sending ? 'Broadcasting...' : 'Broadcast Alert'}
                         </button>
 
-                        <div className="grid grid-cols-2 gap-2 pt-1">
-                            <button
-                                type="button"
-                                onClick={() => alert('Sending SMS alerts to all registered patients in the sector...')}
-                                className="py-2 px-3 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl font-semibold text-[10px] transition flex items-center justify-center gap-1"
-                            >
-                                <MessageSquare className="w-3.5 h-3.5 text-slate-400" /> Send SMS
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => alert('Sending Email warnings to all medical staff...')}
-                                className="py-2 px-3 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl font-semibold text-[10px] transition flex items-center justify-center gap-1"
-                            >
-                                <Mail className="w-3.5 h-3.5 text-slate-400" /> Send Emails
-                            </button>
-                        </div>
+
                     </form>
                 </div>
             </div>
