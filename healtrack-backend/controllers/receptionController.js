@@ -76,7 +76,6 @@ exports.registerWalkIn = async (req, res) => {
     try {
         const { clinicId } = req.params;
         const details = await receptionService.registerWalkIn(clinicId, req.body);
-        
         if (req.io) {
             req.io.emit('QUEUE_UPDATE', {
                 clinicId,

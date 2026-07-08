@@ -6,13 +6,18 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      // Automatically updates the service worker when new content is available
       registerType: 'autoUpdate',
-      includeAssets: ['logo.png'],
+
+      // Includes all source assets in the service worker build
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'maskable-icon.png'],
+
+      // Web App Manifest configuration
       manifest: {
-        name: 'HealTrack',
-        short_name: 'HealTrack',
-        description: 'Advanced Agentic Healthcare Application',
-        theme_color: '#4f46e5',
+        name: 'Healtrack',
+        short_name: 'Heal',
+        description: 'A fully functional healthcare app',
+        theme_color: '#ffffff',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
@@ -20,32 +25,43 @@ export default defineConfig({
         start_url: '/',
         icons: [
           {
-            src: '/logo.png',
+            src: 'pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          },
+          {
+            src: 'maskable-icon.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'
           }
         ]
       },
+
+      // Workbox options for fine-tuning caching strategies
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/healtrack-backend-7h3o\.onrender\.com\/api\/.*/i,
+            urlPattern: /^https:\/\/api\.example\.com\/.*/i,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'healtrack-api-cache',
+              cacheName: 'api-data-cache',
               expiration: {
-                maxEntries: 100,
+                maxEntries: 50,
                 maxAgeSeconds: 60 * 60 * 24 // 1 day
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
               }
             }
           }
         ]
       },
+
+      // Enable developer mode to test the service worker locally
       devOptions: {
         enabled: true
       }
