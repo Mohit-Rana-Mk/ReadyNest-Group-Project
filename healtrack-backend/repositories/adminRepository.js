@@ -242,6 +242,106 @@ class AdminRepository {
             connection.release();
         }
     }
+
+    async getClinicDetails(clinicId) {
+        const [[clinic]] = await db.query(
+            `SELECT id, name, license_number, address, city, postal_code, latitude, longitude, verification_status 
+             FROM clinics WHERE id = ?`,
+            [clinicId]
+        );
+        if (!clinic) return null;
+
+        // Doctors
+        const [doctors] = await db.query(
+            `SELECT u.id, u.name, u.email, u.phone, u.status, s.name as department_name, u.service_id
+             FROM users u
+             LEFT JOIN services s ON u.service_id = s.id
+             LEFT JOIN (SELECT DISTINCT doctor_id, clinic_id FROM doctor_schedules) ds ON ds.doctor_id = u.id
+             WHERE u.role = 'Doctor' AND (u.clinic_id = ? OR ds.clinic_id = ?)`,
+            [clinicId, clinicId]
+        );
+
+        // Receptionists
+        const [receptionists] = await db.query(
+            `SELECT u.id, u.name, u.email, u.phone, u.status
+             FROM users u
+             WHERE u.role = 'ClinicStaff' AND u.clinic_id = ?`,
+            [clinicId]
+        );
+
+        // Departments (clinic services)
+        const [departments] = await db.query(
+            `SELECT cs.service_id, s.name, cs.consultation_fee
+             FROM clinic_services cs
+             JOIN services s ON cs.service_id = s.id
+             WHERE cs.clinic_id = ?`,
+            [clinicId]
+        );
+
+        // Available services in general
+        const [availableServices] = await db.query(
+            `SELECT id, name, description FROM services`
+        );
+
+        return {
+            clinic,
+            doctors,
+            receptionists,
+            departments,
+            availableServices
+        };
+    }
+
+    async updateClinicDetails(clinicId, details) {
+        const { name, license_number, address, city, postal_code, latitude, longitude } = details;
+        await db.execute(
+            `UPDATE clinics 
+             SET name = ?, license_number = ?, address = ?, city = ?, postal_code = ?, latitude = ?, longitude = ?
+             WHERE id = ?`,
+            [name, license_number, address, city, postal_code, latitude || 0, longitude || 0, clinicId]
+        );
+    }
+
+    async addClinicDepartment(clinicId, serviceId, fee) {
+        await db.execute(
+            `INSERT INTO clinic_services (clinic_id, service_id, consultation_fee) 
+             VALUES (?, ?, ?) 
+             ON DUPLICATE KEY UPDATE consultation_fee = ?`,
+            [clinicId, serviceId, fee, fee]
+        );
+    }
+
+    async removeClinicDepartment(clinicId, serviceId) {
+        await db.execute(
+            `DELETE FROM clinic_services WHERE clinic_id = ? AND service_id = ?`,
+            [clinicId, serviceId]
+        );
+    }
+
+    async updateUserStatus(userId, status) {
+        await db.execute(
+            `UPDATE users SET status = ? WHERE id = ? AND role IN ('Doctor', 'ClinicStaff')`,
+            [status, userId]
+        );
+    }
+
+    async deleteUser(userId) {
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+
+            await connection.execute(`UPDATE appointments SET doctor_id = NULL WHERE doctor_id = ?`, [userId]);
+            await connection.execute(`DELETE FROM doctor_schedules WHERE doctor_id = ?`, [userId]);
+            await connection.execute(`DELETE FROM users WHERE id = ?`, [userId]);
+
+            await connection.commit();
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
 }
 
 module.exports = new AdminRepository();

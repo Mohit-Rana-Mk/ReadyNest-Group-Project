@@ -126,6 +126,44 @@ class AdminService {
         }
         await adminRepository.deleteClinic(clinicId);
     }
+
+    async getClinicDetails(clinicId) {
+        if (!clinicId) throw new Error("Clinic ID is required");
+        return await adminRepository.getClinicDetails(clinicId);
+    }
+
+    async updateClinicDetails(clinicId, details) {
+        if (!clinicId || !details.name || !details.license_number) {
+            throw new Error("Missing required clinic details");
+        }
+        await adminRepository.updateClinicDetails(clinicId, details);
+    }
+
+    async addClinicDepartment(clinicId, serviceId, fee) {
+        if (!clinicId || !serviceId || fee === undefined) {
+            throw new Error("Missing parameters for adding department");
+        }
+        await adminRepository.addClinicDepartment(clinicId, serviceId, fee);
+    }
+
+    async removeClinicDepartment(clinicId, serviceId) {
+        if (!clinicId || !serviceId) {
+            throw new Error("Missing parameters for removing department");
+        }
+        await adminRepository.removeClinicDepartment(clinicId, serviceId);
+    }
+
+    async updateUserStatus(userId, status) {
+        if (!userId || !['Active', 'Suspended'].includes(status)) {
+            throw new Error("Invalid status update parameters");
+        }
+        await adminRepository.updateUserStatus(userId, status);
+    }
+
+    async deleteUser(userId) {
+        if (!userId) throw new Error("User ID is required");
+        await adminRepository.deleteUser(userId);
+    }
 }
 
 module.exports = new AdminService();

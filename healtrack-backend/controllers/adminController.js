@@ -758,3 +758,74 @@ exports.deleteClinic = async (req, res) => {
         res.status(500).json({ success: false, message: "Failed to delete clinic", error: error.message });
     }
 };
+
+exports.getClinicDetails = async (req, res) => {
+    try {
+        const { clinicId } = req.params;
+        const details = await adminService.getClinicDetails(clinicId);
+        if (!details) {
+            return res.status(404).json({ success: false, message: "Clinic not found" });
+        }
+        res.json({ success: true, data: details });
+    } catch (error) {
+        console.error("Error getting clinic details:", error);
+        res.status(500).json({ success: false, message: "Failed to retrieve clinic details", error: error.message });
+    }
+};
+
+exports.updateClinicDetails = async (req, res) => {
+    try {
+        const { clinicId } = req.params;
+        await adminService.updateClinicDetails(clinicId, req.body);
+        res.json({ success: true, message: "Clinic details successfully updated!" });
+    } catch (error) {
+        console.error("Error updating clinic details:", error);
+        res.status(500).json({ success: false, message: "Failed to update clinic details", error: error.message });
+    }
+};
+
+exports.addClinicDepartment = async (req, res) => {
+    try {
+        const { clinicId } = req.params;
+        const { serviceId, consultationFee } = req.body;
+        await adminService.addClinicDepartment(clinicId, serviceId, consultationFee);
+        res.json({ success: true, message: "Department successfully added to clinic!" });
+    } catch (error) {
+        console.error("Error adding clinic department:", error);
+        res.status(500).json({ success: false, message: "Failed to add department to clinic", error: error.message });
+    }
+};
+
+exports.removeClinicDepartment = async (req, res) => {
+    try {
+        const { clinicId, serviceId } = req.params;
+        await adminService.removeClinicDepartment(clinicId, serviceId);
+        res.json({ success: true, message: "Department successfully removed from clinic!" });
+    } catch (error) {
+        console.error("Error removing clinic department:", error);
+        res.status(500).json({ success: false, message: "Failed to remove department from clinic", error: error.message });
+    }
+};
+
+exports.updateUserStatus = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { status } = req.body;
+        await adminService.updateUserStatus(userId, status);
+        res.json({ success: true, message: `User account successfully ${status.toLowerCase()}ed!` });
+    } catch (error) {
+        console.error("Error updating user status:", error);
+        res.status(500).json({ success: false, message: "Failed to update user account status", error: error.message });
+    }
+};
+
+exports.deleteUser = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        await adminService.deleteUser(userId);
+        res.json({ success: true, message: "User account successfully removed!" });
+    } catch (error) {
+        console.error("Error deleting user:", error);
+        res.status(500).json({ success: false, message: "Failed to delete user account", error: error.message });
+    }
+};

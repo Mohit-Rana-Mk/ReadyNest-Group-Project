@@ -21,4 +21,12 @@ router.post('/patients/:userId/status', adminController.updatePatientStatus);
 router.delete('/patients/:patientId', adminController.deletePatient);
 router.delete('/clinics/:clinicId', adminController.deleteClinic);
 
+// Clinic Management Routes
+router.get('/clinics/:clinicId/details', adminController.getClinicDetails);
+router.put('/clinics/:clinicId', adminController.updateClinicDetails);
+router.post('/clinics/:clinicId/departments', adminController.addClinicDepartment);
+router.delete('/clinics/:clinicId/departments/:serviceId', adminController.removeClinicDepartment);
+router.post('/users/:userId/status', adminController.updateUserStatus);
+router.delete('/users/:userId', adminController.deleteUser);
+
 module.exports = router;
