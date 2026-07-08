@@ -1,4 +1,6 @@
 const adminRepository = require('../repositories/adminRepository');
+const db = require('../config/db');
+
 
 class AdminService {
     async getPendingClinics() {
@@ -17,7 +19,10 @@ class AdminService {
     }
 
     async createClinic(payload) {
-        const { name, license_number, address, city, postal_code, latitude, longitude } = payload;
+        const { 
+            name, license_number, address, city, postal_code, latitude, longitude,
+            admin_name, admin_email, admin_phone, admin_password 
+        } = payload;
 
         if (!name || !license_number || !address || !city || !postal_code) {
             throw new Error("Missing required clinic information.");
@@ -26,8 +31,37 @@ class AdminService {
         const latVal = latitude ? parseFloat(latitude) : 0.0;
         const lngVal = longitude ? parseFloat(longitude) : 0.0;
 
-        await adminRepository.createClinic(name, license_number, address, city, postal_code, latVal, lngVal);
-        return { success: true, message: "Clinic successfully onboarded and set to Approved!" };
+        let adminData = null;
+        let generatedPassword = null;
+        if (admin_email) {
+            if (!admin_name || !admin_phone) {
+                throw new Error("Admin name and phone number are required to create a clinic admin account.");
+            }
+            
+            // Check if email already exists in users table
+            const [existing] = await db.query("SELECT id FROM users WHERE email = ? OR phone = ?", [admin_email, admin_phone]);
+            if (existing && existing.length > 0) {
+                throw new Error("A user account with this email or phone already exists.");
+            }
+
+            const bcrypt = require('bcrypt');
+            generatedPassword = admin_password || Math.random().toString(36).slice(-8);
+            const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+            adminData = { admin_name, admin_email, admin_phone, hashedPassword };
+        }
+
+        await adminRepository.createClinic(
+            { name, license_number, address, city, postal_code, latitude: latVal, longitude: lngVal },
+            adminData
+        );
+
+        return { 
+            success: true, 
+            message: admin_email 
+                ? `Clinic successfully onboarded and Admin account created!` 
+                : "Clinic successfully onboarded and set to Approved!",
+            credentials: admin_email ? { email: admin_email, password: generatedPassword } : null
+        };
     }
 
     async getEpidemiologyTrends(daysQuery) {

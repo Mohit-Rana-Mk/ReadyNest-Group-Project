@@ -93,11 +93,13 @@ export default function AdminDashboard() {
             if (res.data.success) {
                 setActionMessage(res.data.message);
                 loadDashboardData();
-                setTimeout(() => setActionMessage(''), 3000);
+                setTimeout(() => setActionMessage(''), 5000);
+                return res.data;
             }
         } catch (error) {
             console.error("Direct onboarding failed:", error);
-            alert("Failed to onboard clinic.");
+            alert(error.response?.data?.message || "Failed to onboard clinic.");
+            throw error;
         }
     };
 

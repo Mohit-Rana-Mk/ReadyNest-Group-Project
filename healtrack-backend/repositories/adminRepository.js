@@ -44,12 +44,37 @@ class AdminRepository {
         }
     }
 
-    async createClinic(name, license_number, address, city, postal_code, latitude, longitude) {
-        await db.execute(
-            `INSERT INTO clinics (name, license_number, address, city, postal_code, latitude, longitude, verification_status) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, 'Approved')`,
-            [name, license_number, address, city, postal_code, latitude, longitude]
-        );
+    async createClinic(clinicData, adminData) {
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+
+            const { name, license_number, address, city, postal_code, latitude, longitude } = clinicData;
+            const [result] = await connection.execute(
+                `INSERT INTO clinics (name, license_number, address, city, postal_code, latitude, longitude, verification_status) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, 'Approved')`,
+                [name, license_number, address, city, postal_code, latitude, longitude]
+            );
+
+            const clinicId = result.insertId;
+
+            if (adminData) {
+                const { admin_name, admin_email, admin_phone, hashedPassword } = adminData;
+                await connection.execute(
+                    `INSERT INTO users (name, email, phone, password, role, status, clinic_id)
+                     VALUES (?, ?, ?, ?, 'ClinicAdmin', 'Active', ?)`,
+                    [admin_name, admin_email, admin_phone, hashedPassword, clinicId]
+                );
+            }
+
+            await connection.commit();
+            return clinicId;
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
     }
 
     async getEpidemiologyLocations(days) {

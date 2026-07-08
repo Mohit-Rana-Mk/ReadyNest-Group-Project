@@ -9,15 +9,24 @@ export function ClinicOnboarding({ pendingClinics, onVerify, onOnboardClinic }) 
         city: '',
         postal_code: '',
         latitude: '',
-        longitude: ''
+        longitude: '',
+        admin_name: '',
+        admin_email: '',
+        admin_phone: '',
+        admin_password: ''
     });
     const [submitting, setSubmitting] = useState(false);
+    const [createdCredentials, setCreatedCredentials] = useState(null);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSubmitting(true);
+        setCreatedCredentials(null);
         try {
-            await onOnboardClinic(formData);
+            const res = await onOnboardClinic(formData);
+            if (res && res.credentials) {
+                setCreatedCredentials(res.credentials);
+            }
             setFormData({
                 name: '',
                 license_number: '',
@@ -25,7 +34,11 @@ export function ClinicOnboarding({ pendingClinics, onVerify, onOnboardClinic }) 
                 city: '',
                 postal_code: '',
                 latitude: '',
-                longitude: ''
+                longitude: '',
+                admin_name: '',
+                admin_email: '',
+                admin_phone: '',
+                admin_password: ''
             });
         } catch (error) {
             console.error("Onboarding failed:", error);
@@ -103,6 +116,15 @@ export function ClinicOnboarding({ pendingClinics, onVerify, onOnboardClinic }) 
                     <h3 className="font-bold text-slate-800 text-base">Direct Onboard</h3>
                     <p className="text-xs text-slate-400">Directly add a pre-approved clinic facility without verification queue.</p>
                 </div>
+
+                {createdCredentials && (
+                    <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1.5 animate-fadeIn">
+                        <div className="text-[10px] text-emerald-800 font-extrabold uppercase tracking-wider">Admin Account Created!</div>
+                        <div className="text-xs font-semibold text-slate-700">Email: <span className="font-mono select-all bg-white px-1 py-0.5 rounded border border-emerald-100 ml-1">{createdCredentials.email}</span></div>
+                        <div className="text-xs font-semibold text-slate-700">Password: <span className="font-mono select-all bg-white px-1 py-0.5 rounded border border-emerald-100 ml-1">{createdCredentials.password}</span></div>
+                        <div className="text-[9px] text-slate-400 mt-1">Please copy these credentials before closing or refreshing.</div>
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
@@ -183,6 +205,57 @@ export function ClinicOnboarding({ pendingClinics, onVerify, onOnboardClinic }) 
                                 onChange={e => setFormData(prev => ({ ...prev, longitude: e.target.value }))}
                                 className="w-1/2 bg-[#f8f9fa] border border-[#e9ecef] rounded-xl px-3 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition duration-150 placeholder-slate-400"
                             />
+                        </div>
+                    </div>
+
+                    <div className="border-t border-[#f1f3f5] pt-4 mt-2">
+                        <h4 className="font-bold text-slate-800 text-xs mb-3">Administrator Account</h4>
+                        <div className="space-y-3">
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Admin Name</label>
+                                <input 
+                                    type="text" 
+                                    required={!!formData.admin_email}
+                                    value={formData.admin_name}
+                                    onChange={e => setFormData(prev => ({ ...prev, admin_name: e.target.value }))}
+                                    placeholder="John Doe"
+                                    className="w-full bg-[#f8f9fa] border border-[#e9ecef] rounded-xl px-3.5 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition duration-150 placeholder-slate-400"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Admin Email</label>
+                                <input 
+                                    type="email" 
+                                    value={formData.admin_email}
+                                    onChange={e => setFormData(prev => ({ ...prev, admin_email: e.target.value }))}
+                                    placeholder="admin@metrohealth.com"
+                                    className="w-full bg-[#f8f9fa] border border-[#e9ecef] rounded-xl px-3.5 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition duration-150 placeholder-slate-400"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Admin Phone</label>
+                                <input 
+                                    type="text" 
+                                    required={!!formData.admin_email}
+                                    value={formData.admin_phone}
+                                    onChange={e => setFormData(prev => ({ ...prev, admin_phone: e.target.value }))}
+                                    placeholder="9876543210"
+                                    className="w-full bg-[#f8f9fa] border border-[#e9ecef] rounded-xl px-3.5 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition duration-150 placeholder-slate-400"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Admin Password (Optional)</label>
+                                <input 
+                                    type="password" 
+                                    value={formData.admin_password}
+                                    onChange={e => setFormData(prev => ({ ...prev, admin_password: e.target.value }))}
+                                    placeholder="Leave blank to auto-generate"
+                                    className="w-full bg-[#f8f9fa] border border-[#e9ecef] rounded-xl px-3.5 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition duration-150 placeholder-slate-400"
+                                />
+                            </div>
                         </div>
                     </div>
 
