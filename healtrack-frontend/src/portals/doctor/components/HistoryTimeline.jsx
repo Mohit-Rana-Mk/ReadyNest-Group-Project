@@ -72,20 +72,14 @@ export function HistoryTimeline({ patientHistory, loadingHistory }) {
     };
 
     // Setup chart data in chronological order (oldest to newest)
-    const chartData = rawVitals.length > 0 
-        ? [...rawVitals].reverse().map(v => ({
-            date: new Date(v.recorded_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
-            systolic: v.systolic_bp || 0,
-            diastolic: v.diastolic_bp || 0,
-            pulse: v.pulse_rate || 0,
-            sugar: v.blood_sugar_mgdl || 0,
-            weight: v.weight_kg || 0
-          }))
-        : [
-            { date: '1 Month Ago', systolic: 118, diastolic: 78, pulse: 70, sugar: 90, weight: 70 },
-            { date: '2 Weeks Ago', systolic: 122, diastolic: 82, pulse: 75, sugar: 95, weight: 70.5 },
-            { date: 'Today', systolic: 120, diastolic: 80, pulse: 72, sugar: 92, weight: 70.2 }
-          ];
+    const chartData = [...rawVitals].reverse().map(v => ({
+        date: new Date(v.recorded_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+        systolic: v.systolic_bp || null,
+        diastolic: v.diastolic_bp || null,
+        pulse: v.pulse_rate || null,
+        sugar: v.blood_sugar_mgdl || null,
+        weight: v.weight_kg || null
+    }));
 
     return (
         <div className="flex-1 w-full h-full bg-white border border-[#e9ecef] rounded-3xl shadow-sm flex flex-col overflow-hidden">
@@ -306,13 +300,13 @@ export function HistoryTimeline({ patientHistory, loadingHistory }) {
                                     </div>
                                     <div className="mt-3">
                                         <span className="text-lg font-bold text-slate-800">
-                                            {latestVitals?.blood_sugar_mgdl ? `${latestVitals.blood_sugar_mgdl} ` : '95 '}
+                                            {latestVitals?.blood_sugar_mgdl ? `${latestVitals.blood_sugar_mgdl} ` : 'N/A '}
                                         </span>
                                         <span className="text-[10px] text-slate-400 font-semibold">mg/dL</span>
                                     </div>
                                     <div className="mt-2.5">
-                                        <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full border uppercase tracking-wider ${getSugarClass(latestVitals?.blood_sugar_mgdl || 95).style}`}>
-                                            {getSugarClass(latestVitals?.blood_sugar_mgdl || 95).text}
+                                        <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full border uppercase tracking-wider ${getSugarClass(latestVitals?.blood_sugar_mgdl).style}`}>
+                                            {getSugarClass(latestVitals?.blood_sugar_mgdl).text}
                                         </span>
                                     </div>
                                 </div>
@@ -338,56 +332,68 @@ export function HistoryTimeline({ patientHistory, loadingHistory }) {
                             </div>
                         </div>
 
-                        {/* Cardiology Trend Chart */}
-                        <div className="bg-white border border-slate-200/75 rounded-3xl p-5 shadow-xs">
-                            <div className="mb-4">
-                                <h5 className="font-bold text-slate-800 text-xs">Cardiology Trend</h5>
-                                <p className="text-[10px] text-slate-400">Systolic/Diastolic blood pressure (mmHg) & Pulse rate (bpm) over time</p>
+                        {rawVitals.length === 0 ? (
+                            <div className="flex flex-col justify-center items-center py-12 px-4 border border-dashed border-slate-200 rounded-3xl bg-white text-slate-400 text-center">
+                                <Activity className="w-10 h-10 mb-2.5 text-indigo-500 stroke-[1.5]" />
+                                <h5 className="text-xs font-bold text-slate-700">No Vitals Trend Data Available</h5>
+                                <p className="text-[10px] text-slate-400 mt-1 max-w-[280px]">
+                                    Historical trends for Cardiology and Metabolism will appear once vitals are recorded during consultations.
+                                </p>
                             </div>
-                            <div className="h-64 w-full">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                        <CartesianGrid stroke="#f1f5f9" vertical={false} />
-                                        <XAxis dataKey="date" tick={{ fontSize: 9, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                                        <YAxis tick={{ fontSize: 9, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                                        <Tooltip 
-                                            contentStyle={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', padding: '12px' }}
-                                            labelStyle={{ fontSize: 10, fontWeight: 'bold', color: '#1e293b', marginBottom: '4px' }}
-                                            itemStyle={{ fontSize: 10 }}
-                                        />
-                                        <Legend wrapperStyle={{ fontSize: 10, paddingTop: 10 }} />
-                                        <Line type="monotone" dataKey="systolic" name="Systolic BP" stroke="#f59e0b" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                                        <Line type="monotone" dataKey="diastolic" name="Diastolic BP" stroke="#ef4444" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                                        <Line type="monotone" dataKey="pulse" name="Pulse Rate" stroke="#10b981" strokeWidth={2.5} strokeDasharray="5 5" dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
+                        ) : (
+                            <>
+                                {/* Cardiology Trend Chart */}
+                                <div className="bg-white border border-slate-200/75 rounded-3xl p-5 shadow-xs">
+                                    <div className="mb-4">
+                                        <h5 className="font-bold text-slate-800 text-xs">Cardiology Trend</h5>
+                                        <p className="text-[10px] text-slate-400">Systolic/Diastolic blood pressure (mmHg) & Pulse rate (bpm) over time</p>
+                                    </div>
+                                    <div className="h-64 w-full">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                                <CartesianGrid stroke="#f1f5f9" vertical={false} />
+                                                <XAxis dataKey="date" tick={{ fontSize: 9, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                                                <YAxis tick={{ fontSize: 9, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                                                <Tooltip 
+                                                    contentStyle={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', padding: '12px' }}
+                                                    labelStyle={{ fontSize: 10, fontWeight: 'bold', color: '#1e293b', marginBottom: '4px' }}
+                                                    itemStyle={{ fontSize: 10 }}
+                                                />
+                                                <Legend wrapperStyle={{ fontSize: 10, paddingTop: 10 }} />
+                                                <Line type="monotone" dataKey="systolic" name="Systolic BP" stroke="#f59e0b" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                                                <Line type="monotone" dataKey="diastolic" name="Diastolic BP" stroke="#ef4444" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                                                <Line type="monotone" dataKey="pulse" name="Pulse Rate" stroke="#10b981" strokeWidth={2.5} strokeDasharray="5 5" dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
 
-                        {/* Metabolic Trend Chart */}
-                        <div className="bg-white border border-slate-200/75 rounded-3xl p-5 shadow-xs">
-                            <div className="mb-4">
-                                <h5 className="font-bold text-slate-800 text-xs">Metabolic Trend</h5>
-                                <p className="text-[10px] text-slate-400">Fasting/Random Blood sugar (mg/dL) & Body weight (kg) over time</p>
-                            </div>
-                            <div className="h-64 w-full">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                        <CartesianGrid stroke="#f1f5f9" vertical={false} />
-                                        <XAxis dataKey="date" tick={{ fontSize: 9, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                                        <YAxis tick={{ fontSize: 9, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                                        <Tooltip 
-                                            contentStyle={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', padding: '12px' }}
-                                            labelStyle={{ fontSize: 10, fontWeight: 'bold', color: '#1e293b', marginBottom: '4px' }}
-                                            itemStyle={{ fontSize: 10 }}
-                                        />
-                                        <Legend wrapperStyle={{ fontSize: 10, paddingTop: 10 }} />
-                                        <Line type="monotone" dataKey="sugar" name="Blood Sugar" stroke="#6366f1" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                                        <Line type="monotone" dataKey="weight" name="Weight (kg)" stroke="#06b6d4" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
+                                {/* Metabolic Trend Chart */}
+                                <div className="bg-white border border-slate-200/75 rounded-3xl p-5 shadow-xs">
+                                    <div className="mb-4">
+                                        <h5 className="font-bold text-slate-800 text-xs">Metabolic Trend</h5>
+                                        <p className="text-[10px] text-slate-400">Fasting/Random Blood sugar (mg/dL) & Body weight (kg) over time</p>
+                                    </div>
+                                    <div className="h-64 w-full">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                                <CartesianGrid stroke="#f1f5f9" vertical={false} />
+                                                <XAxis dataKey="date" tick={{ fontSize: 9, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                                                <YAxis tick={{ fontSize: 9, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                                                <Tooltip 
+                                                    contentStyle={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', padding: '12px' }}
+                                                    labelStyle={{ fontSize: 10, fontWeight: 'bold', color: '#1e293b', marginBottom: '4px' }}
+                                                    itemStyle={{ fontSize: 10 }}
+                                                />
+                                                <Legend wrapperStyle={{ fontSize: 10, paddingTop: 10 }} />
+                                                <Line type="monotone" dataKey="sugar" name="Blood Sugar" stroke="#6366f1" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                                                <Line type="monotone" dataKey="weight" name="Weight (kg)" stroke="#06b6d4" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
                 )}
             </div>
