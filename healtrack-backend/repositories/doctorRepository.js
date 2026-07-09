@@ -44,7 +44,7 @@ class DoctorRepository {
             INNER JOIN patients p ON a.patient_id = p.id
             INNER JOIN users u ON p.user_id = u.id
             LEFT JOIN patient_vitals v ON a.id = v.appointment_id
-            WHERE a.doctor_id = ? ${dateCondition}
+            WHERE a.doctor_id = ? AND a.status NOT IN ('Cancelled', 'Canceled') ${dateCondition}
             ORDER BY a.appointment_date ASC
         `, [doctorId]);
 

@@ -20,6 +20,9 @@ export default function DoctorWorkstation() {
     const { logout, user } = useAuth();
     const [appointments, setAppointments] = useState([]);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
+    const selectedApptRef = React.useRef(selectedAppointment);
+    selectedApptRef.current = selectedAppointment;
+
     const [patientHistory, setPatientHistory] = useState(null);
     const [loading, setLoading] = useState(false);
     const [loadingHistory, setLoadingHistory] = useState(false);
@@ -81,9 +84,17 @@ export default function DoctorWorkstation() {
         try {
             const response = await axiosClient.get(`${ENDPOINTS.DOCTOR.GET_APPOINTMENTS}?date_filter=${dateFilter}`);
             if (response.data && response.data.success) {
-                setAppointments(response.data.data);
-                if (response.data.data.length > 0) {
-                    handleSelectAppointment(response.data.data[0]);
+                const activeApps = (response.data.data || []).filter(a => a.status !== 'Cancelled' && a.status !== 'Canceled');
+                setAppointments(activeApps);
+                
+                const currentSel = selectedApptRef.current;
+                if (activeApps.length > 0) {
+                    const stillExists = currentSel ? activeApps.some(a => a.appointment_id === currentSel.appointment_id) : false;
+                    if (!stillExists) {
+                        handleSelectAppointment(activeApps[0]);
+                    }
+                } else {
+                    setSelectedAppointment(null);
                 }
             }
         } catch (error) {
