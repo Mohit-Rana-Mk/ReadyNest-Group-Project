@@ -36,7 +36,7 @@ export default function AdminDashboard() {
     // States
     const [pendingClinics, setPendingClinics] = useState([]);
     const [outbreakStats, setOutbreakStats] = useState({ locations: [], trends: [] });
-    const [aiHealthStats, setAiHealthStats] = useState({ triageRiskRatios: {}, preventiveRecsSent: 0 });
+    const [aiHealthStats, setAiHealthStats] = useState({ triageRiskRatios: {}, preventiveRecsSent: 0, triageCount: 0 });
     const [ecosystemStats, setEcosystemStats] = useState({ kpis: {}, reviews: [] });
     const [actionMessage, setActionMessage] = useState('');
     const [epiFilter, setEpiFilter] = useState(30);
@@ -66,7 +66,7 @@ export default function AdminDashboard() {
             console.error("Error loading dashboard data:", error);
             setPendingClinics([]);
             setOutbreakStats({ locations: [], trends: [] });
-            setAiHealthStats({ triageRiskRatios: {}, preventiveRecsSent: 0 });
+            setAiHealthStats({ triageRiskRatios: {}, preventiveRecsSent: 0, triageCount: 0 });
             setEcosystemStats({ kpis: {}, reviews: [] });
         } finally {
             setLoading(false);
@@ -261,7 +261,7 @@ export default function AdminDashboard() {
                                 <div>
                                     <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Triage Triggers</span>
                                     <span className="text-2xl font-extrabold text-slate-800 mt-1 block">
-                                        {aiHealthStats?.preventiveRecsSent || 1420}
+                                        {aiHealthStats?.triageCount ?? 0}
                                     </span>
                                 </div>
                                 <div className="text-indigo-600 bg-indigo-50 p-2.5 rounded-xl">

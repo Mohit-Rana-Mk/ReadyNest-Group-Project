@@ -77,15 +77,18 @@ class AdminService {
         const preventiveRecsSent = await adminRepository.getPreventiveRecommendationsCount();
 
         const riskMap = { Low: 0, Medium: 0, High: 0 };
+        let triageCount = 0;
         triageStats.forEach(row => {
             if (riskMap[row.predicted_risk] !== undefined) {
                 riskMap[row.predicted_risk] = row.count;
+                triageCount += row.count;
             }
         });
 
         return {
             triageRiskRatios: riskMap,
-            preventiveRecsSent: preventiveRecsSent || 0
+            preventiveRecsSent: preventiveRecsSent || 0,
+            triageCount: triageCount
         };
     }
 
