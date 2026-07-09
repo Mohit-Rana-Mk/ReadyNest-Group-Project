@@ -286,7 +286,9 @@ export default function DoctorWorkstation() {
                                         )}
                                         <span className={`px-2 md:px-3 py-1 rounded-full border text-xs md:text-sm ${
                                             selectedAppointment.status === 'Completed' 
-                                                ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                                                ? 'bg-[#eef2ff] text-indigo-700 border-indigo-200'
+                                                : selectedAppointment.status === 'Canceled' || selectedAppointment.status === 'Cancelled'
+                                                ? 'bg-rose-50 text-rose-700 border-rose-200'
                                                 : 'bg-amber-50 text-amber-700 border-amber-200'
                                         }`}>
                                             {selectedAppointment.status}
@@ -336,7 +338,7 @@ export default function DoctorWorkstation() {
                                         )}
                                     </div>
                                     <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                                        {selectedAppointment.consultation_type === 'Teleconsultation' && selectedAppointment.meeting_link && selectedAppointment.status !== 'Completed' && (
+                                        {selectedAppointment.consultation_type === 'Teleconsultation' && selectedAppointment.meeting_link && !['Completed', 'Canceled', 'Cancelled'].includes(selectedAppointment.status) && (
                                             <Button 
                                                 onClick={() => window.open(selectedAppointment.meeting_link, '_blank')}
                                                 className="w-full sm:w-auto px-4 md:px-6 py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm bg-blue-600 hover:bg-blue-700 text-white shadow-md border-none"
@@ -347,15 +349,17 @@ export default function DoctorWorkstation() {
                                         )}
                                         <Button 
                                             onClick={handleSubmitConsultation}
-                                            disabled={selectedAppointment.status === 'Completed'}
+                                            disabled={['Completed', 'Canceled', 'Cancelled'].includes(selectedAppointment.status)}
                                             className={`w-full sm:w-auto px-4 md:px-6 py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm border-none ${
-                                                selectedAppointment.status === 'Completed'
+                                                ['Completed', 'Canceled', 'Cancelled'].includes(selectedAppointment.status)
                                                     ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                                                     : 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-md'
                                             }`}
                                         >
                                             <CheckCircle2 className="w-5 h-5" />
-                                            {selectedAppointment.status === 'Completed' ? 'Completed' : 'Sign & Complete'}
+                                            {selectedAppointment.status === 'Completed' ? 'Completed' : 
+                                             ['Canceled', 'Cancelled'].includes(selectedAppointment.status) ? 'Cancelled' : 
+                                             'Sign & Complete'}
                                         </Button>
                                     </div>
                                 </div>

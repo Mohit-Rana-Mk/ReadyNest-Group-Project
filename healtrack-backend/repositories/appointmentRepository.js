@@ -77,7 +77,7 @@ class AppointmentRepository {
 
     async cancelAppointment(appointmentId) {
         await db.execute(
-            `UPDATE appointments SET status = 'Canceled' WHERE id = ?`,
+            `UPDATE appointments SET status = 'Cancelled' WHERE id = ?`,
             [appointmentId]
         );
     }

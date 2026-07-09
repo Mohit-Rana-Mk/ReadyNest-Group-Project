@@ -20,8 +20,8 @@ router.post('/triage', patientController.submitTriage);
 router.post('/parkinsons/predict', patientController.predictParkinsons);
 
 // D. Appointment History
-router.get('/:patientId/appointments', patientController.getAppointments);
 router.get('/appointments/family', patientController.getFamilyAppointments);
+router.get('/:patientId/appointments', patientController.getAppointments);
 
 // E. Family Members
 router.get('/family', patientController.getFamilyMembers);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Search, Activity, ClipboardList, BookOpen } from 'lucide-react';
+import { Home, Search, Activity, ClipboardList, BookOpen, CreditCard } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 export default function BottomNav({ activeTab, onTabChange }) {
@@ -11,6 +11,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
         { id: 'triage', label: 'AI TRIAGE', icon: Activity, isSpecial: true },
         { id: 'awareness', label: 'AWARENESS', icon: BookOpen },
         { id: 'records', label: 'RECORDS', icon: ClipboardList },
+        { id: 'payments', label: 'PAYMENTS', icon: CreditCard },
     ];
 
     return (

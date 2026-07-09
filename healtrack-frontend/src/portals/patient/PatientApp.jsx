@@ -44,21 +44,22 @@ export default function PatientApp() {
         })
         .sort((a, b) => new Date(b.appointment_date) - new Date(a.appointment_date));
 
+    const loadData = async () => {
+        try {
+            const [recsData, apptsData] = await Promise.all([
+                fetchRecommendations().catch(() => []),
+                fetchAppointments().catch(() => []),
+            ]);
+            setRecommendations(recsData);
+            setAppointments(apptsData);
+        } catch (err) {
+            console.error('Failed to load patient data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const loadData = async () => {
-            try {
-                const [recsData, apptsData] = await Promise.all([
-                    fetchRecommendations().catch(() => []),
-                    fetchAppointments().catch(() => []),
-                ]);
-                setRecommendations(recsData);
-                setAppointments(apptsData);
-            } catch (err) {
-                console.error('Failed to load patient data:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
         loadData();
 
         const socket = io(SOCKET_URL);
@@ -413,7 +414,7 @@ export default function PatientApp() {
 
                     {activeTab === 'records' && (
                         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <AppointmentHistory appointments={appointments} />
+                            <AppointmentHistory appointments={appointments} onRefresh={loadData} />
                         </div>
                     )}
 

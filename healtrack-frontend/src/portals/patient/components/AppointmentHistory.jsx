@@ -1,5 +1,6 @@
 import React from 'react';
-import { Calendar, Clock, User, Building2, FileText, Video } from 'lucide-react';
+import { Calendar, Clock, User, Building2, FileText, Video, AlertTriangle, X, Loader2 } from 'lucide-react';
+import axiosClient from '../../../api/axiosClient';
 
 const statusColors = {
     'Scheduled':       'bg-indigo-50 text-indigo-700 border-indigo-200',
@@ -7,10 +8,72 @@ const statusColors = {
     'In Consultation': 'bg-violet-50 text-violet-700 border-violet-200',
     'Completed':       'bg-emerald-50 text-emerald-700 border-emerald-200',
     'Cancelled':       'bg-red-50 text-red-700 border-red-200',
+    'Canceled':        'bg-red-50 text-red-700 border-red-200',
 };
 
-export default function AppointmentHistory({ appointments }) {
+export default function AppointmentHistory({ appointments, onRefresh }) {
     const [selectedPatientId, setSelectedPatientId] = React.useState('');
+    const [cancelModalOpen, setCancelModalOpen] = React.useState(false);
+    const [appointmentToCancel, setAppointmentToCancel] = React.useState(null);
+    const [isCancelling, setIsCancelling] = React.useState(false);
+    const [cancelError, setCancelError] = React.useState('');
+
+    const [rescheduleModalOpen, setRescheduleModalOpen] = React.useState(false);
+    const [appointmentToReschedule, setAppointmentToReschedule] = React.useState(null);
+    const [newAppointmentDate, setNewAppointmentDate] = React.useState('');
+    const [isRescheduling, setIsRescheduling] = React.useState(false);
+    const [rescheduleError, setRescheduleError] = React.useState('');
+
+    const handleInitiateCancel = (appt) => {
+        setAppointmentToCancel(appt);
+        setCancelModalOpen(true);
+        setCancelError('');
+    };
+
+    const handleInitiateReschedule = (appt) => {
+        setAppointmentToReschedule(appt);
+        const d = new Date(appt.appointment_date);
+        // Format to YYYY-MM-DDTHH:MM local format
+        const tzoffset = d.getTimezoneOffset() * 60000; 
+        const localISOTime = (new Date(d.getTime() - tzoffset)).toISOString().slice(0, 16);
+        setNewAppointmentDate(localISOTime);
+        setRescheduleModalOpen(true);
+        setRescheduleError('');
+    };
+
+    const handleConfirmCancel = async () => {
+        if (!appointmentToCancel) return;
+        setIsCancelling(true);
+        setCancelError('');
+        try {
+            await axiosClient.put(`/patient/appointments/${appointmentToCancel.id}/cancel`);
+            setCancelModalOpen(false);
+            if (onRefresh) await onRefresh();
+        } catch (err) {
+            console.error('Cancel error:', err);
+            setCancelError(err.response?.data?.message || 'Failed to cancel appointment. Please try again.');
+        } finally {
+            setIsCancelling(false);
+        }
+    };
+
+    const handleConfirmReschedule = async () => {
+        if (!appointmentToReschedule || !newAppointmentDate) return;
+        setIsRescheduling(true);
+        setRescheduleError('');
+        try {
+            await axiosClient.put(`/patient/appointments/${appointmentToReschedule.id}/reschedule`, {
+                new_date: newAppointmentDate
+            });
+            setRescheduleModalOpen(false);
+            if (onRefresh) await onRefresh();
+        } catch (err) {
+            console.error('Reschedule error:', err);
+            setRescheduleError(err.response?.data?.message || 'Failed to reschedule appointment. Please try again.');
+        } finally {
+            setIsRescheduling(false);
+        }
+    };
 
     if (!appointments || appointments.length === 0) {
         return (
@@ -175,22 +238,173 @@ export default function AppointmentHistory({ appointments }) {
                                 </div>
                             )}
 
-                            {/* Join Call Button */}
-                            {appt.consultation_type === 'Teleconsultation' && appt.meeting_link && appt.status !== 'Completed' && appt.status !== 'Cancelled' && (
-                                <div className="pt-3">
-                                    <button 
-                                        onClick={() => window.open(appt.meeting_link, '_blank')}
-                                        className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-lg transition-colors"
-                                    >
-                                        <Video size={14} />
-                                        Join Video Call
-                                    </button>
-                                </div>
-                            )}
+                             {/* Join Call Button */}
+                             {appt.consultation_type === 'Teleconsultation' && appt.meeting_link && appt.status !== 'Completed' && appt.status !== 'Cancelled' && appt.status !== 'Canceled' && (
+                                 <div className="pt-3">
+                                     <button 
+                                         onClick={() => window.open(appt.meeting_link, '_blank')}
+                                         className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-lg transition-colors cursor-pointer"
+                                     >
+                                         <Video size={14} />
+                                         Join Video Call
+                                     </button>
+                                 </div>
+                             )}
+
+                             {/* Cancel/Reschedule Actions */}
+                             {['Scheduled', 'Checked-In'].includes(appt.status) && (
+                                 <div className="mt-3 pt-3 border-t border-gray-100 flex gap-2">
+                                     <button 
+                                         onClick={() => handleInitiateReschedule(appt)}
+                                         className="flex-1 flex items-center justify-center gap-1 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-700 text-slate-600 text-[10px] font-bold uppercase tracking-wider py-2 px-3 rounded-xl border border-slate-200 hover:border-indigo-100 transition-all cursor-pointer"
+                                     >
+                                         Reschedule
+                                     </button>
+                                     <button 
+                                         onClick={() => handleInitiateCancel(appt)}
+                                         className="flex-1 flex items-center justify-center gap-1 bg-slate-50 hover:bg-rose-50 hover:text-rose-600 text-slate-600 text-[10px] font-bold uppercase tracking-wider py-2 px-3 rounded-xl border border-slate-200 hover:border-rose-100 transition-all cursor-pointer"
+                                     >
+                                         Cancel
+                                     </button>
+                                 </div>
+                             )}
+                         </div>
+                     );
+                 })}
+             </div>
+
+            {/* Cancel Modal */}
+            {cancelModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200 relative">
+                        <button 
+                            onClick={() => setCancelModalOpen(false)}
+                            className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                        >
+                            <X size={18} />
+                        </button>
+                        
+                        <div className="flex items-center gap-3.5 mb-4">
+                            <div className="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 shrink-0">
+                                <AlertTriangle size={24} />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-black text-slate-900">Cancel Appointment</h3>
+                                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">Confirmation Required</p>
+                            </div>
                         </div>
-                    );
-                })}
-            </div>
+
+                        <p className="text-sm text-slate-600 leading-relaxed font-medium">
+                            Are you sure you want to cancel your appointment with <span className="font-bold text-slate-800">Dr. {appointmentToCancel?.doctor_name}</span> at <span className="font-bold text-slate-800">{appointmentToCancel?.clinic_name}</span>?
+                        </p>
+                        
+                        <div className="mt-3.5 p-3 rounded-2xl bg-rose-50/30 border border-rose-100/30 text-xs text-rose-700 font-medium leading-relaxed">
+                            ⚠️ Cancellation will be processed immediately and the slot will be released.
+                        </div>
+
+                        {cancelError && (
+                            <div className="mt-3 text-xs text-rose-600 font-bold bg-rose-50/50 p-2.5 rounded-xl border border-rose-100 animate-pulse">
+                                {cancelError}
+                            </div>
+                        )}
+
+                        <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                            <button
+                                disabled={isCancelling}
+                                onClick={() => setCancelModalOpen(false)}
+                                className="flex-1 px-4 py-3 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-bold uppercase tracking-wider rounded-xl border border-slate-200 transition-colors cursor-pointer"
+                            >
+                                No, Keep It
+                            </button>
+                            <button
+                                disabled={isCancelling}
+                                onClick={handleConfirmCancel}
+                                className="flex-1 px-4 py-3 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md shadow-rose-600/10 flex items-center justify-center gap-2 cursor-pointer"
+                            >
+                                {isCancelling ? (
+                                    <>
+                                        <Loader2 size={14} className="animate-spin" />
+                                        Cancelling...
+                                    </>
+                                ) : (
+                                    'Yes, Cancel'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Reschedule Modal */}
+            {rescheduleModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200 relative">
+                        <button 
+                            onClick={() => setRescheduleModalOpen(false)}
+                            className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                        >
+                            <X size={18} />
+                        </button>
+                        
+                        <div className="flex items-center gap-3.5 mb-4">
+                            <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-[#7F3DEC] shrink-0">
+                                <Calendar size={24} />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-black text-slate-900">Reschedule Appointment</h3>
+                                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">Select Date & Time</p>
+                            </div>
+                        </div>
+
+                        <p className="text-sm text-slate-600 leading-relaxed font-medium mb-4">
+                            Choose a new slot for your appointment with <span className="font-bold text-slate-800">Dr. {appointmentToReschedule?.doctor_name}</span>.
+                        </p>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">New Date & Time</label>
+                                <input 
+                                    type="datetime-local" 
+                                    required
+                                    value={newAppointmentDate}
+                                    onChange={(e) => setNewAppointmentDate(e.target.value)}
+                                    className="w-full border border-slate-200 rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-all font-medium text-slate-700 bg-slate-50/50"
+                                />
+                            </div>
+                        </div>
+
+                        {rescheduleError && (
+                            <div className="mt-3 text-xs text-rose-600 font-bold bg-rose-50/50 p-2.5 rounded-xl border border-rose-100 animate-pulse">
+                                {rescheduleError}
+                            </div>
+                        )}
+
+                        <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                            <button
+                                disabled={isRescheduling}
+                                onClick={() => setRescheduleModalOpen(false)}
+                                className="flex-1 px-4 py-3 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-bold uppercase tracking-wider rounded-xl border border-slate-200 transition-colors cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                disabled={isRescheduling}
+                                onClick={handleConfirmReschedule}
+                                className="flex-1 px-4 py-3 bg-[#7F3DEC] hover:bg-[#6c2ed2] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md shadow-[#7F3DEC]/10 flex items-center justify-center gap-2 cursor-pointer"
+                            >
+                                {isRescheduling ? (
+                                    <>
+                                        <Loader2 size={14} className="animate-spin" />
+                                        Updating...
+                                    </>
+                                ) : (
+                                    'Reschedule'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

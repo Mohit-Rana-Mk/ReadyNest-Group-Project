@@ -1,5 +1,6 @@
 const appointmentRepository = require('../repositories/appointmentRepository');
 const crypto = require('crypto');
+const db = require('../config/db');
 
 class AppointmentService {
     async getAppointments(patientId) {
@@ -37,6 +38,30 @@ class AppointmentService {
 
     async cancelAppointment(appointmentId) {
         await appointmentRepository.cancelAppointment(appointmentId);
+
+        // Check if there is an associated paid payment
+        const [payments] = await db.query(
+            `SELECT id, amount, status FROM payments WHERE appointment_id = ?`,
+            [appointmentId]
+        );
+
+        if (payments.length > 0 && payments[0].status === 'Paid') {
+            const payment = payments[0];
+
+            // Verify if a refund request already exists to avoid double entries
+            const [existingRefund] = await db.query(
+                `SELECT id FROM refund_requests WHERE payment_id = ?`,
+                [payment.id]
+            );
+
+            if (existingRefund.length === 0) {
+                await db.execute(
+                    `INSERT INTO refund_requests (payment_id, amount, reason, status)
+                     VALUES (?, ?, 'cancellation', 'Pending')`,
+                    [payment.id, payment.amount]
+                );
+            }
+        }
     }
 
     async rescheduleAppointment(appointmentId, newDate) {

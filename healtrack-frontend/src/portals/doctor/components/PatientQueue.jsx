@@ -35,6 +35,7 @@ export function PatientQueue({ appointments, selectedAppointment, handleSelectAp
                     appointments.map((appt) => {
                     const isSelected = selectedAppointment?.appointment_id === appt.appointment_id;
                     const isCompleted = appt.status === 'Completed';
+                    const isCancelled = appt.status === 'Canceled' || appt.status === 'Cancelled';
 
                     return (
                         <div
@@ -43,6 +44,8 @@ export function PatientQueue({ appointments, selectedAppointment, handleSelectAp
                             className={`p-3 rounded-xl border cursor-pointer transition-all ${
                                 isSelected 
                                     ? 'bg-emerald-50 border-emerald-200 shadow-sm' 
+                                    : isCancelled
+                                    ? 'bg-rose-50/30 border-rose-100/50 hover:bg-rose-50/50 opacity-75'
                                     : 'bg-white border-[#e9ecef] hover:border-emerald-100 hover:bg-slate-50'
                             }`}
                         >
@@ -57,9 +60,13 @@ export function PatientQueue({ appointments, selectedAppointment, handleSelectAp
                                     </div>
                                 </div>
                                 {isCompleted ? (
-                                    <CheckCircle className="w-4 h-4 text-emerald-500" />
+                                    <CheckCircle className="w-4 h-4 text-emerald-500 animate-in zoom-in duration-200" />
+                                ) : isCancelled ? (
+                                    <span className="px-2 py-0.5 text-[8px] font-black bg-rose-50 border border-rose-100 text-rose-600 rounded-md uppercase tracking-wider animate-in zoom-in duration-200">
+                                        Cancelled
+                                    </span>
                                 ) : (
-                                    <AlertCircle className="w-4 h-4 text-amber-500" />
+                                    <AlertCircle className="w-4 h-4 text-amber-500 animate-pulse" />
                                 )}
                             </div>
                         </div>

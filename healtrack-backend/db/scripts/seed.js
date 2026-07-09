@@ -45,14 +45,14 @@ async function seed() {
         const passwordHash = await bcrypt.hash('password123', 10);
 
         // Users
-        await db.query(`INSERT INTO users (id, name, email, phone, password, role, status, service_id) VALUES 
-            (1, 'Super Admin', 'superadmin@healtrack.com', '1000000001', ?, 'SuperAdmin', 'Active', NULL),
-            (2, 'Dr. Vikram Sharma', 'vikram@healtrack.com', '1000000002', ?, 'Doctor', 'Active', 1),
-            (3, 'Dr. Anjali Desai', 'anjali@healtrack.com', '1000000003', ?, 'Doctor', 'Active', 2),
-            (4, 'Rahul Verma', 'rahul@healtrack.com', '1000000004', ?, 'ClinicStaff', 'Active', NULL),
-            (5, 'Patient One', 'patient1@mail.com', '1000000005', ?, 'Patient', 'Active', NULL),
-            (6, 'Patient Two', 'patient2@mail.com', '1000000006', ?, 'Patient', 'Active', NULL),
-            (7, 'Clinic Admin', 'admin@healtrack.com', '1000000007', ?, 'ClinicAdmin', 'Active', NULL)
+        await db.query(`INSERT INTO users (id, name, email, phone, password, role, status, service_id, clinic_id) VALUES 
+            (1, 'Super Admin', 'superadmin@healtrack.com', '1000000001', ?, 'SuperAdmin', 'Active', NULL, NULL),
+            (2, 'Dr. Vikram Sharma', 'vikram@healtrack.com', '1000000002', ?, 'Doctor', 'Active', 1, 1),
+            (3, 'Dr. Anjali Desai', 'anjali@healtrack.com', '1000000003', ?, 'Doctor', 'Active', 2, 1),
+            (4, 'Rahul Verma', 'rahul@healtrack.com', '1000000004', ?, 'ClinicStaff', 'Active', NULL, 1),
+            (5, 'Patient One', 'patient1@mail.com', '1000000005', ?, 'Patient', 'Active', NULL, NULL),
+            (6, 'Patient Two', 'patient2@mail.com', '1000000006', ?, 'Patient', 'Active', NULL, NULL),
+            (7, 'Clinic Admin', 'admin@healtrack.com', '1000000007', ?, 'ClinicAdmin', 'Active', NULL, 1)
         `, [passwordHash, passwordHash, passwordHash, passwordHash, passwordHash, passwordHash, passwordHash]);
 
         // Clinic Services
@@ -103,6 +103,20 @@ async function seed() {
         });
 
         await db.query(`INSERT INTO appointments (id, clinic_id, patient_id, doctor_id, appointment_date, status, pre_remarks) VALUES ${appointmentQueries.join(',')}`);
+
+        // Seed Payments
+        console.log("Seeding Payments...");
+        await db.query(`INSERT INTO payments (id, patient_id, doctor_id, clinic_id, appointment_id, razorpay_order_id, razorpay_payment_id, amount, status, receipt_id, invoice_id) VALUES 
+            (1, 1, 2, 1, 1, 'order_mock_001', 'pay_mock_001', 1200.00, 'Paid', 'rcpt_mock_001', 'INV-mock-001'),
+            (2, 2, 3, 1, 2, 'order_mock_002', NULL, 600.00, 'Pending', 'rcpt_mock_002', 'INV-mock-002'),
+            (3, 1, 2, 1, 3, 'order_mock_003', 'pay_mock_003', 1200.00, 'Refunded', 'rcpt_mock_003', 'INV-mock-003')
+        `);
+
+        // Seed Refund Requests
+        console.log("Seeding Refund Requests...");
+        await db.query(`INSERT INTO refund_requests (id, payment_id, amount, reason, status, processed_at) VALUES 
+            (1, 3, 1200.00, 'cancellation', 'Approved', NOW())
+        `);
 
         await db.query('SET FOREIGN_KEY_CHECKS = 1');
         console.log('✅ Database seeded successfully!');

@@ -805,3 +805,107 @@ exports.processRefund = async (req, res) => {
         res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
+// E. RECEPTIONIST PAYMENT HISTORY & REFUND
+exports.getReceptionPayments = async (req, res) => {
+    const clinicId = req.user?.clinic_id;
+    if (!clinicId) {
+        return res.status(400).json({ message: 'Clinic ID is required' });
+    }
+
+    try {
+        const [payments] = await db.query(
+            `SELECT p.id, p.amount, p.status, p.receipt_id, p.invoice_id, p.created_at, p.appointment_id,
+                    pat.name AS patient_name, du.name AS doctor_name, a.status AS appointment_status
+             FROM payments p
+             JOIN patients pat ON p.patient_id = pat.id
+             JOIN users du ON p.doctor_id = du.id
+             LEFT JOIN appointments a ON p.appointment_id = a.id
+             WHERE p.clinic_id = ?
+             ORDER BY p.created_at DESC`,
+            [clinicId]
+        );
+        res.status(200).json(payments);
+    } catch (error) {
+        console.error('Fetch Reception Payments Error:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+exports.processReceptionRefund = async (req, res) => {
+    const clinicId = req.user?.clinic_id;
+    const { payment_id, reason } = req.body;
+
+    if (!clinicId) {
+        return res.status(400).json({ message: 'Clinic ID is required' });
+    }
+    if (!payment_id || !reason) {
+        return res.status(400).json({ message: 'Payment ID and refund reason are required' });
+    }
+
+    try {
+        const [payments] = await db.query(
+            `SELECT id, amount, status, appointment_id FROM payments WHERE id = ? AND clinic_id = ?`,
+            [payment_id, clinicId]
+        );
+
+        if (payments.length === 0) {
+            return res.status(404).json({ message: 'Payment record not found' });
+        }
+
+        const payment = payments[0];
+        if (payment.status !== 'Paid') {
+            return res.status(400).json({ message: 'Only successful paid payments can be refunded' });
+        }
+
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+
+            // Mark payment as Refunded
+            await connection.execute(
+                `UPDATE payments SET status = 'Refunded' WHERE id = ?`,
+                [payment_id]
+            );
+
+            // Mark appointment as Cancelled
+            if (payment.appointment_id) {
+                await connection.execute(
+                    `UPDATE appointments SET status = 'Cancelled' WHERE id = ?`,
+                    [payment.appointment_id]
+                );
+            }
+
+            // Create refund request and mark it Approved immediately
+            await connection.execute(
+                `INSERT INTO refund_requests (payment_id, amount, reason, status, processed_at)
+                 VALUES (?, ?, ?, 'Approved', NOW())`,
+                [payment_id, payment.amount, `Reception: ${reason}`]
+            );
+
+            // Log audit trace
+            await connection.execute(
+                `INSERT INTO payment_audit_logs (user_id, action, details)
+                 VALUES (?, 'RECEPTION_REFUND', ?)`,
+                [req.user?.id || null, JSON.stringify({ payment_id, amount: payment.amount, reason })]
+            );
+
+            await connection.commit();
+
+            if (req.io) {
+                req.io.emit('QUEUE_UPDATE', { clinicId });
+            }
+
+            res.status(200).json({ success: true, message: 'Payment successfully refunded and appointment cancelled.' });
+        } catch (trxErr) {
+            await connection.rollback();
+            throw trxErr;
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Reception Process Refund Error:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+

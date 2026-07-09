@@ -38,6 +38,16 @@ export default function ReceptionDesk() {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentDone, setPaymentDone] = useState(null); // { method, receipt_id, fee }
 
+  // Sub Tab Navigation and Ledger History state
+  const [activeTab, setActiveTab] = useState('queue'); // 'queue', 'payments'
+  const [payments, setPayments] = useState([]);
+  const [paymentsLoading, setPaymentsLoading] = useState(false);
+  const [paymentSearchTerm, setPaymentSearchTerm] = useState('');
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState('');
+  const [refundModal, setRefundModal] = useState(null); // { paymentId, amount, patientName }
+  const [refundReason, setRefundReason] = useState('');
+  const [refundLoading, setRefundLoading] = useState(false);
+
   const clinicId = user?.clinic_id || 1;
 
   const fetchQueue = async (isBackground = false) => {
@@ -58,8 +68,54 @@ export default function ReceptionDesk() {
     }
   };
 
+  const fetchPayments = async (isBackground = false) => {
+    if (!isBackground) setPaymentsLoading(true);
+    try {
+      const res = await axiosClient.get('/payments/reception/payments');
+      setPayments(res.data || []);
+    } catch (err) {
+      console.error("Failed to fetch reception payments", err);
+    } finally {
+      setPaymentsLoading(false);
+    }
+  };
+
+  const handleRefundSubmit = async (e) => {
+    e.preventDefault();
+    if (!refundModal || !refundReason.trim()) return;
+    setRefundLoading(true);
+    try {
+      await axiosClient.post('/payments/reception/refund', {
+        payment_id: refundModal.paymentId,
+        reason: refundReason
+      });
+      setNotification(`Refund of ₹${parseFloat(refundModal.amount).toFixed(2)} processed successfully for ${refundModal.patientName}`);
+      setTimeout(() => setNotification(null), 5000);
+      setRefundModal(null);
+      setRefundReason('');
+      fetchPayments();
+      fetchQueue();
+    } catch (err) {
+      alert('Refund failed: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setRefundLoading(false);
+    }
+  };
+
+  const filteredPayments = payments.filter(p => {
+    const matchesSearch =
+      p.receipt_id?.toLowerCase().includes(paymentSearchTerm.toLowerCase()) ||
+      p.invoice_id?.toLowerCase().includes(paymentSearchTerm.toLowerCase()) ||
+      p.patient_name?.toLowerCase().includes(paymentSearchTerm.toLowerCase()) ||
+      p.doctor_name?.toLowerCase().includes(paymentSearchTerm.toLowerCase());
+    
+    const matchesStatus = paymentStatusFilter === '' || p.status === paymentStatusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
   useEffect(() => {
     fetchQueue();
+    fetchPayments();
     const socket = io(SOCKET_URL);
     socket.on('QUEUE_UPDATE', (data) => {
       if (data.message) {
@@ -67,6 +123,7 @@ export default function ReceptionDesk() {
         setTimeout(() => setNotification(null), 5000);
       }
       fetchQueue(true);
+      fetchPayments(true);
     });
     return () => socket.disconnect();
   }, []);
@@ -441,114 +498,291 @@ export default function ReceptionDesk() {
 
         {/* RIGHT PANEL: Queue Control (8 columns) */}
         <div className="lg:col-span-8 space-y-6">
-          {/* Active Queue */}
-          <div className="bg-white border border-slate-100 rounded-3xl shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div>
-                <h2 className="text-sm font-black text-slate-800 uppercase tracking-wider">Today's OPD Queue</h2>
-                <p className="text-[10px] text-slate-400 font-medium mt-0.5">{activeQueue.length} patients waiting</p>
-              </div>
-              <div className="relative w-full sm:w-56">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300" />
-                <Input
-                  type="text"
-                  placeholder="Search patients..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 bg-[#F1F5F9] border-0 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400/30 placeholder-slate-400"
-                />
-              </div>
-            </div>
+          {/* Sub Tab Navigation */}
+          <div className="bg-white border border-slate-100 p-1.5 rounded-2xl flex gap-2">
+            <button
+              onClick={() => setActiveTab('queue')}
+              className={`flex-1 text-center py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                activeTab === 'queue'
+                  ? 'bg-[#6366f1] text-white shadow-md'
+                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+              }`}
+            >
+              OPD Queue Management
+            </button>
+            <button
+              onClick={() => setActiveTab('payments')}
+              className={`flex-1 text-center py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                activeTab === 'payments'
+                  ? 'bg-[#6366f1] text-white shadow-md'
+                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+              }`}
+            >
+              Payment Ledger & History
+            </button>
+          </div>
 
-            {loading ? (
-              <div className="p-10 text-center text-slate-400 text-xs font-bold uppercase tracking-wider animate-pulse">Loading Queue...</div>
-            ) : activeQueue.length === 0 ? (
-              <div className="p-10 text-center">
-                <div className="w-14 h-14 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 border border-slate-100">
-                  <Users className="w-7 h-7 text-slate-300" />
+          {activeTab === 'queue' && (
+            <>
+              {/* Active Queue */}
+              <div className="bg-white border border-slate-100 rounded-3xl shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-sm font-black text-slate-800 uppercase tracking-wider">Today's OPD Queue</h2>
+                    <p className="text-[10px] text-slate-400 font-medium mt-0.5">{activeQueue.length} patients waiting</p>
+                  </div>
+                  <div className="relative w-full sm:w-56">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300" />
+                    <Input
+                      type="text"
+                      placeholder="Search patients..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-9 pr-4 py-2.5 bg-[#F1F5F9] border-0 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400/30 placeholder-slate-400"
+                    />
+                  </div>
                 </div>
-                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">No active patients in queue</p>
-              </div>
-            ) : (
-              <div className="divide-y divide-slate-50">
-                {activeQueue.map((apt) => (
-                  <div key={apt.id} className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0 border border-indigo-100">
-                        <span className="text-xs font-black text-indigo-700">{apt.patientName?.charAt(0)?.toUpperCase()}</span>
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-800">{apt.patientName}</p>
-                        {apt.patientMrn && <p className="text-[9px] text-slate-400 font-medium mt-0.5">{apt.patientMrn}</p>}
-                        <p className="text-[9px] text-slate-500 font-medium mt-0.5">Dr. {apt.doctorName} · {apt.time}</p>
-                      </div>
+
+                {loading ? (
+                  <div className="p-10 text-center text-slate-400 text-xs font-bold uppercase tracking-wider animate-pulse">Loading Queue...</div>
+                ) : activeQueue.length === 0 ? (
+                  <div className="p-10 text-center">
+                    <div className="w-14 h-14 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 border border-slate-100">
+                      <Users className="w-7 h-7 text-slate-300" />
                     </div>
-                    <div className="flex items-center gap-2 sm:shrink-0">
-                      <span className={`px-2.5 py-1 border rounded-lg text-[9px] font-extrabold uppercase tracking-wider ${statusBadgeColor(apt.status)}`}>
-                        {apt.status}
-                      </span>
-                      {(apt.status === 'Scheduled' || apt.status === 'Checked-In') && (
-                        <Button
-                          variant="outline"
-                          onClick={() => handleStatusChange(apt.id, 'In Consultation')}
-                          className="px-3 py-1.5 bg-[#6366f1] hover:bg-[#5558e6] text-white text-[9px] font-extrabold uppercase tracking-wider rounded-lg transition cursor-pointer border-none"
-                        >
-                          Send In →
-                        </Button>
-                      )}
-                      <Select
-                        value={apt.status}
-                        onChange={(e) => handleStatusChange(apt.id, e.target.value)}
-                        className="px-2 py-1.5 bg-[#F1F5F9] border-0 rounded-lg text-[9px] font-bold text-slate-600 focus:outline-none cursor-pointer"
-                      >
-                        {statusOptions.map(opt => (
-                          <option key={opt} value={opt}>{opt}</option>
+                    <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">No active patients in queue</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-50">
+                    {activeQueue.map((apt) => (
+                      <div key={apt.id} className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0 border border-indigo-100">
+                            <span className="text-xs font-black text-indigo-700">{apt.patientName?.charAt(0)?.toUpperCase()}</span>
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-slate-800">{apt.patientName}</p>
+                            {apt.patientMrn && <p className="text-[9px] text-slate-400 font-medium mt-0.5">{apt.patientMrn}</p>}
+                            <p className="text-[9px] text-slate-500 font-medium mt-0.5">Dr. {apt.doctorName} · {apt.time}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 sm:shrink-0">
+                          <span className={`px-2.5 py-1 border rounded-lg text-[9px] font-extrabold uppercase tracking-wider ${statusBadgeColor(apt.status)}`}>
+                            {apt.status}
+                          </span>
+                          {(apt.status === 'Scheduled' || apt.status === 'Checked-In') && (
+                            <Button
+                              variant="outline"
+                              onClick={() => handleStatusChange(apt.id, 'In Consultation')}
+                              className="px-3 py-1.5 bg-[#6366f1] hover:bg-[#5558e6] text-white text-[9px] font-extrabold uppercase tracking-wider rounded-lg transition cursor-pointer border-none"
+                            >
+                              Send In →
+                            </Button>
+                          )}
+                          <Select
+                            value={apt.status}
+                            onChange={(e) => handleStatusChange(apt.id, e.target.value)}
+                            className="px-2 py-1.5 bg-[#F1F5F9] border-0 rounded-lg text-[9px] font-bold text-slate-600 focus:outline-none cursor-pointer"
+                          >
+                            {statusOptions.map(opt => (
+                              <option key={opt} value={opt}>{opt}</option>
+                            ))}
+                          </Select>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Completed Appointments */}
+              <div className="bg-white border border-slate-100 rounded-3xl shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-emerald-50 flex items-center justify-between bg-emerald-50/40">
+                  <div>
+                    <h2 className="text-sm font-black text-emerald-800 uppercase tracking-wider">Completed Appointments</h2>
+                    <p className="text-[10px] text-emerald-600 font-medium mt-0.5">{completedQueue.length} seen today</p>
+                  </div>
+                  <span className="px-3 py-1.5 bg-emerald-100 text-emerald-700 text-[10px] font-extrabold uppercase tracking-widest rounded-xl border border-emerald-200">
+                    {completedQueue.length} done
+                  </span>
+                </div>
+
+                {completedQueue.length === 0 ? (
+                  <div className="p-8 text-center text-xs text-slate-400 font-bold uppercase tracking-wider">
+                    No completed appointments yet.
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-50">
+                    {completedQueue.map((apt) => (
+                      <div key={apt.id} className="px-6 py-4 flex items-center justify-between opacity-75 hover:opacity-100 transition-opacity">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 border border-emerald-100">
+                            <CheckCircle className="w-5 h-5 text-emerald-500" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-slate-700">{apt.patientName}</p>
+                            <p className="text-[9px] text-slate-400 font-medium mt-0.5">Dr. {apt.doctorName} · {apt.time}</p>
+                          </div>
+                        </div>
+                        <span className="px-2.5 py-1 border border-emerald-100 bg-emerald-50 text-emerald-700 text-[9px] font-extrabold uppercase tracking-wider rounded-lg">
+                          Completed
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          {activeTab === 'payments' && (
+            <div className="bg-white border border-slate-100 rounded-3xl shadow-sm overflow-hidden p-6 space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-sm font-black text-slate-800 uppercase tracking-wider">Payment Ledger</h2>
+                  <p className="text-[10px] text-slate-400 font-medium mt-0.5">Track and refund outpatient transactions</p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                  <div className="relative flex-1 sm:w-48">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300" />
+                    <Input
+                      type="text"
+                      placeholder="Search payments..."
+                      value={paymentSearchTerm}
+                      onChange={(e) => setPaymentSearchTerm(e.target.value)}
+                      className="w-full pl-9 pr-4 py-2 bg-[#F1F5F9] border-0 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400/30 placeholder-slate-400"
+                    />
+                  </div>
+                  <Select
+                    value={paymentStatusFilter}
+                    onChange={(e) => setPaymentStatusFilter(e.target.value)}
+                    className="px-2 py-2 bg-[#F1F5F9] border-0 rounded-xl text-[10px] font-bold text-slate-600 focus:outline-none cursor-pointer"
+                  >
+                    <option value="">All Statuses</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Refunded">Refunded</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Failed">Failed</option>
+                  </Select>
+                </div>
+              </div>
+
+              {paymentsLoading ? (
+                <div className="p-10 text-center text-slate-400 text-xs font-bold uppercase tracking-wider animate-pulse">Loading Payments...</div>
+              ) : filteredPayments.length === 0 ? (
+                <div className="p-10 text-center">
+                  <div className="w-14 h-14 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 border border-slate-100">
+                    <CreditCard className="w-7 h-7 text-slate-300" />
+                  </div>
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">No transaction logs found</p>
+                </div>
+              ) : (
+                <>
+                  {/* MOBILE VIEW CARD LIST (Hidden on Desktop) */}
+                  <div className="block md:hidden space-y-4">
+                    {filteredPayments.map((p) => (
+                      <div key={p.id} className="p-4 border border-slate-100 hover:border-indigo-100 rounded-2xl space-y-2 bg-[#FAFBFD]/40 transition-all">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="text-[10px] font-mono font-bold text-slate-900">{p.receipt_id}</p>
+                            <p className="text-[8px] text-slate-400 mt-0.5">INV: {p.invoice_id}</p>
+                          </div>
+                          <span className={`px-2 py-0.5 text-[8px] font-extrabold rounded border uppercase tracking-wider ${
+                            p.status === 'Paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                            p.status === 'Refunded' ? 'bg-rose-50 text-rose-700 border-rose-100' :
+                            p.status === 'Pending' ? 'bg-amber-50 text-amber-700 border-amber-100' :
+                            'bg-slate-50 text-slate-500 border-slate-200'
+                          }`}>
+                            {p.status}
+                          </span>
+                        </div>
+                        
+                        <div className="text-[11px] font-medium text-slate-600 space-y-1">
+                          <p><span className="text-slate-400 font-semibold text-[9px] uppercase tracking-wider mr-1 block sm:inline">Patient:</span> <span className="text-slate-800 font-bold">{p.patient_name}</span></p>
+                          <p><span className="text-slate-400 font-semibold text-[9px] uppercase tracking-wider mr-1 block sm:inline">Doctor:</span> Dr. {p.doctor_name}</p>
+                          <p><span className="text-slate-400 font-semibold text-[9px] uppercase tracking-wider mr-1 block sm:inline">Date:</span> {new Date(p.created_at).toLocaleString('en-IN')}</p>
+                        </div>
+
+                        <div className="flex justify-between items-center pt-2 border-t border-slate-50">
+                          <p className="text-sm font-black text-slate-900">₹{parseFloat(p.amount).toFixed(2)}</p>
+                          {p.status === 'Paid' && (
+                            <Button
+                              onClick={() => setRefundModal({ paymentId: p.id, amount: p.amount, patientName: p.patient_name })}
+                              className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[9px] font-extrabold uppercase tracking-wider rounded-lg border-none transition cursor-pointer"
+                            >
+                              Refund
+                            </Button>
+                          )}
+                          {p.status === 'Refunded' && (
+                            <span className="text-[8px] bg-rose-50 border border-rose-100 text-rose-600 font-extrabold uppercase px-1.5 py-0.5 rounded">
+                              Refunded
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* DESKTOP TABLE VIEW (Hidden on Mobile) */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-100 font-bold text-slate-500 uppercase tracking-wider text-[9px]">
+                          <th className="p-3">Receipt / Invoice</th>
+                          <th className="p-3">Patient</th>
+                          <th className="p-3">Doctor</th>
+                          <th className="p-3">Date</th>
+                          <th className="p-3">Amount</th>
+                          <th className="p-3">Status</th>
+                          <th className="p-3 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                        {filteredPayments.map((p) => (
+                          <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
+                            <td className="p-3">
+                              <p className="font-mono font-bold text-slate-900">{p.receipt_id}</p>
+                              <p className="text-[10px] text-slate-400 mt-0.5">{p.invoice_id}</p>
+                            </td>
+                            <td className="p-3 font-semibold text-slate-800">{p.patient_name}</td>
+                            <td className="p-3">Dr. {p.doctor_name}</td>
+                            <td className="p-3 text-slate-500">{new Date(p.created_at).toLocaleDateString('en-IN')}</td>
+                            <td className="p-3 font-bold text-slate-950">₹{parseFloat(p.amount).toFixed(2)}</td>
+                            <td className="p-3">
+                              <span className={`px-2 py-0.5 text-[8px] font-extrabold rounded border uppercase tracking-wider ${
+                                p.status === 'Paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                                p.status === 'Refunded' ? 'bg-rose-50 text-rose-700 border-rose-100' :
+                                p.status === 'Pending' ? 'bg-amber-50 text-amber-700 border-amber-100' :
+                                'bg-slate-50 text-slate-500 border-slate-200'
+                              }`}>
+                                {p.status}
+                              </span>
+                            </td>
+                            <td className="p-3 text-right">
+                              {p.status === 'Paid' ? (
+                                <Button
+                                  onClick={() => setRefundModal({ paymentId: p.id, amount: p.amount, patientName: p.patient_name })}
+                                  className="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[10px] font-extrabold uppercase tracking-wider rounded-lg border-none transition cursor-pointer"
+                                >
+                                  Refund
+                                </Button>
+                              ) : p.status === 'Refunded' ? (
+                                <span className="text-[8px] bg-rose-50 border border-rose-100 text-rose-600 font-extrabold uppercase px-1.5 py-0.5 rounded">
+                                  Refunded
+                                </span>
+                              ) : (
+                                <span className="text-slate-300">-</span>
+                              )}
+                            </td>
+                          </tr>
                         ))}
-                      </Select>
-                    </div>
+                      </tbody>
+                    </table>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Completed Appointments */}
-          <div className="bg-white border border-slate-100 rounded-3xl shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-emerald-50 flex items-center justify-between bg-emerald-50/40">
-              <div>
-                <h2 className="text-sm font-black text-emerald-800 uppercase tracking-wider">Completed Appointments</h2>
-                <p className="text-[10px] text-emerald-600 font-medium mt-0.5">{completedQueue.length} seen today</p>
-              </div>
-              <span className="px-3 py-1.5 bg-emerald-100 text-emerald-700 text-[10px] font-extrabold uppercase tracking-widest rounded-xl border border-emerald-200">
-                {completedQueue.length} done
-              </span>
+                </>
+              )}
             </div>
-
-            {completedQueue.length === 0 ? (
-              <div className="p-8 text-center text-xs text-slate-400 font-bold uppercase tracking-wider">
-                No completed appointments yet.
-              </div>
-            ) : (
-              <div className="divide-y divide-slate-50">
-                {completedQueue.map((apt) => (
-                  <div key={apt.id} className="px-6 py-4 flex items-center justify-between opacity-75 hover:opacity-100 transition-opacity">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 border border-emerald-100">
-                        <CheckCircle className="w-5 h-5 text-emerald-500" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-700">{apt.patientName}</p>
-                        <p className="text-[9px] text-slate-400 font-medium mt-0.5">Dr. {apt.doctorName} · {apt.time}</p>
-                      </div>
-                    </div>
-                    <span className="px-2.5 py-1 border border-emerald-100 bg-emerald-50 text-emerald-700 text-[9px] font-extrabold uppercase tracking-wider rounded-lg">
-                      Completed
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </div>
 
@@ -643,6 +877,64 @@ export default function ReceptionDesk() {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+      {/* REFUND MODAL */}
+      {refundModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100 animate-in fade-in zoom-in duration-200">
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-[#f8fafc]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center">
+                  <Banknote className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-slate-800 text-sm">Issue Refund</h3>
+                  <p className="text-[10px] text-slate-400 font-semibold">Patient: {refundModal.patientName} · ₹{parseFloat(refundModal.amount).toFixed(2)}</p>
+                </div>
+              </div>
+              <button onClick={() => { setRefundModal(null); setRefundReason(''); }} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition">
+                <X className="w-4 h-4 text-slate-500" />
+              </button>
+            </div>
+
+            <form onSubmit={handleRefundSubmit} className="p-6 space-y-4">
+              <p className="text-xs text-slate-500">
+                Are you sure you want to refund this payment? This action will refund the payment and automatically cancel the corresponding appointment.
+              </p>
+              <div>
+                <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Reason for Refund *</label>
+                <textarea
+                  required
+                  rows={3}
+                  value={refundReason}
+                  onChange={(e) => setRefundReason(e.target.value)}
+                  placeholder="e.g., Doctor unavailable, Patient requested cancellation..."
+                  className="w-full px-4 py-3 bg-[#F1F5F9] border-0 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-450/30 placeholder-slate-400 resize-none"
+                />
+              </div>
+              <div className="flex gap-2 justify-end pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => { setRefundModal(null); setRefundReason(''); }}
+                  className="px-4 py-2 border border-slate-200 hover:bg-slate-50 rounded-xl text-slate-500 text-xs font-bold uppercase tracking-wider cursor-pointer"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={refundLoading || !refundReason.trim()}
+                  className="px-5 py-2 bg-rose-600 hover:bg-rose-700 disabled:bg-slate-300 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer border-none"
+                >
+                  {refundLoading
+                    ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> Refunding...</>
+                    : 'Confirm Refund'
+                  }
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       )}
