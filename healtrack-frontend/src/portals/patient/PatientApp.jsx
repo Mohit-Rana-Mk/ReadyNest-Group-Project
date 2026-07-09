@@ -24,10 +24,11 @@ export default function PatientApp() {
     const { logout, user } = useAuth();
 
     const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const upcomingAppointments = appointments
         .filter(apt => {
             const aptDate = new Date(apt.appointment_date);
-            return aptDate >= now && 
+            return aptDate >= todayStart && 
                    apt.status !== 'Completed' && 
                    apt.status !== 'Cancelled' && 
                    apt.status !== 'Canceled';
@@ -37,7 +38,7 @@ export default function PatientApp() {
     const recentVisits = appointments
         .filter(apt => {
             const aptDate = new Date(apt.appointment_date);
-            return aptDate < now || 
+            return aptDate < todayStart || 
                    apt.status === 'Completed' || 
                    apt.status === 'Cancelled' || 
                    apt.status === 'Canceled';

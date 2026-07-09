@@ -8,6 +8,8 @@ class AppointmentRepository {
                     c.name AS clinic_name, du.name AS doctor_name,
                     v.weight_kg, v.height_cm, v.systolic_bp, v.diastolic_bp, v.blood_sugar_mgdl, v.pulse_rate,
                     pr.report_url, pr.file_name,
+                    pay.id AS payment_id, pay.status AS payment_status, pay.amount AS payment_amount,
+                    rr.status AS refund_status,
                     (
                         SELECT JSON_ARRAYAGG(JSON_OBJECT(
                             'medicine_name', pi.medicine_name,
@@ -25,6 +27,8 @@ class AppointmentRepository {
              JOIN users du ON a.doctor_id = du.id
              LEFT JOIN patient_vitals v ON a.id = v.appointment_id
              LEFT JOIN patient_reports pr ON a.id = pr.appointment_id
+             LEFT JOIN payments pay ON a.id = pay.appointment_id
+             LEFT JOIN refund_requests rr ON pay.id = rr.payment_id
              WHERE a.patient_id = ?
              ORDER BY a.appointment_date DESC
              LIMIT 20`,
@@ -41,6 +45,8 @@ class AppointmentRepository {
                     p.id AS patient_id, p.name AS patient_name,
                     v.weight_kg, v.height_cm, v.systolic_bp, v.diastolic_bp, v.blood_sugar_mgdl, v.pulse_rate,
                     pr.report_url, pr.file_name,
+                    pay.id AS payment_id, pay.status AS payment_status, pay.amount AS payment_amount,
+                    rr.status AS refund_status,
                     (
                         SELECT JSON_ARRAYAGG(JSON_OBJECT(
                             'medicine_name', pi.medicine_name,
@@ -59,6 +65,8 @@ class AppointmentRepository {
              JOIN patients p ON a.patient_id = p.id
              LEFT JOIN patient_vitals v ON a.id = v.appointment_id
              LEFT JOIN patient_reports pr ON a.id = pr.appointment_id
+             LEFT JOIN payments pay ON a.id = pay.appointment_id
+             LEFT JOIN refund_requests rr ON pay.id = rr.payment_id
              WHERE p.user_id = ?
              ORDER BY a.appointment_date DESC
              LIMIT 50`,
