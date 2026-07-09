@@ -67,7 +67,7 @@ if (!self.define) {
     });
   };
 }
-define(['./workbox-970124e6'], (function (workbox) { 'use strict';
+define(['./workbox-290dd570'], (function (workbox) { 'use strict';
 
   self.skipWaiting();
   workbox.clientsClaim();
@@ -81,19 +81,17 @@ define(['./workbox-970124e6'], (function (workbox) { 'use strict';
     "revision": "3ca0b8505b4bec776b69afdba2768812"
   }, {
     "url": "index.html",
-    "revision": "0.iu7hibj255s"
+    "revision": "0.ht2k0huplmg"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html"), {
     allowlist: [/^\/$/]
   }));
-  workbox.registerRoute(/^https:\/\/healtrack-backend-7h3o\.onrender\.com\/api\/.*/i, new workbox.NetworkFirst({
-    "cacheName": "healtrack-api-cache",
+  workbox.registerRoute(/^https:\/\/api\.example\.com\/.*/i, new workbox.NetworkFirst({
+    "cacheName": "api-data-cache",
     plugins: [new workbox.ExpirationPlugin({
-      maxEntries: 100,
+      maxEntries: 50,
       maxAgeSeconds: 86400
-    }), new workbox.CacheableResponsePlugin({
-      statuses: [0, 200]
     })]
   }), 'GET');
 

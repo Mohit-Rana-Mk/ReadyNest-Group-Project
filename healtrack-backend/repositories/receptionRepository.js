@@ -3,13 +3,15 @@ const db = require('../config/db');
 class ReceptionRepository {
     async getQueue(clinicId, dateString) {
         const [queue] = await db.query(
-            `SELECT a.id, a.appointment_date, a.status, 
+            `SELECT a.id, a.appointment_date, a.status, a.consultation_type,
                     DATE_FORMAT(a.appointment_date, '%h:%i %p') as time,
-                    p.name as patientName, p.mrn as patientMrn, du.name as doctorName
+                    p.name as patientName, p.mrn as patientMrn, p.id as patient_id, 
+                    du.name as doctorName, a.doctor_id, pay.status as payment_status
              FROM appointments a
              JOIN patients p ON a.patient_id = p.id
              JOIN users pu ON p.user_id = pu.id
              JOIN users du ON a.doctor_id = du.id
+             LEFT JOIN payments pay ON a.id = pay.appointment_id
              WHERE a.clinic_id = ? AND DATE(a.appointment_date) = ?
              ORDER BY a.appointment_date ASC`,
              [clinicId, dateString]
@@ -42,6 +44,30 @@ class ReceptionRepository {
             `UPDATE appointments SET status = ? WHERE id = ? AND clinic_id = ?`,
             [status, appointmentId, clinicId]
         );
+
+        if (status === 'Cancelled' || status === 'Canceled') {
+            const [payments] = await db.query(
+                `SELECT id, amount, status FROM payments WHERE appointment_id = ?`,
+                [appointmentId]
+            );
+
+            if (payments.length > 0 && payments[0].status === 'Paid') {
+                const payment = payments[0];
+
+                const [existingRefund] = await db.query(
+                    `SELECT id FROM refund_requests WHERE payment_id = ?`,
+                    [payment.id]
+                );
+
+                if (existingRefund.length === 0) {
+                    await db.execute(
+                        `INSERT INTO refund_requests (payment_id, amount, reason, status)
+                         VALUES (?, ?, 'cancellation', 'Pending')`,
+                        [payment.id, payment.amount]
+                    );
+                }
+            }
+        }
     }
 
     async lookupPatientByPhone(phone) {
@@ -123,7 +149,7 @@ class ReceptionRepository {
 
     async getAppointmentDetails(appointmentId) {
         const [rows] = await db.query(
-            `SELECT a.doctor_id, p.name as patientName, a.status 
+            `SELECT a.doctor_id, p.name as patientName, a.status, a.consultation_type 
              FROM appointments a
              JOIN patients p ON a.patient_id = p.id
              WHERE a.id = ?`,

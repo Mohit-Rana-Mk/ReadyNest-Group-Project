@@ -3,9 +3,19 @@ import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
 import { Search } from 'lucide-react';
 
-export function OpdQueueTable({ queue, onStatusChange }) {
+export function OpdQueueTable({ queue, onStatusChange, onCollectPayment }) {
   const [searchTerm, setSearchTerm] = useState('');
   const statusOptions = ['Scheduled', 'Checked-In', 'In Consultation', 'Completed', 'Cancelled'];
+
+  const handleStatusChangeAttempt = (appointmentId, newStatus, appointment) => {
+    if (appointment.consultation_type === 'In-Person' && appointment.payment_status === 'Pending') {
+      if (newStatus !== 'Cancelled' && newStatus !== 'Canceled') {
+        alert('Payment must be completed first. Please click "Collect Payment" to record the payment.');
+        return;
+      }
+    }
+    onStatusChange(appointmentId, newStatus);
+  };
 
   // Filter by search term
   const filteredQueue = queue.filter(appointment => 
@@ -51,24 +61,50 @@ export function OpdQueueTable({ queue, onStatusChange }) {
               </div>
             </div>
 
+            <div className="text-xs text-gray-500 flex justify-between items-center bg-gray-50 p-2 rounded border border-gray-100">
+              <div>
+                <span className="font-semibold text-gray-600">Type:</span> {appointment.consultation_type || 'In-Person'}
+              </div>
+              <div>
+                {appointment.payment_status === 'Paid' ? (
+                  <span className="px-2 py-0.5 bg-green-100 text-green-800 font-semibold rounded text-[10px]">Paid</span>
+                ) : appointment.payment_status === 'Pending' ? (
+                  <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 font-bold rounded text-[10px] border border-yellow-200">Payment Pending</span>
+                ) : (
+                  <span className="px-2 py-0.5 bg-gray-100 text-gray-700 font-semibold rounded text-[10px]">—</span>
+                )}
+              </div>
+            </div>
+
             {!isCompletedTable && (
               <div className="pt-2 flex justify-between items-center gap-2">
-                <select
-                  value={appointment.status}
-                  onChange={(e) => onStatusChange(appointment.id, e.target.value)}
-                  className="flex-1 rounded-md border-gray-300 py-2 pl-3 pr-8 text-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 bg-white border"
-                >
-                  {statusOptions.map(opt => (
-                    <option key={opt} value={opt}>{opt}</option>
-                  ))}
-                </select>
-                {(appointment.status === 'Scheduled' || appointment.status === 'Checked-In') && (
-                  <button
-                    onClick={() => onStatusChange(appointment.id, 'In Consultation')}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2 px-4 rounded shadow-sm transition whitespace-nowrap"
+                {appointment.status !== 'Cancelled' && appointment.status !== 'Canceled' && (
+                  <select
+                    value={appointment.status}
+                    onChange={(e) => handleStatusChangeAttempt(appointment.id, e.target.value, appointment)}
+                    className="flex-1 rounded-md border-gray-300 py-2 pl-3 pr-8 text-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 bg-white border"
                   >
-                    Send In
+                    {statusOptions.map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                )}
+                {appointment.consultation_type === 'In-Person' && appointment.payment_status === 'Pending' ? (
+                  <button
+                    onClick={() => onCollectPayment(appointment)}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold py-2 px-4 rounded shadow-sm transition whitespace-nowrap"
+                  >
+                    Collect Payment
                   </button>
+                ) : (
+                  (appointment.status === 'Scheduled' || appointment.status === 'Checked-In') && (
+                    <button
+                      onClick={() => onStatusChange(appointment.id, 'In Consultation')}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2 px-4 rounded shadow-sm transition whitespace-nowrap"
+                    >
+                      Send In
+                    </button>
+                  )
                 )}
               </div>
             )}
@@ -84,6 +120,7 @@ export function OpdQueueTable({ queue, onStatusChange }) {
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient Name</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor Assigned</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type & Payment</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
               {!isCompletedTable && <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>}
             </tr>
@@ -105,35 +142,58 @@ export function OpdQueueTable({ queue, onStatusChange }) {
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{appointment.time}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <div className="flex flex-col gap-1">
+                    <span className="font-semibold text-xs text-gray-700">{appointment.consultation_type || 'In-Person'}</span>
+                    {appointment.payment_status === 'Paid' ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 w-fit">Paid</span>
+                    ) : appointment.payment_status === 'Pending' ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800 w-fit border border-yellow-200">Payment Pending</span>
+                    ) : (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 w-fit">—</span>
+                    )}
+                  </div>
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <Badge status={appointment.status} />
                 </td>
                 {!isCompletedTable && (
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-2 items-center">
-                    {(appointment.status === 'Scheduled' || appointment.status === 'Checked-In') && (
+                    {appointment.consultation_type === 'In-Person' && appointment.payment_status === 'Pending' ? (
                       <button
-                        onClick={() => onStatusChange(appointment.id, 'In Consultation')}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-1.5 px-3 rounded shadow-sm transition"
+                        onClick={() => onCollectPayment(appointment)}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-1.5 px-3 rounded shadow-sm transition"
                       >
-                        Send In
+                        Collect Payment
                       </button>
+                    ) : (
+                      (appointment.status === 'Scheduled' || appointment.status === 'Checked-In') && (
+                        <button
+                          onClick={() => onStatusChange(appointment.id, 'In Consultation')}
+                          className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-1.5 px-3 rounded shadow-sm transition"
+                        >
+                          Send In
+                        </button>
+                      )
                     )}
-                    <select
-                      value={appointment.status}
-                      onChange={(e) => onStatusChange(appointment.id, e.target.value)}
-                      className="block rounded-md border-gray-300 py-1 pl-2 pr-6 text-xs focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 bg-white border"
-                    >
-                      {statusOptions.map(opt => (
-                        <option key={opt} value={opt}>{opt}</option>
-                      ))}
-                    </select>
+                    {appointment.status !== 'Cancelled' && appointment.status !== 'Canceled' && (
+                      <select
+                        value={appointment.status}
+                        onChange={(e) => handleStatusChangeAttempt(appointment.id, e.target.value, appointment)}
+                        className="block rounded-md border-gray-300 py-1 pl-2 pr-6 text-xs focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 bg-white border"
+                      >
+                        {statusOptions.map(opt => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                    )}
                   </td>
                 )}
               </tr>
             ))}
             {appointments.length === 0 && (
               <tr>
-                <td colSpan={isCompletedTable ? "4" : "5"} className="px-6 py-8 text-center text-gray-500">
+                <td colSpan={isCompletedTable ? "5" : "6"} className="px-6 py-8 text-center text-gray-500">
                   {isCompletedTable ? "No completed appointments." : "No appointments currently in the active queue."}
                 </td>
               </tr>

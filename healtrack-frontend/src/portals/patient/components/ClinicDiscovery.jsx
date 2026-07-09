@@ -22,7 +22,8 @@ export default function ClinicDiscovery() {
         appointment_date: '',
         doctor_id: '',
         department_id: '',
-        consultation_type: 'In-Person'
+        consultation_type: 'In-Person',
+        payment_method: 'Online'
     });
     const [clinicDoctors, setClinicDoctors] = useState([]);
     
@@ -122,7 +123,8 @@ export default function ClinicDiscovery() {
                 patient_id: family.length > 0 ? family[0].id : '',
                 doctor_id: doctors.length > 0 ? doctors[0].id : '',
                 department_id: '',
-                consultation_type: 'In-Person'
+                consultation_type: 'In-Person',
+                payment_method: 'Online'
             }));
             
             const waitData = await fetchClinicWaitTime(clinic.id);
@@ -149,6 +151,31 @@ export default function ClinicDiscovery() {
                 finalPatientId = addRes.patient_id;
             }
 
+            const pMethod = bookingData.consultation_type === 'Teleconsultation' ? 'Online' : bookingData.payment_method;
+
+            // Create Order
+            const orderData = await createPaymentOrder({
+                clinic_id: selectedClinic.id,
+                doctor_id: bookingData.doctor_id,
+                patient_id: finalPatientId,
+                appointment_date: bookingData.appointment_date,
+                consultation_type: bookingData.consultation_type,
+                payment_method: pMethod
+            });
+
+            if (!orderData) {
+                alert('Failed to create payment order.');
+                return;
+            }
+
+            if (pMethod === 'Counter') {
+                setBookingSuccess(true);
+                setTimeout(() => {
+                    setIsBookingModalOpen(false);
+                }, 2000);
+                return;
+            }
+
             // Load Razorpay script dynamically
             const rzpLoaded = await new Promise((resolve) => {
                 if (window.Razorpay) {
@@ -167,16 +194,7 @@ export default function ClinicDiscovery() {
                 return;
             }
 
-            // Create Order
-            const orderData = await createPaymentOrder({
-                clinic_id: selectedClinic.id,
-                doctor_id: bookingData.doctor_id,
-                patient_id: finalPatientId,
-                appointment_date: bookingData.appointment_date,
-                consultation_type: bookingData.consultation_type
-            });
-
-            if (!orderData || !orderData.orderId) {
+            if (!orderData.orderId) {
                 alert('Failed to create payment order.');
                 return;
             }
@@ -522,10 +540,13 @@ export default function ClinicDiscovery() {
                                         name="consultation_type" 
                                         value="In-Person" 
                                         checked={bookingData.consultation_type === 'In-Person'}
-                                        onChange={(e) => setBookingData({...bookingData, consultation_type: e.target.value})}
+                                        onChange={(e) => setBookingData({
+                                            ...bookingData, 
+                                            consultation_type: e.target.value
+                                        })}
                                         className="text-indigo-600 focus:ring-indigo-500"
                                     />
-                                    <span className="text-sm text-gray-700">In-Person</span>
+                                    <span className="text-sm text-gray-700 font-medium">In-Person</span>
                                 </label>
                                 <label className="flex items-center space-x-2">
                                     <input 
@@ -533,13 +554,47 @@ export default function ClinicDiscovery() {
                                         name="consultation_type" 
                                         value="Teleconsultation" 
                                         checked={bookingData.consultation_type === 'Teleconsultation'}
-                                        onChange={(e) => setBookingData({...bookingData, consultation_type: e.target.value})}
+                                        onChange={(e) => setBookingData({
+                                            ...bookingData, 
+                                            consultation_type: e.target.value,
+                                            payment_method: 'Online'
+                                        })}
                                         className="text-indigo-600 focus:ring-indigo-500"
                                     />
-                                    <span className="text-sm text-gray-700">Teleconsultation</span>
+                                    <span className="text-sm text-gray-700 font-medium">Teleconsultation</span>
                                 </label>
                             </div>
                         </div>
+
+                        {bookingData.consultation_type === 'In-Person' && (
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Option</label>
+                                <div className="flex space-x-4">
+                                    <label className="flex items-center space-x-2">
+                                        <input 
+                                            type="radio" 
+                                            name="payment_method" 
+                                            value="Online" 
+                                            checked={bookingData.payment_method === 'Online'}
+                                            onChange={(e) => setBookingData({...bookingData, payment_method: e.target.value})}
+                                            className="text-indigo-600 focus:ring-indigo-500"
+                                        />
+                                        <span className="text-sm text-gray-700 font-medium">Pay Online (Razorpay)</span>
+                                    </label>
+                                    <label className="flex items-center space-x-2">
+                                        <input 
+                                            type="radio" 
+                                            name="payment_method" 
+                                            value="Counter" 
+                                            checked={bookingData.payment_method === 'Counter'}
+                                            onChange={(e) => setBookingData({...bookingData, payment_method: e.target.value})}
+                                            className="text-indigo-600 focus:ring-indigo-500"
+                                        />
+                                        <span className="text-sm text-gray-700 font-semibold text-indigo-600">Pay at Counter</span>
+                                    </label>
+                                </div>
+                            </div>
+                        )}
                         <div className="pt-4 flex justify-end space-x-3 border-t border-gray-200">
                             <Button type="button" variant="outline" onClick={() => setIsBookingModalOpen(false)}>Cancel</Button>
                             <Button type="submit" variant="primary">Confirm Booking</Button>

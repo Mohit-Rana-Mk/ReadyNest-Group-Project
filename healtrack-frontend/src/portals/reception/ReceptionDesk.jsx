@@ -279,6 +279,36 @@ export default function ReceptionDesk() {
     }
   };
 
+  const closePaymentModal = () => {
+    setPaymentModal(null);
+    setPaymentDone(null);
+    fetchQueue();
+    fetchPayments();
+  };
+
+  const handleStatusChangeAttempt = (id, newStatus, appointment) => {
+    if (appointment.consultation_type === 'In-Person' && appointment.payment_status === 'Pending') {
+      if (newStatus !== 'Cancelled' && newStatus !== 'Canceled') {
+        alert('Payment must be completed first. Please click "Collect Payment" to record the payment.');
+        return;
+      }
+    }
+    handleStatusChange(id, newStatus);
+  };
+
+  const handleCollectPayment = (appointment) => {
+    const doc = doctors.find(d => d.id === appointment.doctor_id || d.name === appointment.doctorName);
+    setPaymentModal({
+      appointmentId: appointment.id,
+      patientId: appointment.patient_id,
+      doctorId: appointment.doctor_id || (doc ? doc.id : null),
+      clinicId: clinicId,
+      doctorName: appointment.doctorName,
+      fee: doc?.consultation_fee || 500
+    });
+    setPaymentDone(null);
+  };
+
   // Filtered queue lists
   const statusOptions = ['Scheduled', 'Checked-In', 'In Consultation', 'Completed', 'Cancelled'];
   const filteredQueue = (queue || []).filter(a =>
@@ -564,30 +594,54 @@ export default function ReceptionDesk() {
                             <p className="text-xs font-bold text-slate-800">{apt.patientName}</p>
                             {apt.patientMrn && <p className="text-[9px] text-slate-400 font-medium mt-0.5">{apt.patientMrn}</p>}
                             <p className="text-[9px] text-slate-500 font-medium mt-0.5">Dr. {apt.doctorName} · {apt.time}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-[9px] font-extrabold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                                {apt.consultation_type || 'In-Person'}
+                              </span>
+                              {apt.payment_status === 'Paid' ? (
+                                <span className="px-1.5 py-0.5 bg-green-50 text-green-700 border border-green-100 rounded text-[9px] font-extrabold uppercase">Paid</span>
+                              ) : apt.payment_status === 'Pending' ? (
+                                <span className="px-1.5 py-0.5 bg-yellow-50 text-yellow-700 border border-yellow-100 rounded text-[9px] font-black uppercase">Payment Pending</span>
+                              ) : (
+                                <span className="px-1.5 py-0.5 bg-slate-50 text-slate-500 border border-slate-100 rounded text-[9px] font-semibold uppercase">—</span>
+                              )}
+                            </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 sm:shrink-0">
                           <span className={`px-2.5 py-1 border rounded-lg text-[9px] font-extrabold uppercase tracking-wider ${statusBadgeColor(apt.status)}`}>
                             {apt.status}
                           </span>
-                          {(apt.status === 'Scheduled' || apt.status === 'Checked-In') && (
+                          {apt.consultation_type === 'In-Person' && apt.payment_status === 'Pending' ? (
                             <Button
                               variant="outline"
-                              onClick={() => handleStatusChange(apt.id, 'In Consultation')}
-                              className="px-3 py-1.5 bg-[#6366f1] hover:bg-[#5558e6] text-white text-[9px] font-extrabold uppercase tracking-wider rounded-lg transition cursor-pointer border-none"
+                              onClick={() => handleCollectPayment(apt)}
+                              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-extrabold uppercase tracking-wider rounded-lg transition cursor-pointer border-none"
                             >
-                              Send In →
+                              Collect Payment
                             </Button>
+                          ) : (
+                            (apt.status === 'Scheduled' || apt.status === 'Checked-In') && (
+                              <Button
+                                variant="outline"
+                                onClick={() => handleStatusChange(apt.id, 'In Consultation')}
+                                className="px-3 py-1.5 bg-[#6366f1] hover:bg-[#5558e6] text-white text-[9px] font-extrabold uppercase tracking-wider rounded-lg transition cursor-pointer border-none"
+                              >
+                                Send In →
+                              </Button>
+                            )
                           )}
-                          <Select
-                            value={apt.status}
-                            onChange={(e) => handleStatusChange(apt.id, e.target.value)}
-                            className="px-2 py-1.5 bg-[#F1F5F9] border-0 rounded-lg text-[9px] font-bold text-slate-600 focus:outline-none cursor-pointer"
-                          >
-                            {statusOptions.map(opt => (
-                              <option key={opt} value={opt}>{opt}</option>
-                            ))}
-                          </Select>
+                          {apt.status !== 'Cancelled' && apt.status !== 'Canceled' && (
+                            <Select
+                              value={apt.status}
+                              onChange={(e) => handleStatusChangeAttempt(apt.id, e.target.value, apt)}
+                              className="px-2 py-1.5 bg-[#F1F5F9] border-0 rounded-lg text-[9px] font-bold text-slate-600 focus:outline-none cursor-pointer"
+                            >
+                              {statusOptions.map(opt => (
+                                <option key={opt} value={opt}>{opt}</option>
+                              ))}
+                            </Select>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -802,7 +856,7 @@ export default function ReceptionDesk() {
                 </div>
               </div>
               {paymentDone && (
-                <button onClick={() => setPaymentModal(null)} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition">
+                <button onClick={closePaymentModal} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition">
                   <X className="w-4 h-4 text-slate-500" />
                 </button>
               )}
@@ -819,7 +873,7 @@ export default function ReceptionDesk() {
                   <p className="text-xs text-slate-500 mb-1">Method: <span className="font-bold text-slate-700">{paymentDone.method}</span></p>
                   <p className="text-xs text-slate-500 mb-4">Ref: <span className="font-mono text-slate-700 text-[10px]">{paymentDone.receipt_id}</span></p>
                   <button
-                    onClick={() => setPaymentModal(null)}
+                    onClick={closePaymentModal}
                     className="px-6 py-2.5 bg-[#6366f1] hover:bg-[#5558e6] text-white rounded-xl text-xs font-bold uppercase tracking-widest transition"
                   >
                     Done
@@ -869,7 +923,7 @@ export default function ReceptionDesk() {
                   )}
 
                   <button
-                    onClick={() => setPaymentModal(null)}
+                    onClick={closePaymentModal}
                     className="w-full text-center text-xs text-slate-400 hover:text-slate-600 font-medium pt-2 transition"
                   >
                     Skip — collect payment later

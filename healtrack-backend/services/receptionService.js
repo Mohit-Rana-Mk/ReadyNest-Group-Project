@@ -1,4 +1,5 @@
 const receptionRepository = require('../repositories/receptionRepository');
+const db = require('../config/db');
 
 class ReceptionService {
     async getQueue(clinicId) {
@@ -30,12 +31,28 @@ class ReceptionService {
     }
 
     async checkIn(clinicId, appointmentId) {
+        const details = await receptionRepository.getAppointmentDetails(appointmentId);
+        if (details && details.consultation_type === 'In-Person') {
+            const [payRows] = await db.query(`SELECT status FROM payments WHERE appointment_id = ?`, [appointmentId]);
+            if (payRows.length > 0 && payRows[0].status === 'Pending') {
+                throw new Error('Payment must be completed before sending patient in');
+            }
+        }
         await receptionRepository.checkInPatient(appointmentId, clinicId);
         return await receptionRepository.getAppointmentDetails(appointmentId);
     }
 
     async updateStatus(clinicId, appointmentId, status) {
         if (!status) throw new Error('Status is required');
+        if (status === 'Checked-In' || status === 'In Consultation' || status === 'Completed') {
+            const details = await receptionRepository.getAppointmentDetails(appointmentId);
+            if (details && details.consultation_type === 'In-Person') {
+                const [payRows] = await db.query(`SELECT status FROM payments WHERE appointment_id = ?`, [appointmentId]);
+                if (payRows.length > 0 && payRows[0].status === 'Pending') {
+                    throw new Error('Payment must be completed before sending patient in');
+                }
+            }
+        }
         await receptionRepository.updateStatus(appointmentId, clinicId, status);
         return await receptionRepository.getAppointmentDetails(appointmentId);
     }

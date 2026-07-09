@@ -44,6 +44,13 @@ class PaymentRepository {
         );
     }
 
+    async confirmCounterAppointment(appointmentId) {
+        await db.execute(
+            `UPDATE appointments SET status = 'Scheduled' WHERE id = ?`,
+            [appointmentId]
+        );
+    }
+
     async getPaymentByAppointmentId(appointmentId) {
         const [paymentRows] = await db.query(
             `SELECT id, status, clinic_id FROM payments WHERE appointment_id = ?`,

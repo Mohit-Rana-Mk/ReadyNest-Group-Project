@@ -9,7 +9,7 @@ const razorpay = new Razorpay({
 
 class PaymentService {
     async createOrder(payload) {
-        const { clinic_id, doctor_id, patient_id, appointment_date, consultation_type } = payload;
+        const { clinic_id, doctor_id, patient_id, appointment_date, consultation_type, payment_method } = payload;
 
         if (!clinic_id || !doctor_id || !patient_id || !appointment_date) {
             throw new Error('Missing required fields for appointment booking');
@@ -26,6 +26,24 @@ class PaymentService {
         const appointmentId = await paymentRepository.createPendingAppointment(
             clinic_id, doctor_id, patient_id, appointment_date, cType, meetingLink
         );
+
+        if (payment_method === 'Counter') {
+            const orderId = `COUNTER-${appointmentId}`;
+            const receipt_id = `REC-CNT-${Date.now()}-${appointmentId}`;
+            const invoice_id = `INV-CNT-${Date.now()}-${appointmentId}`;
+
+            await paymentRepository.createInitialPaymentRecord(
+                patient_id, doctor_id, clinic_id, appointmentId, orderId, fee, receipt_id, invoice_id
+            );
+
+            await paymentRepository.confirmCounterAppointment(appointmentId);
+
+            return {
+                appointmentId,
+                paymentMethod: 'Counter',
+                fee
+            };
+        }
 
         const rzpOrder = await razorpay.orders.create({
             amount: Math.round(fee * 100), 
