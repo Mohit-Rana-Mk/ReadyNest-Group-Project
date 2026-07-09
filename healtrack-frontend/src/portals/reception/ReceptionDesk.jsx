@@ -613,22 +613,20 @@ export default function ReceptionDesk() {
                             {apt.status}
                           </span>
                           {apt.consultation_type === 'In-Person' && apt.payment_status === 'Pending' ? (
-                            <Button
-                              variant="outline"
+                            <button
                               onClick={() => handleCollectPayment(apt)}
                               className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-extrabold uppercase tracking-wider rounded-lg transition cursor-pointer border-none"
                             >
                               Collect Payment
-                            </Button>
+                            </button>
                           ) : (
                             (apt.status === 'Scheduled' || apt.status === 'Checked-In') && (
-                              <Button
-                                variant="outline"
+                              <button
                                 onClick={() => handleStatusChange(apt.id, 'In Consultation')}
                                 className="px-3 py-1.5 bg-[#6366f1] hover:bg-[#5558e6] text-white text-[9px] font-extrabold uppercase tracking-wider rounded-lg transition cursor-pointer border-none"
                               >
                                 Send In →
-                              </Button>
+                              </button>
                             )
                           )}
                           {apt.status !== 'Cancelled' && apt.status !== 'Canceled' && (
