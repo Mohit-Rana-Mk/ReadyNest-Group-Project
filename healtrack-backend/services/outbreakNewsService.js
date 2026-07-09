@@ -27,6 +27,12 @@ async function getRecommendedDoctorsForDisease(diseaseId) {
         patterns = ['%infect%', '%general%'];
     }
 
+    const specialtyName = diseaseId === 'influenza' ? 'Pulmonology / General Medicine' :
+                          diseaseId === 'dengue' ? 'Infectious Diseases' :
+                          diseaseId === 'typhoid' ? 'Internal Medicine' : 'General Practice';
+
+    let recommended = [];
+
     try {
         // Query users table for doctors in matching departments/specialties
         const [rows] = await db.query(
@@ -40,7 +46,7 @@ async function getRecommendedDoctorsForDisease(diseaseId) {
         );
 
         if (rows && rows.length > 0) {
-            return rows.map(r => ({
+            recommended = rows.map(r => ({
                 id: r.id,
                 name: r.name,
                 specialty: r.specialty || 'General Medicine',
@@ -52,27 +58,19 @@ async function getRecommendedDoctorsForDisease(diseaseId) {
         console.warn('[OutbreakNews] Error querying doctors from DB:', e.message);
     }
 
-    // Fallback on-call doctors when DB is empty
-    const specialtyName = diseaseId === 'influenza' ? 'Pulmonology / General Medicine' :
-                          diseaseId === 'dengue' ? 'Infectious Diseases' :
-                          diseaseId === 'typhoid' ? 'Internal Medicine' : 'General Practice';
-    
-    return [
-        {
-            id: `sim-doc-${diseaseId}-1`,
-            name: `Dr. Sarah Jenkins (On-Call)`,
-            specialty: specialtyName,
-            email: 's.jenkins@auracare.org',
+    // Pad with N/A doctors up to 2 items
+    while (recommended.length < 2) {
+        const idx = recommended.length + 1;
+        recommended.push({
+            id: `na-doc-${diseaseId}-${idx}`,
+            name: 'N/A',
+            specialty: idx === 1 ? specialtyName : 'Epidemiology / General Medicine',
+            email: 'na@healtrack.com',
             isVirtual: true
-        },
-        {
-            id: `sim-doc-${diseaseId}-2`,
-            name: `Dr. Amit Patel (Infectious Expert)`,
-            specialty: 'Epidemiology / General Medicine',
-            email: 'a.patel@auracare.org',
-            isVirtual: true
-        }
-    ];
+        });
+    }
+
+    return recommended;
 }
 
 // ─── Disease keyword taxonomy for news classification ────────────────────────

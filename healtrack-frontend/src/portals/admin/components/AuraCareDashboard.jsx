@@ -1293,15 +1293,15 @@ export function AuraCareDashboard() {
                                             disease.recommendedDoctors.map((doc, di) => (
                                                 <div key={di} className="rec-doc-card">
                                                     <div className="doc-card-left">
-                                                        <div className={`doc-avatar ${doc.isVirtual ? 'virtual' : 'active'}`}>
+                                                        <div className={`doc-avatar ${doc.name === 'N/A' ? 'na' : (doc.isVirtual ? 'virtual' : 'active')}`}>
                                                             <User className="w-3.5 h-3.5 text-white" />
                                                         </div>
                                                         <div className="doc-info">
                                                             <span className="doc-name">{doc.name}</span>
-                                                            <span className="doc-specialty">{doc.specialty}</span>
+                                                            <span className="doc-specialty">{doc.name === 'N/A' ? 'N/A' : doc.specialty}</span>
                                                         </div>
                                                     </div>
-                                                    {doc.isVirtual && (
+                                                    {doc.isVirtual && doc.name !== 'N/A' && (
                                                         <span className="virtual-doc-badge">On-Call</span>
                                                     )}
                                                 </div>

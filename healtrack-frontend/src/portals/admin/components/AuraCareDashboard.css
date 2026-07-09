@@ -1895,6 +1895,10 @@
   background: var(--accent-green);
 }
 
+.auracare-dashboard .doc-avatar.na {
+  background: #94a3b8; /* slate-400 */
+}
+
 .auracare-dashboard .doc-info {
   display: flex;
   flex-direction: column;
