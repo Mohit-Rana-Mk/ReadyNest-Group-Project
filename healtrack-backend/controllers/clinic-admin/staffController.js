@@ -37,3 +37,14 @@ exports.updateStaff = async (req, res) => {
         res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
+exports.deleteStaff = async (req, res) => {
+    try {
+        const { staffId } = req.params;
+        await clinicAdminService.deleteStaff(staffId);
+        res.status(200).json({ message: 'Staff deleted successfully' });
+    } catch (error) {
+        console.error('Delete Staff Error:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};

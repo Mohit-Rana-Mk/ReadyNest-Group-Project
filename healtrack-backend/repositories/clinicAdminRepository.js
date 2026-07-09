@@ -389,6 +389,66 @@ class ClinicAdminRepository {
             [name, role, status, role, service_id, staffId]
         );
     }
+
+    async deleteStaffMember(staffId) {
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+            await connection.query('SET FOREIGN_KEY_CHECKS = 0');
+
+            // Get all appointments for this doctor to delete related items
+            const [appointments] = await connection.query('SELECT id FROM appointments WHERE doctor_id = ?', [staffId]);
+            const apptIds = appointments.map(a => a.id);
+
+            // Get all prescriptions for this doctor
+            const [prescriptions] = await connection.query('SELECT id FROM prescriptions WHERE doctor_id = ?', [staffId]);
+            const rxIds = prescriptions.map(r => r.id);
+
+            // Get all payments for this doctor
+            const [payments] = await connection.query('SELECT id FROM payments WHERE doctor_id = ?', [staffId]);
+            const paymentIds = payments.map(p => p.id);
+
+            // 1. Delete prescription items
+            if (rxIds.length > 0) {
+                await connection.query('DELETE FROM prescription_items WHERE prescription_id IN (?)', [rxIds]);
+            }
+            // 2. Delete prescriptions
+            await connection.query('DELETE FROM prescriptions WHERE doctor_id = ?', [staffId]);
+
+            // 3. Delete refund requests
+            if (paymentIds.length > 0) {
+                await connection.query('DELETE FROM refund_requests WHERE payment_id IN (?)', [paymentIds]);
+            }
+            // 4. Delete payments
+            await connection.query('DELETE FROM payments WHERE doctor_id = ?', [staffId]);
+
+            // 5. Delete patient vitals & razorpay orders
+            if (apptIds.length > 0) {
+                await connection.query('DELETE FROM patient_vitals WHERE appointment_id IN (?)', [apptIds]);
+                await connection.query('DELETE FROM razorpay_orders WHERE appointment_id IN (?)', [apptIds]);
+            }
+
+            // 6. Delete appointments
+            await connection.query('DELETE FROM appointments WHERE doctor_id = ?', [staffId]);
+
+            // 7. Delete doctor schedules
+            await connection.query('DELETE FROM doctor_schedules WHERE doctor_id = ?', [staffId]);
+
+            // 8. Delete user
+            await connection.query('DELETE FROM users WHERE id = ? AND role IN (\'Doctor\', \'ClinicStaff\')', [staffId]);
+
+            await connection.query('SET FOREIGN_KEY_CHECKS = 1');
+            await connection.commit();
+        } catch (error) {
+            try {
+                await connection.query('SET FOREIGN_KEY_CHECKS = 1');
+            } catch (err) {}
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
 }
 
 module.exports = new ClinicAdminRepository();

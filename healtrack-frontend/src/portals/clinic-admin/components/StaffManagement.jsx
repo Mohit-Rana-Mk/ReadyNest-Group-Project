@@ -75,6 +75,18 @@ export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
     }
   };
 
+  const handleDelete = async (member) => {
+    if (window.confirm(`Are you sure you want to permanently delete ${member.name} (${member.role})? This will also remove any related schedules and appointments.`)) {
+      try {
+        await axiosClient.delete(`/clinic-admin/${clinicId}/staff/${member.id}`);
+        if (refreshData) refreshData();
+      } catch (err) {
+        console.error("Error deleting staff:", err);
+        alert("Failed to delete staff member.");
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -113,6 +125,7 @@ export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <Button variant="outline" className="py-1 px-3 text-xs" onClick={() => openEditModal(member)}>Edit</Button>
+                    <Button variant="outline" className="py-1 px-3 text-xs ml-2 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 hover:border-red-300" onClick={() => handleDelete(member)}>Delete</Button>
                   </td>
                 </tr>
               ))}

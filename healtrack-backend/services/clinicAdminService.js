@@ -127,6 +127,10 @@ class ClinicAdminService {
         await clinicAdminRepository.updateStaffMember(staffId, payload);
     }
 
+    async deleteStaff(staffId) {
+        await clinicAdminRepository.deleteStaffMember(staffId);
+    }
+
     async getOutbreakAlerts(clinicId) {
         return await clinicAdminRepository.getOutbreakAlerts(clinicId);
     }

@@ -21,6 +21,7 @@ router.get('/:clinicId/operational-dashboard', analyticsController.getOperationa
 router.get('/:clinicId/staff', staffController.getStaff);
 router.post('/:clinicId/staff', staffController.addStaff);
 router.put('/:clinicId/staff/:staffId', staffController.updateStaff);
+router.delete('/:clinicId/staff/:staffId', staffController.deleteStaff);
 
 // C. Department Management
 router.get('/services/global', departmentController.getAllGlobalServices); // Note: Order matters or it catches as clinicId if placed below
