@@ -259,9 +259,10 @@ class ClinicAdminRepository {
         }
 
         if (patients.length > 0) {
-            // Find target service ID for General Medicine
+            // Find target service ID for General Medicine.
+            // Use NULL if not found to avoid FK constraint failure on fresh deployments.
             const [services] = await db.query(`SELECT id FROM services WHERE LOWER(name) LIKE '%general%' LIMIT 1`);
-            const targetServiceId = services.length > 0 ? services[0].id : 2;
+            const targetServiceId = services.length > 0 ? services[0].id : null;
 
             const alertTitle = `Clinic Alert: ${disease} (${severity} Severity)`;
             const alertDescription = `${message} (Target sector: ${sector})`;

@@ -82,12 +82,13 @@ async function runOutbreakCheck(io) {
         // 3. Process results and insert alerts into the database
         const results = response.results;
         
-        // Find general medicine service to attribute target_service_id
+        // Find general medicine service to attribute target_service_id.
+        // Use NULL if no services exist to avoid FK constraint violation on fresh deployments.
         const [services] = await db.query("SELECT id, name FROM services");
-        let targetServiceId = services[0]?.id || 1;
-        const genMedService = services.find(s => s.name.toLowerCase().includes('general'));
-        if (genMedService) {
-            targetServiceId = genMedService.id;
+        let targetServiceId = null; // default to NULL (column must be nullable)
+        if (services.length > 0) {
+            const genMedService = services.find(s => s.name.toLowerCase().includes('general'));
+            targetServiceId = genMedService ? genMedService.id : services[0].id;
         }
 
         const [patients] = await db.query("SELECT id FROM patients");

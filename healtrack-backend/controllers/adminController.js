@@ -548,11 +548,18 @@ exports.broadcastAwareness = async (req, res) => {
             return res.status(400).json({ success: false, message: "Missing required parameters: disease, title, description." });
         }
         
-        // 1. Insert alert into preventive_recommendations for all registered patients
+        // 1. Find a valid target_service_id (General Medicine preferred).
+        //    Use NULL if services table is empty to avoid FK constraint failure on fresh deployments.
+        const [[genService]] = await db.query(
+            `SELECT id FROM services WHERE LOWER(name) LIKE '%general%' ORDER BY id ASC LIMIT 1`
+        );
+        const broadcastServiceId = genService ? genService.id : null;
+
+        // 2. Insert alert into preventive_recommendations for all registered patients
         await db.query(
             `INSERT INTO preventive_recommendations (patient_id, alert_title, alert_description, status, generated_by, target_service_id)
-             SELECT id, ?, ?, 'Pending', 'System_Cron', 2 FROM patients`,
-            [title, description]
+             SELECT id, ?, ?, 'Pending', 'System_Cron', ? FROM patients`,
+            [title, description, broadcastServiceId]
         );
         
         // 2. Count patients notified
