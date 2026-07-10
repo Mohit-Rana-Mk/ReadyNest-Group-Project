@@ -7,6 +7,8 @@ import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { auth } from '../api/firebase';
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 export default function Login() {
     const { t } = useTranslation();
@@ -18,10 +20,59 @@ export default function Login() {
     const { login } = useAuth();
     const navigate = useNavigate();
 
+    const handleGoogleSignIn = async () => {
+        setError('');
+        setLoading(true);
+        try {
+            const provider = new GoogleAuthProvider();
+            const result = await signInWithPopup(auth, provider);
+            const idToken = await result.user.getIdToken();
+            
+            const res = await axiosClient.post('/auth/firebase-auth', { idToken });
+            if (res.data.success) {
+                login(res.data.data.user, res.data.data.token);
+                
+                switch (res.data.data.user.role) {
+                    case 'SuperAdmin': navigate('/admin'); break;
+                    case 'ClinicAdmin': navigate('/clinic'); break;
+                    case 'Doctor': navigate('/doctor'); break;
+                    case 'ClinicStaff': navigate('/reception'); break;
+                    case 'Patient': navigate('/patient'); break;
+                    default: navigate('/unauthorized');
+                }
+            }
+        } catch (err) {
+            console.error("Google Sign-In Error:", err);
+            setError(err.response?.data?.message || err.message || 'Failed to sign in with Google');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setLoading(true);
+
+        try {
+            const firebaseUserCredential = await signInWithEmailAndPassword(auth, email, password);
+            const idToken = await firebaseUserCredential.user.getIdToken();
+            const res = await axiosClient.post('/auth/firebase-auth', { idToken });
+            if (res.data.success) {
+                login(res.data.data.user, res.data.data.token);
+                switch (res.data.data.user.role) {
+                    case 'SuperAdmin': navigate('/admin'); break;
+                    case 'ClinicAdmin': navigate('/clinic'); break;
+                    case 'Doctor': navigate('/doctor'); break;
+                    case 'ClinicStaff': navigate('/reception'); break;
+                    case 'Patient': navigate('/patient'); break;
+                    default: navigate('/unauthorized');
+                }
+                return;
+            }
+        } catch (firebaseErr) {
+            console.log("Firebase login failed, trying fallback to custom auth:", firebaseErr.message);
+        }
 
         try {
             const res = await axiosClient.post('/auth/login', { email, password });
@@ -55,6 +106,7 @@ export default function Login() {
             setLoading(false);
         }
     };
+
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
@@ -176,6 +228,31 @@ export default function Login() {
                                     </Button>
                                 </div>
                             </form>
+                            
+                            <div className="relative my-6">
+                                <div className="absolute inset-0 flex items-center">
+                                    <div className="w-full border-t border-slate-200"></div>
+                                </div>
+                                <div className="relative flex justify-center text-xs uppercase">
+                                    <span className="bg-white px-3 text-[10px] font-extrabold tracking-wider text-slate-400">Or continue with</span>
+                                </div>
+                            </div>
+
+                            <Button
+                                type="button"
+                                onClick={handleGoogleSignIn}
+                                disabled={loading}
+                                variant="outline"
+                                className="w-full gap-2 py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl font-bold text-xs flex justify-center items-center"
+                            >
+                                <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
+                                    <path
+                                        fill="#EA4335"
+                                        d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.136 4.114-3.465 0-6.273-2.808-6.273-6.273s2.808-6.273 6.273-6.273c1.558 0 2.978.579 4.072 1.53l3.02-3.02C18.995 1.59 15.823 0 12.24 0 5.48 0 0 5.48 0 12.24s5.48 12.24 12.24 12.24c6.82 0 12.24-5.42 12.24-12.24 0-.785-.098-1.57-.275-2.28H12.24z"
+                                    />
+                                </svg>
+                                Sign In with Google
+                            </Button>
                             
                             <div className="mt-8 text-center text-xs font-bold text-slate-400">
                                 New to HealTrack?{' '}

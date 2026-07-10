@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, Loader2, LogOut, Home, Search, Activity, FileText, BookOpen, CreditCard } from 'lucide-react';
+import { Heart, Loader2, LogOut, Home, Search, Activity, FileText, BookOpen, CreditCard, User, AlertCircle, Calendar, Phone } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import BottomNav from './components/BottomNav';
 import PreventiveAlertBanner from './components/PreventiveAlertBanner';
@@ -8,7 +8,8 @@ import AiTriageAssistant from './components/AiTriageAssistant';
 import AppointmentHistory from './components/AppointmentHistory';
 import GeneralAwareness from './components/GeneralAwareness';
 import PatientPayments from './components/PatientPayments';
-import { fetchRecommendations, fetchClinics, fetchAppointments, dismissRecommendation } from '../../api/patientApi';
+import PatientProfile from './components/PatientProfile';
+import { fetchRecommendations, fetchClinics, fetchAppointments, dismissRecommendation, fetchProfile, updateProfile } from '../../api/patientApi';
 import { io } from 'socket.io-client';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
@@ -22,6 +23,17 @@ export default function PatientApp() {
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const { logout, user } = useAuth();
+
+    // Profile completeness state
+    const [profile, setProfile] = useState(null);
+    const [showCompleteProfileModal, setShowCompleteProfileModal] = useState(false);
+    const [modalCountryCode, setModalCountryCode] = useState('+91');
+    const [modalPhone, setModalPhone] = useState('');
+    const [modalDob, setModalDob] = useState('');
+    const [modalGender, setModalGender] = useState('Prefer Not to Say');
+    const [modalBloodGroup, setModalBloodGroup] = useState('');
+    const [modalSaving, setModalSaving] = useState(false);
+    const [modalError, setModalError] = useState('');
 
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -45,18 +57,91 @@ export default function PatientApp() {
         })
         .sort((a, b) => new Date(b.appointment_date) - new Date(a.appointment_date));
 
+    const validatePhoneFormat = (code, num) => {
+        const clean = num.replace(/\D/g, '');
+        if (['+91', '+1', '+44'].includes(code)) {
+            return clean.length === 10;
+        }
+        if (['+61', '+971', '+966'].includes(code)) {
+            return clean.length === 9;
+        }
+        return clean.length >= 7 && clean.length <= 15;
+    };
+
     const loadData = async () => {
         try {
-            const [recsData, apptsData] = await Promise.all([
+            const [recsData, apptsData, profileRes] = await Promise.all([
                 fetchRecommendations().catch(() => []),
                 fetchAppointments().catch(() => []),
+                fetchProfile().catch(() => null)
             ]);
             setRecommendations(recsData);
             setAppointments(apptsData);
+            if (profileRes && profileRes.success && profileRes.data) {
+                setProfile(profileRes.data);
+                const p = profileRes.data;
+                // If phone or date_of_birth is missing/null, prompt to complete profile
+                if (!p.phone || !p.date_of_birth) {
+                    setShowCompleteProfileModal(true);
+                }
+            }
         } catch (err) {
             console.error('Failed to load patient data:', err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleCompleteProfileSubmit = async (e) => {
+        e.preventDefault();
+        setModalError('');
+
+        if (!modalPhone.trim()) {
+            setModalError('Phone number is required.');
+            return;
+        }
+
+        if (!validatePhoneFormat(modalCountryCode, modalPhone)) {
+            const expected = ['+91', '+1', '+44'].includes(modalCountryCode) ? '10' : '9';
+            setModalError(`Phone number must consist of exactly ${expected} digits for country code ${modalCountryCode}.`);
+            return;
+        }
+
+        if (!modalDob) {
+            setModalError('Date of birth is required.');
+            return;
+        }
+
+        const birthDate = new Date(modalDob);
+        const today = new Date();
+        if (birthDate > today) {
+            setModalError('Date of birth cannot be a future date.');
+            return;
+        }
+
+        try {
+            setModalSaving(true);
+            const combinedPhone = `${modalCountryCode}${modalPhone.replace(/\D/g, '')}`;
+            const res = await updateProfile({
+                name: profile?.name,
+                email: profile?.email,
+                phone: combinedPhone,
+                date_of_birth: modalDob,
+                gender: modalGender,
+                blood_group: modalBloodGroup || null
+            });
+
+            if (res.success) {
+                setShowCompleteProfileModal(false);
+                await loadData();
+            } else {
+                setModalError(res.message || 'Failed to update profile.');
+            }
+        } catch (err) {
+            console.error('Complete profile error:', err);
+            setModalError(err.response?.data?.message || 'Error occurred while updating profile.');
+        } finally {
+            setModalSaving(false);
         }
     };
 
@@ -93,6 +178,7 @@ export default function PatientApp() {
         { id: 'awareness', name: t('nav.generalAwareness'), icon: BookOpen },
         { id: 'records', name: t('nav.records'), icon: FileText },
         { id: 'payments', name: 'Payments', icon: CreditCard },
+        { id: 'profile', name: 'My Profile', icon: User },
     ];
 
     if (loading) {
@@ -195,6 +281,13 @@ export default function PatientApp() {
                         </div>
                         <div className="flex items-center gap-3">
                             <LanguageSwitcher />
+                            <Button 
+                                variant="outline"
+                                onClick={() => setActiveTab('profile')} 
+                                className={`p-2 rounded-xl transition-colors border-slate-800/40 ${activeTab === 'profile' ? 'bg-[#7F3DEC] text-white' : 'text-slate-300 hover:text-white bg-slate-800/30'}`}
+                            >
+                                <User size={16} />
+                            </Button>
                             <Button 
                                 variant="outline"
                                 onClick={logout} 
@@ -430,11 +523,151 @@ export default function PatientApp() {
                             <PatientPayments />
                         </div>
                     )}
+
+                    {activeTab === 'profile' && (
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <PatientProfile />
+                        </div>
+                    )}
                 </div>
             </main>
 
             {/* Bottom Navigation — mobile only */}
             <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+
+            {/* Complete Profile Modal Overlay */}
+            {showCompleteProfileModal && (
+                <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 overflow-y-auto">
+                    <div className="bg-white rounded-3xl max-w-md w-full p-6 md:p-8 shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200">
+                        <div className="text-center space-y-3">
+                            <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center mx-auto border border-indigo-100">
+                                <User className="w-6 h-6 text-indigo-500" />
+                            </div>
+                            <h3 className="text-lg font-black text-slate-800 uppercase tracking-wide">Complete Your Profile</h3>
+                            <p className="text-xs text-slate-500 leading-relaxed">
+                                Before you can access your dashboard and features, please fill in your details to complete your account profile.
+                            </p>
+                        </div>
+
+                        {modalError && (
+                            <div className="mt-4 p-3 bg-rose-50 text-rose-800 border border-rose-100 rounded-2xl text-[11px] font-bold flex items-center gap-2">
+                                <AlertCircle size={14} className="text-rose-600 shrink-0" />
+                                <span>{modalError}</span>
+                            </div>
+                        )}
+
+                        <form onSubmit={handleCompleteProfileSubmit} className="mt-6 space-y-4">
+                            {/* Phone Number */}
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Phone Number</label>
+                                <div className="flex gap-2">
+                                    <div className="w-24 relative">
+                                        <select
+                                            value={modalCountryCode}
+                                            onChange={(e) => setModalCountryCode(e.target.value)}
+                                            className="w-full bg-[#F8FAFC] border border-slate-200 rounded-2xl px-2 py-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all shadow-sm appearance-none cursor-pointer"
+                                        >
+                                            <option value="+91">🇮🇳 +91</option>
+                                            <option value="+1">🇺🇸 +1</option>
+                                            <option value="+44">🇬🇧 +44</option>
+                                            <option value="+61">🇦🇺 +61</option>
+                                            <option value="+971">🇦🇪 +971</option>
+                                            <option value="+966">🇸🇦 +966</option>
+                                        </select>
+                                        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-500"></div>
+                                    </div>
+                                    <div className="flex-1 relative">
+                                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-3.5 h-3.5" />
+                                        <input
+                                            type="tel"
+                                            value={modalPhone}
+                                            onChange={(e) => setModalPhone(e.target.value)}
+                                            placeholder="Phone number"
+                                            className="w-full bg-[#F8FAFC] border border-slate-200 rounded-2xl pl-9 pr-3 py-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all shadow-sm"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Date of Birth */}
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Date of Birth</label>
+                                <div className="relative">
+                                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-3.5 h-3.5" />
+                                    <input
+                                        type="date"
+                                        value={modalDob}
+                                        onChange={(e) => setModalDob(e.target.value)}
+                                        max={new Date().toISOString().split('T')[0]}
+                                        className="w-full bg-[#F8FAFC] border border-slate-200 rounded-2xl pl-9 pr-3 py-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all shadow-sm"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Gender */}
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Gender</label>
+                                <div className="relative">
+                                    <select
+                                        value={modalGender}
+                                        onChange={(e) => setModalGender(e.target.value)}
+                                        className="w-full bg-[#F8FAFC] border border-slate-200 rounded-2xl px-3 py-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all shadow-sm appearance-none cursor-pointer"
+                                    >
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                        <option value="Prefer Not to Say">Prefer Not to Say</option>
+                                    </select>
+                                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-500"></div>
+                                </div>
+                            </div>
+
+                            {/* Blood Group */}
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Blood Group (Optional)</label>
+                                <div className="relative">
+                                    <select
+                                        value={modalBloodGroup}
+                                        onChange={(e) => setModalBloodGroup(e.target.value)}
+                                        className="w-full bg-[#F8FAFC] border border-slate-200 rounded-2xl px-3 py-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all shadow-sm appearance-none cursor-pointer"
+                                    >
+                                        <option value="">Select Blood Group</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                    </select>
+                                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-500"></div>
+                                </div>
+                            </div>
+
+                            {/* Submit Button */}
+                            <div className="pt-2">
+                                <Button
+                                    type="submit"
+                                    disabled={modalSaving}
+                                    className="w-full bg-[#7F3DEC] hover:bg-[#6c2ed2] text-white text-xs font-bold uppercase tracking-wider py-3.5 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border-none"
+                                >
+                                    {modalSaving ? (
+                                        <>
+                                            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                            Saving...
+                                        </>
+                                    ) : (
+                                        'Save and Continue'
+                                    )}
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

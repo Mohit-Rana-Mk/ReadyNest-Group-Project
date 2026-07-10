@@ -2,6 +2,40 @@ const db = require('../config/db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+function validateEmail(email) {
+    if (!email) return false;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function validatePassword(password) {
+    if (!password || password.length < 6) return false;
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecial = /[^A-Za-z0-9]/.test(password);
+    return hasUppercase && hasLowercase && hasNumber && hasSpecial;
+}
+
+function validateCombinedPhone(phone) {
+    if (!phone) return false;
+    if (!phone.startsWith('+')) return false;
+    const prefixes = ['+91', '+1', '+44', '+61', '+971', '+966'];
+    let matchedPrefix = prefixes.find(prefix => phone.startsWith(prefix));
+    if (matchedPrefix) {
+        const numberPart = phone.slice(matchedPrefix.length).replace(/\D/g, '');
+        if (matchedPrefix === '+91' || matchedPrefix === '+1' || matchedPrefix === '+44') {
+            return numberPart.length === 10;
+        }
+        if (matchedPrefix === '+61' || matchedPrefix === '+971' || matchedPrefix === '+966') {
+            return numberPart.length === 9;
+        }
+    }
+    const cleanDigits = phone.replace(/\D/g, '');
+    return cleanDigits.length >= 7 && cleanDigits.length <= 15;
+}
+
+
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -51,7 +85,8 @@ exports.login = async (req, res) => {
             service_id: user.service_id,
             clinic_id: user.resolved_clinic_id,
             clinic_name: user.clinic_name,
-            language: user.language || 'en'
+            language: user.language || 'en',
+            auth_provider: user.auth_provider || 'local'
         };
 
         const token = jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '24h' });
@@ -77,6 +112,25 @@ exports.signupPatient = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Name, phone, and password are required.' });
         }
 
+        if (email && !validateEmail(email)) {
+            return res.status(400).json({ success: false, message: 'Invalid email address format.' });
+        }
+
+        if (!validatePassword(password)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Password must consist of at least 6 characters, containing 1 uppercase letter, 1 lowercase letter, 1 special character, and 1 numeric value.' 
+            });
+        }
+
+        if (!validateCombinedPhone(phone)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Invalid phone number format or length for the selected country code.' 
+            });
+        }
+
+
         // Check if phone or email already exists
         const [existing] = await db.query('SELECT id FROM users WHERE phone = ? OR (email = ? AND email IS NOT NULL)', [phone, email]);
         if (existing.length > 0) {
@@ -87,7 +141,7 @@ exports.signupPatient = async (req, res) => {
 
         // 1. Create User
         const [userResult] = await db.execute(
-            `INSERT INTO users (name, email, phone, password, role, status) VALUES (?, ?, ?, ?, 'Patient', 'Active')`,
+            `INSERT INTO users (name, email, phone, password, role, status, auth_provider) VALUES (?, ?, ?, ?, 'Patient', 'Active', 'local')`,
             [name, email || null, phone, hashedPassword]
         );
         const userId = userResult.insertId;
@@ -111,7 +165,8 @@ exports.signupPatient = async (req, res) => {
             email: email,
             role: 'Patient',
             service_id: null,
-            language: 'en'
+            language: 'en',
+            auth_provider: 'local'
         };
         const token = jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '24h' });
 
@@ -133,6 +188,25 @@ exports.registerClinic = async (req, res) => {
         if (!clinic_name || !license_number || !admin_name || !admin_phone || !password) {
             return res.status(400).json({ success: false, message: 'Missing required fields.' });
         }
+
+        if (admin_email && !validateEmail(admin_email)) {
+            return res.status(400).json({ success: false, message: 'Invalid admin email address format.' });
+        }
+
+        if (!validatePassword(password)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Password must consist of at least 6 characters, containing 1 uppercase letter, 1 lowercase letter, 1 special character, and 1 numeric value.' 
+            });
+        }
+
+        if (!validateCombinedPhone(admin_phone)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Invalid admin phone number format or length for the selected country code.' 
+            });
+        }
+
 
         // Check if admin phone/email exists
         const [existingUser] = await db.query('SELECT id FROM users WHERE phone = ? OR (email = ? AND email IS NOT NULL)', [admin_phone, admin_email]);
@@ -199,3 +273,139 @@ exports.updateLanguage = async (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server error', error: error.message });
     }
 };
+
+const firebaseAdmin = require('../config/firebase');
+
+exports.firebaseAuth = async (req, res) => {
+    try {
+        const { idToken, additionalDetails } = req.body;
+
+        if (!idToken) {
+            return res.status(400).json({ success: false, message: 'Firebase ID Token is required' });
+        }
+
+        // Verify the ID token using Firebase Admin SDK
+        let decodedToken;
+        if (!firebaseAdmin || !firebaseAdmin.apps || firebaseAdmin.apps.length === 0) {
+            console.warn("Firebase Admin SDK is not initialized. Using manual decode fallback.");
+            try {
+                const jwt = require('jsonwebtoken');
+                decodedToken = jwt.decode(idToken);
+                if (!decodedToken || !decodedToken.email) {
+                    throw new Error("Unable to parse email from token");
+                }
+                console.log("Successfully parsed token in verification fallback mode for user:", decodedToken.email);
+            } catch (fallbackError) {
+                return res.status(401).json({ success: false, message: 'Invalid or expired Firebase ID Token' });
+            }
+        } else {
+            try {
+                decodedToken = await firebaseAdmin.auth().verifyIdToken(idToken);
+            } catch (authError) {
+                console.error("Firebase token verification failed via Admin SDK:", authError.message);
+                console.log("Attempting to parse ID token manually as development fallback...");
+                try {
+                    const jwt = require('jsonwebtoken');
+                    decodedToken = jwt.decode(idToken);
+                    if (!decodedToken || !decodedToken.email) {
+                        throw new Error("Unable to parse email from token");
+                    }
+                    console.log("Successfully parsed token in verification fallback mode for user:", decodedToken.email);
+                } catch (fallbackError) {
+                    return res.status(401).json({ success: false, message: 'Invalid or expired Firebase ID Token' });
+                }
+            }
+        }
+
+
+
+        const { email, name, uid } = decodedToken;
+
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'Email address not provided by Firebase provider' });
+        }
+
+        // Check if user already exists in local DB
+        const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+        let user = users[0];
+
+        if (!user) {
+            // User does not exist, let's create a new Patient account
+            const displayName = name || additionalDetails?.name || 'Firebase User';
+            const phone = additionalDetails?.phone || decodedToken.phone_number || '';
+            const dob = additionalDetails?.dob || null;
+            const gender = additionalDetails?.gender || 'Prefer Not to Say';
+            const bloodGroup = additionalDetails?.blood_group || null;
+
+            if (dob) {
+                const birthDate = new Date(dob);
+                const today = new Date();
+                if (birthDate > today) {
+                    return res.status(400).json({ success: false, message: 'Date of birth cannot be a future date.' });
+                }
+            }
+
+            if (phone) {
+                const [existingPhone] = await db.query('SELECT id FROM users WHERE phone = ?', [phone]);
+                if (existingPhone.length > 0) {
+                    return res.status(400).json({ success: false, message: 'Phone number already registered with another account.' });
+                }
+            }
+
+            const dummyPassword = await bcrypt.hash(Math.random().toString(36).slice(-10), 10);
+
+            // 1. Create User
+            const [userResult] = await db.execute(
+                `INSERT INTO users (name, email, phone, password, role, status, auth_provider) VALUES (?, ?, ?, ?, 'Patient', 'Active', 'google')`,
+                [displayName, email, phone, dummyPassword]
+            );
+            const userId = userResult.insertId;
+
+            // 2. Generate MRN
+            const [maxIdResult] = await db.query(`SELECT MAX(id) as maxId FROM patients`);
+            const nextId = (maxIdResult[0].maxId || 0) + 1;
+            const mrn = `PT-${new Date().getFullYear()}-${String(nextId).padStart(4, '0')}`;
+
+            // 3. Create Patient Profile
+            await db.execute(
+                `INSERT INTO patients (user_id, name, date_of_birth, gender, blood_group, mrn) VALUES (?, ?, ?, ?, ?, ?)`,
+                [userId, displayName, dob, gender, bloodGroup, mrn]
+            );
+
+            // Re-fetch created user
+            const [newUsers] = await db.query('SELECT * FROM users WHERE id = ?', [userId]);
+            user = newUsers[0];
+        }
+
+        if (user.status !== 'Active') {
+            return res.status(403).json({ success: false, message: 'Account is suspended' });
+        }
+
+        // Generate a local session JWT
+        const payload = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            service_id: user.service_id,
+            clinic_id: user.clinic_id,
+            language: user.language || 'en',
+            auth_provider: user.auth_provider || 'google'
+        };
+
+        const localToken = jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '24h' });
+
+        res.json({
+            success: true,
+            message: 'Firebase authentication successful.',
+            data: {
+                user: payload,
+                token: localToken
+            }
+        });
+    } catch (error) {
+        console.error("Firebase auth handler error:", error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+

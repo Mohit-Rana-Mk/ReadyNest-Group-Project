@@ -607,13 +607,18 @@ exports.getPatientAnalytics = async (req, res) => {
             conditions.push('s.name IN (?)');
             params.push(departments.split(','));
         }
-        if (min_age) {
-            conditions.push('TIMESTAMPDIFF(YEAR, p.date_of_birth, CURDATE()) >= ?');
-            params.push(parseInt(min_age));
-        }
-        if (max_age) {
-            conditions.push('TIMESTAMPDIFF(YEAR, p.date_of_birth, CURDATE()) <= ?');
-            params.push(parseInt(max_age));
+        if (min_age && max_age) {
+            conditions.push('(p.date_of_birth IS NULL OR (TIMESTAMPDIFF(YEAR, p.date_of_birth, CURDATE()) >= ? AND TIMESTAMPDIFF(YEAR, p.date_of_birth, CURDATE()) <= ?))');
+            params.push(parseInt(min_age), parseInt(max_age));
+        } else {
+            if (min_age) {
+                conditions.push('(p.date_of_birth IS NULL OR TIMESTAMPDIFF(YEAR, p.date_of_birth, CURDATE()) >= ?)');
+                params.push(parseInt(min_age));
+            }
+            if (max_age) {
+                conditions.push('(p.date_of_birth IS NULL OR TIMESTAMPDIFF(YEAR, p.date_of_birth, CURDATE()) <= ?)');
+                params.push(parseInt(max_age));
+            }
         }
 
         const whereClause = conditions.join(' AND ');
@@ -658,30 +663,34 @@ exports.getPatientAnalytics = async (req, res) => {
 
         // Process age bins: 0-19 (bin 0), 20-39 (bin 20), 40-59 (bin 40), 60-79 (bin 60), 80+ (bin 80)
         const ageBins = {
-            '0': { bin: 0, label: '0-19', female: 0, male: 0 },
-            '20': { bin: 20, label: '20-39', female: 0, male: 0 },
-            '40': { bin: 40, label: '40-59', female: 0, male: 0 },
-            '60': { bin: 60, label: '60-79', female: 0, male: 0 },
-            '80': { bin: 80, label: '80+', female: 0, male: 0 }
+            '0': { bin: 0, label: '0-19', female: 0, male: 0, preferNotToSay: 0 },
+            '20': { bin: 20, label: '20-39', female: 0, male: 0, preferNotToSay: 0 },
+            '40': { bin: 40, label: '40-59', female: 0, male: 0, preferNotToSay: 0 },
+            '60': { bin: 60, label: '60-79', female: 0, male: 0, preferNotToSay: 0 },
+            '80': { bin: 80, label: '80+', female: 0, male: 0, preferNotToSay: 0 },
+            'unknown': { bin: -1, label: 'Not Specified', female: 0, male: 0, preferNotToSay: 0 }
         };
 
         ageGenderRows.forEach(row => {
-            const age = parseInt(row.age);
             const gender = (row.gender || '').toLowerCase();
+            const targetGenderKey = gender === 'female' ? 'female' : (gender === 'male' ? 'male' : 'preferNotToSay');
+
+            if (row.age === null || row.age === undefined) {
+                ageBins['unknown'][targetGenderKey] += row.count;
+                return;
+            }
+            const age = parseInt(row.age);
             let binKey = '0';
             if (age >= 80) binKey = '80';
             else if (age >= 60) binKey = '60';
             else if (age >= 40) binKey = '40';
             else if (age >= 20) binKey = '20';
 
-            if (gender === 'female') {
-                ageBins[binKey].female += row.count;
-            } else if (gender === 'male') {
-                ageBins[binKey].male += row.count;
-            }
+            ageBins[binKey][targetGenderKey] += row.count;
         });
 
-        const ageGenderData = Object.values(ageBins);
+        // Only include "Not Specified" if there are patients with unspecified age
+        const ageGenderData = Object.values(ageBins).filter(bin => bin.bin !== -1 || bin.female > 0 || bin.male > 0 || bin.preferNotToSay > 0);
 
         // 5. Disease Distribution (Prescription diagnosis counts)
         const diseaseQuery = `

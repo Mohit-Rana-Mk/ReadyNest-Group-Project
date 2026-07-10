@@ -13,7 +13,8 @@ export function ClinicOnboarding({ pendingClinics, onVerify, onOnboardClinic }) 
         admin_name: '',
         admin_email: '',
         admin_phone: '',
-        admin_password: ''
+        admin_password: '',
+        admin_country_code: '+91'
     });
     const [submitting, setSubmitting] = useState(false);
     const [createdCredentials, setCreatedCredentials] = useState(null);
@@ -23,7 +24,15 @@ export function ClinicOnboarding({ pendingClinics, onVerify, onOnboardClinic }) 
         setSubmitting(true);
         setCreatedCredentials(null);
         try {
-            const res = await onOnboardClinic(formData);
+            const phoneVal = formData.admin_phone.trim();
+            const combinedPhone = phoneVal 
+                ? (phoneVal.startsWith('+') ? phoneVal : `${formData.admin_country_code}${phoneVal}`)
+                : '';
+            const payload = {
+                ...formData,
+                admin_phone: combinedPhone
+            };
+            const res = await onOnboardClinic(payload);
             if (res && res.credentials) {
                 setCreatedCredentials(res.credentials);
             }
@@ -38,7 +47,8 @@ export function ClinicOnboarding({ pendingClinics, onVerify, onOnboardClinic }) 
                 admin_name: '',
                 admin_email: '',
                 admin_phone: '',
-                admin_password: ''
+                admin_password: '',
+                admin_country_code: '+91'
             });
         } catch (error) {
             console.error("Onboarding failed:", error);
@@ -234,16 +244,30 @@ export function ClinicOnboarding({ pendingClinics, onVerify, onOnboardClinic }) 
                                 />
                             </div>
 
-                            <div>
+                             <div>
                                 <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Admin Phone</label>
-                                <input 
-                                    type="text" 
-                                    required={!!formData.admin_email}
-                                    value={formData.admin_phone}
-                                    onChange={e => setFormData(prev => ({ ...prev, admin_phone: e.target.value }))}
-                                    placeholder="9876543210"
-                                    className="w-full bg-[#f8f9fa] border border-[#e9ecef] rounded-xl px-3.5 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition duration-150 placeholder-slate-400"
-                                />
+                                <div className="flex gap-2">
+                                    <select
+                                        value={formData.admin_country_code}
+                                        onChange={e => setFormData(prev => ({ ...prev, admin_country_code: e.target.value }))}
+                                        className="bg-[#f8f9fa] border border-[#e9ecef] rounded-xl px-2 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 transition duration-150"
+                                    >
+                                        <option value="+91">🇮🇳 +91</option>
+                                        <option value="+1">🇺🇸 +1</option>
+                                        <option value="+44">🇬🇧 +44</option>
+                                        <option value="+61">🇦🇺 +61</option>
+                                        <option value="+971">🇦🇪 +971</option>
+                                        <option value="+966">🇸🇦 +966</option>
+                                    </select>
+                                    <input 
+                                        type="text" 
+                                        required={!!formData.admin_email}
+                                        value={formData.admin_phone}
+                                        onChange={e => setFormData(prev => ({ ...prev, admin_phone: e.target.value }))}
+                                        placeholder="9876543210"
+                                        className="flex-1 bg-[#f8f9fa] border border-[#e9ecef] rounded-xl px-3.5 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition duration-150 placeholder-slate-400"
+                                    />
+                                </div>
                             </div>
 
                             <div>
@@ -255,6 +279,9 @@ export function ClinicOnboarding({ pendingClinics, onVerify, onOnboardClinic }) 
                                     placeholder="Leave blank to auto-generate"
                                     className="w-full bg-[#f8f9fa] border border-[#e9ecef] rounded-xl px-3.5 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition duration-150 placeholder-slate-400"
                                 />
+                                <p className="mt-1 text-[9px] text-slate-400 leading-relaxed font-medium">
+                                    Must consist of at least 6 characters, containing 1 uppercase, 1 lowercase, 1 number, and 1 special character.
+                                </p>
                             </div>
                         </div>
                     </div>

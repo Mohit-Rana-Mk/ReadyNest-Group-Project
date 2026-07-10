@@ -1,5 +1,38 @@
 const clinicAdminRepository = require('../repositories/clinicAdminRepository');
 
+function validateEmail(email) {
+    if (!email) return false;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function validatePassword(password) {
+    if (!password || password.length < 6) return false;
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecial = /[^A-Za-z0-9]/.test(password);
+    return hasUppercase && hasLowercase && hasNumber && hasSpecial;
+}
+
+function validateCombinedPhone(phone) {
+    if (!phone) return false;
+    if (!phone.startsWith('+')) return false;
+    const prefixes = ['+91', '+1', '+44', '+61', '+971', '+966'];
+    let matchedPrefix = prefixes.find(prefix => phone.startsWith(prefix));
+    if (matchedPrefix) {
+        const numberPart = phone.slice(matchedPrefix.length).replace(/\D/g, '');
+        if (matchedPrefix === '+91' || matchedPrefix === '+1' || matchedPrefix === '+44') {
+            return numberPart.length === 10;
+        }
+        if (matchedPrefix === '+61' || matchedPrefix === '+971' || matchedPrefix === '+966') {
+            return numberPart.length === 9;
+        }
+    }
+    const cleanDigits = phone.replace(/\D/g, '');
+    return cleanDigits.length >= 7 && cleanDigits.length <= 15;
+}
+
 class ClinicAdminService {
     async getAnalytics(clinicId, months) {
         return await clinicAdminRepository.getBasicAnalytics(clinicId, months);
@@ -112,8 +145,27 @@ class ClinicAdminService {
             throw new Error('Missing required fields');
         }
 
+        if (!validateEmail(email)) {
+            throw new Error('Invalid email format');
+        }
+
+        if (!validateCombinedPhone(phone)) {
+            throw new Error('Invalid phone format or length for the selected country code.');
+        }
+
+        let generatedPassword = null;
+        if (password) {
+            if (!validatePassword(password)) {
+                throw new Error('Password must consist of at least 6 characters, containing 1 uppercase letter, 1 lowercase letter, 1 special character, and 1 numeric value.');
+            }
+            generatedPassword = password;
+        } else {
+            // Generate a strong password that passes validatePassword
+            const randomStr = Math.random().toString(36).slice(-4);
+            generatedPassword = `HT@staff${randomStr}`; // contains uppercase, lowercase, special, digits, and length >= 6
+        }
+
         const bcrypt = require('bcrypt');
-        const generatedPassword = password || Math.random().toString(36).slice(-8);
         const hashedPassword = await bcrypt.hash(generatedPassword, 10);
 
         const newUserId = await clinicAdminRepository.addStaffMember({

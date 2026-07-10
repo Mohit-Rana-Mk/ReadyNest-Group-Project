@@ -75,6 +75,15 @@ exports.lookupPatient = async (req, res) => {
 exports.registerWalkIn = async (req, res) => {
     try {
         const { clinicId } = req.params;
+
+        if (req.body.dob) {
+            const birthDate = new Date(req.body.dob);
+            const today = new Date();
+            if (birthDate > today) {
+                return res.status(400).json({ message: 'Date of birth cannot be a future date.' });
+            }
+        }
+
         const details = await receptionService.registerWalkIn(clinicId, req.body);
         if (req.io) {
             req.io.emit('QUEUE_UPDATE', {

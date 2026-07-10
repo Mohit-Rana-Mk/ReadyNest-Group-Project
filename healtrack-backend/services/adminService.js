@@ -2,6 +2,39 @@ const adminRepository = require('../repositories/adminRepository');
 const db = require('../config/db');
 
 
+function validateEmail(email) {
+    if (!email) return false;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function validatePassword(password) {
+    if (!password || password.length < 6) return false;
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecial = /[^A-Za-z0-9]/.test(password);
+    return hasUppercase && hasLowercase && hasNumber && hasSpecial;
+}
+
+function validateCombinedPhone(phone) {
+    if (!phone) return false;
+    if (!phone.startsWith('+')) return false;
+    const prefixes = ['+91', '+1', '+44', '+61', '+971', '+966'];
+    let matchedPrefix = prefixes.find(prefix => phone.startsWith(prefix));
+    if (matchedPrefix) {
+        const numberPart = phone.slice(matchedPrefix.length).replace(/\D/g, '');
+        if (matchedPrefix === '+91' || matchedPrefix === '+1' || matchedPrefix === '+44') {
+            return numberPart.length === 10;
+        }
+        if (matchedPrefix === '+61' || matchedPrefix === '+971' || matchedPrefix === '+966') {
+            return numberPart.length === 9;
+        }
+    }
+    const cleanDigits = phone.replace(/\D/g, '');
+    return cleanDigits.length >= 7 && cleanDigits.length <= 15;
+}
+
 class AdminService {
     async getPendingClinics() {
         return await adminRepository.getPendingClinics();
@@ -37,6 +70,25 @@ class AdminService {
             if (!admin_name || !admin_phone) {
                 throw new Error("Admin name and phone number are required to create a clinic admin account.");
             }
+
+            if (!validateEmail(admin_email)) {
+                throw new Error("Invalid admin email format.");
+            }
+
+            if (!validateCombinedPhone(admin_phone)) {
+                throw new Error("Invalid admin phone format or length for the selected country code.");
+            }
+
+            if (admin_password) {
+                if (!validatePassword(admin_password)) {
+                    throw new Error("Password must consist of at least 6 characters, containing 1 uppercase letter, 1 lowercase letter, 1 special character, and 1 numeric value.");
+                }
+                generatedPassword = admin_password;
+            } else {
+                // Generate a strong password that passes validatePassword
+                const randomStr = Math.random().toString(36).slice(-4);
+                generatedPassword = `HT@admin${randomStr}`; // contains uppercase, lowercase, special, digits, and length >= 6
+            }
             
             // Check if email already exists in users table
             const [existing] = await db.query("SELECT id FROM users WHERE email = ? OR phone = ?", [admin_email, admin_phone]);
@@ -45,7 +97,6 @@ class AdminService {
             }
 
             const bcrypt = require('bcrypt');
-            generatedPassword = admin_password || Math.random().toString(36).slice(-8);
             const hashedPassword = await bcrypt.hash(generatedPassword, 10);
             adminData = { admin_name, admin_email, admin_phone, hashedPassword };
         }

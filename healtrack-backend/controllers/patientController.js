@@ -720,3 +720,189 @@ exports.submitClinicReview = async (req, res) => {
         res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
+// ─────────────────────────────────────────────────────────────
+// H. Patient Profile & Password Settings
+// ─────────────────────────────────────────────────────────────
+exports.getProfile = async (req, res) => {
+    try {
+        const [rows] = await db.query(
+            `SELECT u.id as user_id, u.name, u.email, u.phone, u.profile_image, u.auth_provider,
+                    p.id as patient_id, p.mrn, p.date_of_birth, p.gender, p.blood_group, p.emergency_contact
+             FROM users u
+             LEFT JOIN patients p ON u.id = p.user_id
+             WHERE u.id = ?`,
+            [req.user.id]
+        );
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Profile not found' });
+        }
+        res.status(200).json({ success: true, data: rows[0] });
+    } catch (error) {
+        console.error('Get Profile Error:', error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+};
+
+exports.updateProfile = async (req, res) => {
+    const { name, email, phone, date_of_birth, gender, blood_group, emergency_contact } = req.body;
+    try {
+        const [users] = await db.query('SELECT auth_provider, email FROM users WHERE id = ?', [req.user.id]);
+        if (users.length === 0) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        const user = users[0];
+
+        // 1. Validation for Email/Phone format
+        if (email && email !== user.email) {
+            if (user.auth_provider === 'google') {
+                return res.status(400).json({ success: false, message: 'Google users cannot change their email address.' });
+            }
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return res.status(400).json({ success: false, message: 'Invalid email address format.' });
+            }
+            // Check uniqueness
+            const [existingEmail] = await db.query('SELECT id FROM users WHERE email = ? AND id != ?', [email, req.user.id]);
+            if (existingEmail.length > 0) {
+                return res.status(400).json({ success: false, message: 'Email address already registered by another user.' });
+            }
+        }
+
+        // Phone validation
+        if (phone) {
+            const cleanPhone = phone.trim();
+            if (!cleanPhone.startsWith('+')) {
+                return res.status(400).json({ success: false, message: 'Phone number must start with a country code (e.g. +91).' });
+            }
+            // Check uniqueness
+            const [existingPhone] = await db.query('SELECT id FROM users WHERE phone = ? AND id != ?', [phone, req.user.id]);
+            if (existingPhone.length > 0) {
+                return res.status(400).json({ success: false, message: 'Phone number already registered by another user.' });
+            }
+        }
+
+        // Validate Date of Birth is not in the future
+        if (date_of_birth) {
+            const birthDate = new Date(date_of_birth);
+            const today = new Date();
+            if (birthDate > today) {
+                return res.status(400).json({ success: false, message: 'Date of birth cannot be a future date.' });
+            }
+        }
+
+        // 2. Perform updates
+        const finalEmail = user.auth_provider === 'google' ? user.email : (email || user.email);
+        await db.query(
+            `UPDATE users SET name = ?, email = ?, phone = ? WHERE id = ?`,
+            [name, finalEmail, phone, req.user.id]
+        );
+
+        await db.query(
+            `UPDATE patients SET name = ?, date_of_birth = ?, gender = ?, blood_group = ?, emergency_contact = ? WHERE user_id = ?`,
+            [name, date_of_birth || null, gender, blood_group || null, emergency_contact || null, req.user.id]
+        );
+
+        res.status(200).json({ success: true, message: 'Profile updated successfully.' });
+    } catch (error) {
+        console.error('Update Profile Error:', error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+};
+
+exports.changePassword = async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    const bcrypt = require('bcrypt');
+    try {
+        const [users] = await db.query('SELECT password, auth_provider FROM users WHERE id = ?', [req.user.id]);
+        if (users.length === 0) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        const user = users[0];
+
+        if (user.auth_provider === 'google') {
+            return res.status(400).json({ success: false, message: 'Google users cannot change/reset password.' });
+        }
+
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ success: false, message: 'Current password and new password are required.' });
+        }
+
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ success: false, message: 'Incorrect current password.' });
+        }
+
+        // Validate new password rules
+        if (newPassword.length < 6) {
+            return res.status(400).json({ success: false, message: 'New password must be at least 6 characters long.' });
+        }
+        const hasUppercase = /[A-Z]/.test(newPassword);
+        const hasLowercase = /[a-z]/.test(newPassword);
+        const hasNumber = /[0-9]/.test(newPassword);
+        const hasSpecial = /[^A-Za-z0-9]/.test(newPassword);
+        if (!hasUppercase || !hasLowercase || !hasNumber || !hasSpecial) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 numeric value, and 1 special character.' 
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await db.query('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, req.user.id]);
+
+        res.status(200).json({ success: true, message: 'Password updated successfully.' });
+    } catch (error) {
+        console.error('Change Password Error:', error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+};
+
+exports.uploadProfileImage = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'No image file uploaded.' });
+        }
+
+        let imageUrl = '';
+        if (!process.env.CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_CLOUD_NAME === 'demo') {
+            console.warn("Cloudinary not configured, using a default mock URL.");
+            imageUrl = "https://res.cloudinary.com/demo/image/upload/v1/mock_avatar.png";
+        } else {
+            const cloudinary = require('../config/cloudinary');
+            const streamifier = require('streamifier');
+
+            const uploadFromBuffer = (req) => {
+                return new Promise((resolve, reject) => {
+                    let cld_upload_stream = cloudinary.uploader.upload_stream(
+                        { folder: "healtrack_avatars" },
+                        (error, result) => {
+                            if (result) {
+                                resolve(result);
+                            } else {
+                                reject(error);
+                            }
+                        }
+                    );
+                    streamifier.createReadStream(req.file.buffer).pipe(cld_upload_stream);
+                });
+            };
+
+            const result = await uploadFromBuffer(req);
+            imageUrl = result.secure_url;
+        }
+
+        await db.query('UPDATE users SET profile_image = ? WHERE id = ?', [imageUrl, req.user.id]);
+
+        res.status(200).json({
+            success: true,
+            message: 'Profile image uploaded successfully.',
+            data: { profile_image: imageUrl }
+        });
+    } catch (error) {
+        console.error('Upload Profile Image Error:', error);
+        res.status(500).json({ success: false, message: 'Internal Server Error', error: error.message });
+    }
+};
+

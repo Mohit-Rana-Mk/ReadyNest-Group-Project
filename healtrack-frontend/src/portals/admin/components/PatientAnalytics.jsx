@@ -12,9 +12,9 @@ const DEPARTMENTS = [
   'Pediatrics', 'Dermatology', 'ENT', 'Neurology', 'Gynecology', 'Psychiatry'
 ];
 
-const GENDERS = ['Female', 'Male'];
+const GENDERS = ['Female', 'Male', 'Prefer Not to Say'];
 
-const PIE_COLORS = ['#3b82f6', '#1e3a8a']; // Matches PowerBI light blue & dark blue
+const PIE_COLORS = ['#3b82f6', '#1e3a8a', '#10b981']; // Matches PowerBI light blue, dark blue, and emerald green
 
 const MOSAIC_COLORS = [
   '#2563eb', '#db2777', '#0f766e', '#a21caf', '#06b6d4',
@@ -287,6 +287,7 @@ export function PatientAnalytics() {
                 <Legend verticalAlign="top" height={36} />
                 <Bar dataKey="female" name="Female" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="male" name="Male" fill="#1e3a8a" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="preferNotToSay" name="Prefer Not to Say" fill="#10b981" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -308,9 +309,13 @@ export function PatientAnalytics() {
                   dataKey="value"
                   label={({ name, value }) => `${name}: ${value} (${((value / totalPieCount) * 100).toFixed(2)}%)`}
                 >
-                  {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                  ))}
+                  {pieData.map((entry, index) => {
+                    let color = '#94a3b8'; // Default slate-400
+                    if (entry.name === 'Female') color = '#3b82f6';
+                    else if (entry.name === 'Male') color = '#1e3a8a';
+                    else if (entry.name === 'Prefer Not to Say') color = '#10b981';
+                    return <Cell key={`cell-${index}`} fill={color} />;
+                  })}
                 </Pie>
                 <Tooltip formatter={(value) => `${value} Patients`} />
                 <Legend verticalAlign="bottom" height={36} />

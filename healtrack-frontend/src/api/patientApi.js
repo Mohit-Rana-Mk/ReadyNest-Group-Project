@@ -52,3 +52,19 @@ export const rescheduleAppointment = (appointmentId, newDate) =>
 
 export const submitClinicReview = (data) =>
     axiosClient.post('/patient/reviews', data).then(res => res.data);
+
+export const fetchProfile = () =>
+    axiosClient.get('/patient/profile').then(res => res.data);
+
+export const updateProfile = (data) =>
+    axiosClient.put('/patient/profile', data).then(res => res.data);
+
+export const changePassword = (data) =>
+    axiosClient.put('/patient/profile/password', data).then(res => res.data);
+
+export const uploadProfileImage = (formData) =>
+    axiosClient.post('/patient/profile/image', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    }).then(res => res.data);

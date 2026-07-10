@@ -9,7 +9,7 @@ export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
   const [editMode, setEditMode] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [departments, setDepartments] = useState([]);
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', role: 'Doctor', status: 'Active', service_id: '', password: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', role: 'Doctor', status: 'Active', service_id: '', password: '', country_code: '+91' });
   const [createdCredentials, setCreatedCredentials] = useState(null);
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
   const openAddModal = () => {
     setEditMode(false);
     setCreatedCredentials(null);
-    setFormData({ name: '', email: '', phone: '', role: 'Doctor', status: 'Active', service_id: '', password: '' });
+    setFormData({ name: '', email: '', phone: '', role: 'Doctor', status: 'Active', service_id: '', password: '', country_code: '+91' });
     setIsModalOpen(true);
   };
 
@@ -57,7 +57,14 @@ export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
         });
         setIsModalOpen(false);
       } else {
-        const payload = { ...formData };
+        const phoneVal = formData.phone.trim();
+        const combinedPhone = phoneVal 
+            ? (phoneVal.startsWith('+') ? phoneVal : `${formData.country_code}${phoneVal}`)
+            : '';
+        const payload = { 
+          ...formData,
+          phone: combinedPhone 
+        };
         if (formData.role !== 'Doctor') {
           delete payload.service_id;
         }
@@ -155,7 +162,27 @@ export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                      <input required type="text" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3" />
+                      <div className="flex gap-2">
+                        <select
+                          value={formData.country_code}
+                          onChange={e => setFormData({...formData, country_code: e.target.value})}
+                          className="border border-gray-300 rounded-md py-2 px-2 bg-white text-sm outline-none"
+                        >
+                          <option value="+91">🇮🇳 +91</option>
+                          <option value="+1">🇺🇸 +1</option>
+                          <option value="+44">🇬🇧 +44</option>
+                          <option value="+61">🇦🇺 +61</option>
+                          <option value="+971">🇦🇪 +971</option>
+                          <option value="+966">🇸🇦 +966</option>
+                        </select>
+                        <input 
+                          required 
+                          type="text" 
+                          value={formData.phone} 
+                          onChange={e => setFormData({...formData, phone: e.target.value})} 
+                          className="flex-1 border border-gray-300 rounded-md py-2 px-3 outline-none" 
+                        />
+                      </div>
                     </div>
                   </>
                 )}
@@ -190,7 +217,6 @@ export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
                   </div>
                 )}
 
-                {!editMode && !createdCredentials && (
                     <div className="space-y-1">
                         <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Set Password</label>
                         <div className="flex gap-2">
@@ -203,14 +229,19 @@ export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
                             />
                             <button
                                 type="button"
-                                onClick={() => setFormData({ ...formData, password: Math.random().toString(36).slice(-8) })}
+                                onClick={() => {
+                                    const randomStr = Math.random().toString(36).slice(-4);
+                                    setFormData({ ...formData, password: `HT@staff${randomStr}` });
+                                }}
                                 className="px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition whitespace-nowrap"
                             >
                                 Auto-Gen
                             </button>
                         </div>
+                        <p className="mt-1 text-[9px] text-slate-400 leading-relaxed font-medium">
+                            Must consist of at least 6 characters, containing 1 uppercase, 1 lowercase, 1 number, and 1 special character.
+                        </p>
                     </div>
-                )}
               </div>
               <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-slate-100">
                 <Button variant="outline" type="button" onClick={() => setIsModalOpen(false)}>Cancel</Button>

@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const http = require('http');
 const { Server } = require('socket.io');
 require('dotenv').config();
+require('./config/firebase');
 
 const receptionRoutes = require('./routes/receptionRoutes');
 const doctorRoutes = require('./routes/doctorRoutes');

@@ -39,4 +39,14 @@ router.put('/appointments/:appointmentId/reschedule', patientController.reschedu
 // G. Reviews
 router.post('/reviews', patientController.submitClinicReview);
 
+// H. Patient Profile & Settings
+const multer = require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+router.get('/profile', patientController.getProfile);
+router.put('/profile', patientController.updateProfile);
+router.put('/profile/password', patientController.changePassword);
+router.post('/profile/image', upload.single('profile_image'), patientController.uploadProfileImage);
+
 module.exports = router;

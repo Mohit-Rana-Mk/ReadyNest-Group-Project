@@ -7,6 +7,8 @@ import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { auth } from '../api/firebase';
+import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 export default function Signup() {
     const { t } = useTranslation();
@@ -20,6 +22,7 @@ export default function Signup() {
     // Patient Fields
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
+    const [countryCode, setCountryCode] = useState('+91');
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [dob, setDob] = useState('');
@@ -32,11 +35,70 @@ export default function Signup() {
     const [address, setAddress] = useState('');
     const [city, setCity] = useState('');
 
+    const validateEmailFormat = (em) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(em);
+    };
+
+    const validatePasswordStrength = (pass) => {
+        if (pass.length < 6) return false;
+        const hasUppercase = /[A-Z]/.test(pass);
+        const hasLowercase = /[a-z]/.test(pass);
+        const hasNumber = /[0-9]/.test(pass);
+        const hasSpecial = /[^A-Za-z0-9]/.test(pass);
+        return hasUppercase && hasLowercase && hasNumber && hasSpecial;
+    };
+
+    const validatePhoneFormat = (code, num) => {
+        const cleanNum = num.replace(/\D/g, '');
+        if (code === '+91' || code === '+1' || code === '+44') {
+            return cleanNum.length === 10;
+        }
+        if (code === '+61' || code === '+971' || code === '+966') {
+            return cleanNum.length === 9;
+        }
+        return cleanNum.length >= 7 && cleanNum.length <= 15;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setSuccessMessage('');
         setLoading(true);
+
+        // Validate Email
+        if (email && !validateEmailFormat(email)) {
+            setError('Invalid email address format.');
+            setLoading(false);
+            return;
+        }
+
+        // Validate Password
+        if (!validatePasswordStrength(password)) {
+            setError('Password must consist of at least 6 characters, containing 1 uppercase letter, 1 lowercase letter, 1 special character, and 1 numeric value.');
+            setLoading(false);
+            return;
+        }
+
+        // Validate Phone format
+        if (!validatePhoneFormat(countryCode, phone)) {
+            const expectedLen = ['+91', '+1', '+44'].includes(countryCode) ? '10' : '9';
+            setError(`Phone number must consist of exactly ${expectedLen} digits for country code ${countryCode}.`);
+            setLoading(false);
+            return;
+        }
+
+        const combinedPhone = `${countryCode}${phone.replace(/\D/g, '')}`;
+
+        if (!isClinic) {
+            const today = new Date();
+            const birthDate = new Date(dob);
+            if (birthDate > today) {
+                setError('Date of birth cannot be a future date.');
+                setLoading(false);
+                return;
+            }
+        }
 
         try {
             if (isClinic) {
@@ -47,7 +109,7 @@ export default function Signup() {
                     city,
                     admin_name: name,
                     admin_email: email,
-                    admin_phone: phone,
+                    admin_phone: combinedPhone,
                     password
                 };
                 const res = await axiosClient.post('/auth/register-clinic', payload);
@@ -55,21 +117,72 @@ export default function Signup() {
                     setSuccessMessage(res.data.message);
                 }
             } else {
-                const payload = { name, email, phone, password, dob, gender, blood_group: bloodGroup };
-                const res = await axiosClient.post('/auth/signup-patient', payload);
+                let idToken;
+                try {
+                    const firebaseCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    idToken = await firebaseCredential.user.getIdToken();
+                } catch (firebaseErr) {
+                    console.error("Firebase signup failed:", firebaseErr);
+                    setError(firebaseErr.message || 'Firebase registration failed');
+                    setLoading(false);
+                    return;
+                }
+
+                const payload = {
+                    idToken,
+                    additionalDetails: {
+                        name,
+                        phone: combinedPhone,
+                        dob,
+                        gender,
+                        blood_group: bloodGroup
+                    }
+                };
+                const res = await axiosClient.post('/auth/firebase-auth', payload);
                 if (res.data.success) {
                     login(res.data.data.user, res.data.data.token);
                     navigate('/patient');
                 }
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to sign up');
+            setError(err.response?.data?.message || err.message || 'Failed to sign up');
         } finally {
             setLoading(false);
         }
     };
 
+
+    const handleGoogleSignup = async () => {
+        setError('');
+        setLoading(true);
+        try {
+            const provider = new GoogleAuthProvider();
+            const result = await signInWithPopup(auth, provider);
+            const idToken = await result.user.getIdToken();
+            
+            const payload = {
+                idToken,
+                additionalDetails: {
+                    name: result.user.displayName || 'Google User',
+                    phone: result.user.phoneNumber || ''
+                }
+            };
+            const res = await axiosClient.post('/auth/firebase-auth', payload);
+            if (res.data.success) {
+                login(res.data.data.user, res.data.data.token);
+                navigate('/patient');
+            }
+        } catch (err) {
+            console.error("Google Sign-Up Error:", err);
+            setError(err.response?.data?.message || err.message || 'Failed to sign up with Google');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
     return (
+
         <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
             {/* Background Accent Grid / Glow */}
             <div className="absolute top-0 right-0 -mt-20 -mr-20 w-[600px] h-[600px] bg-gradient-to-br from-indigo-500/5 to-purple-500/5 rounded-full blur-[100px] pointer-events-none"></div>
@@ -174,7 +287,9 @@ export default function Signup() {
                             )}
 
                             {!successMessage && (
-                                <form className="space-y-4" onSubmit={handleSubmit}>
+                                <>
+                                    <form className="space-y-4" onSubmit={handleSubmit}>
+
                                     {isClinic && (
                                         <div className="space-y-4">
                                             <h3 className="text-xs font-extrabold text-slate-800 border-b pb-2 uppercase tracking-wider">Clinic Details</h3>
@@ -211,7 +326,28 @@ export default function Signup() {
                                             </div>
                                             <div>
                                                 <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Phone Number</label>
-                                                <input type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-4 py-3 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400" placeholder="+1 (555) 000-0000" />
+                                                <div className="flex gap-2">
+                                                    <select
+                                                        value={countryCode}
+                                                        onChange={(e) => setCountryCode(e.target.value)}
+                                                        className="px-3 py-3 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700"
+                                                    >
+                                                        <option value="+91">🇮🇳 +91</option>
+                                                        <option value="+1">🇺🇸 +1</option>
+                                                        <option value="+44">🇬🇧 +44</option>
+                                                        <option value="+61">🇦🇺 +61</option>
+                                                        <option value="+971">🇦🇪 +971</option>
+                                                        <option value="+966">🇸🇦 +966</option>
+                                                    </select>
+                                                    <input
+                                                        type="tel"
+                                                        required
+                                                        value={phone}
+                                                        onChange={(e) => setPhone(e.target.value)}
+                                                        className="flex-1 px-4 py-3 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400"
+                                                        placeholder="98765 43210"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
 
@@ -219,7 +355,7 @@ export default function Signup() {
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <div>
                                                     <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Date of Birth</label>
-                                                    <input type="date" required value={dob} onChange={(e) => setDob(e.target.value)} className="w-full px-4 py-3 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400" />
+                                                    <input type="date" required value={dob} max={new Date().toISOString().split('T')[0]} onChange={(e) => setDob(e.target.value)} className="w-full px-4 py-3 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400" />
                                                 </div>
                                                 <div>
                                                     <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Gender</label>
@@ -236,6 +372,9 @@ export default function Signup() {
                                         <div>
                                             <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Password</label>
                                             <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-3 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400" placeholder="••••••••" />
+                                            <p className="mt-1 text-[10px] text-slate-400 leading-relaxed font-medium">
+                                                Must be at least 6 characters, containing 1 uppercase, 1 lowercase, 1 number, and 1 special character.
+                                            </p>
                                         </div>
                                     </div>
 
@@ -256,7 +395,38 @@ export default function Signup() {
                                         </Button>
                                     </div>
                                 </form>
-                            )}
+
+                                {!isClinic && (
+                                    <>
+                                        <div className="relative my-6">
+                                            <div className="absolute inset-0 flex items-center">
+                                                <div className="w-full border-t border-slate-200"></div>
+                                            </div>
+                                            <div className="relative flex justify-center text-xs uppercase">
+                                                <span className="bg-white px-3 text-[10px] font-extrabold tracking-wider text-slate-400">Or continue with</span>
+                                            </div>
+                                        </div>
+
+                                        <Button
+                                            type="button"
+                                            onClick={handleGoogleSignup}
+                                            disabled={loading}
+                                            variant="outline"
+                                            className="w-full gap-2 py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl font-bold text-xs flex justify-center items-center"
+                                        >
+                                            <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
+                                                <path
+                                                    fill="#EA4335"
+                                                    d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.136 4.114-3.34 0-6.05-2.71-6.05-6.05s2.71-6.05 6.05-6.05c1.47 0 2.82.53 3.88 1.405l2.922-2.922C18.665 3.03 15.65 2 12.24 2 6.58 2 2 6.58 2 12.24s4.58 10.24 10.24 10.24c5.795 0 10.254-4.074 10.254-10.24 0-.695-.08-1.355-.22-1.955H12.24z"
+                                                />
+                                            </svg>
+                                            Sign Up with Google
+                                        </Button>
+                                    </>
+                                )}
+                            </>)}
+
+
 
                             <div className="mt-8 text-center text-xs font-bold text-slate-400">
                                 Already have an account?{' '}

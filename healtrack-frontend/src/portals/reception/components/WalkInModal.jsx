@@ -95,6 +95,15 @@ export function WalkInModal({ isOpen, onClose, onRegister, doctors = [], clinicI
     const isNew = selectedPatientId === 'new' || !selectedPatientId;
     if (isNew && !name) return;
 
+    if (isNew && dob) {
+      const birthDate = new Date(dob);
+      const today = new Date();
+      if (birthDate > today) {
+        alert("Date of birth cannot be a future date.");
+        return;
+      }
+    }
+
     onRegister({ 
       phone, 
       doctor_id, 
@@ -164,6 +173,7 @@ export function WalkInModal({ isOpen, onClose, onRegister, doctors = [], clinicI
             <input 
               type="date" 
               disabled={!isNewPatient}
+              max={new Date().toISOString().split('T')[0]}
               value={dob}
               onChange={(e) => setDob(e.target.value)}
               className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm outline-none disabled:bg-gray-100 disabled:text-gray-500"
