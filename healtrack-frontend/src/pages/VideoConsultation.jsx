@@ -226,10 +226,10 @@ export default function VideoConsultation() {
             </div>
 
             {/* Controls */}
-            <div className="absolute bottom-6 inset-x-0 flex justify-center items-center gap-4 z-10">
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex justify-center items-center gap-6 z-50 bg-slate-900/60 p-4 rounded-full backdrop-blur-xl border border-white/10 shadow-2xl">
                 <button 
                     onClick={toggleMute}
-                    className={`w-14 h-14 rounded-full flex items-center justify-center transition shadow-lg backdrop-blur-md ${isMuted ? 'bg-rose-500 text-white' : 'bg-slate-800/80 text-white hover:bg-slate-700'}`}
+                    className={`w-14 h-14 rounded-full flex items-center justify-center transition shadow-lg ${isMuted ? 'bg-rose-500 text-white hover:bg-rose-600' : 'bg-slate-700/80 text-white hover:bg-slate-600'}`}
                 >
                     {isMuted ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
                 </button>
@@ -243,7 +243,7 @@ export default function VideoConsultation() {
 
                 <button 
                     onClick={toggleVideo}
-                    className={`w-14 h-14 rounded-full flex items-center justify-center transition shadow-lg backdrop-blur-md ${isVideoOff ? 'bg-rose-500 text-white' : 'bg-slate-800/80 text-white hover:bg-slate-700'}`}
+                    className={`w-14 h-14 rounded-full flex items-center justify-center transition shadow-lg ${isVideoOff ? 'bg-rose-500 text-white hover:bg-rose-600' : 'bg-slate-700/80 text-white hover:bg-slate-600'}`}
                 >
                     {isVideoOff ? <VideoOff className="w-6 h-6" /> : <Vid className="w-6 h-6" />}
                 </button>
