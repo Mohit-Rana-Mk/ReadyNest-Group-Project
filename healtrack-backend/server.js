@@ -39,6 +39,29 @@ app.use((req, res, next) => {
 // Socket connection handling
 io.on('connection', (socket) => {
     console.log('A client connected:', socket.id);
+
+    // WebRTC Signaling
+    socket.on('join-video-room', ({ roomId, userId }) => {
+        socket.join(roomId);
+        socket.to(roomId).emit('user-connected', userId);
+        
+        socket.on('disconnect', () => {
+            socket.to(roomId).emit('user-disconnected', userId);
+        });
+    });
+
+    socket.on('webrtc-offer', (data) => {
+        socket.to(data.roomId).emit('webrtc-offer', data);
+    });
+
+    socket.on('webrtc-answer', (data) => {
+        socket.to(data.roomId).emit('webrtc-answer', data);
+    });
+
+    socket.on('webrtc-ice-candidate', (data) => {
+        socket.to(data.roomId).emit('webrtc-ice-candidate', data);
+    });
+
     socket.on('disconnect', () => {
         console.log('A client disconnected:', socket.id);
     });

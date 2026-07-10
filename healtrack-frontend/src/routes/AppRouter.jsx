@@ -10,6 +10,7 @@ import AdminDashboard from '../portals/admin/AdminDashboard';
 import ProtectedRoute from './ProtectedRoute';
 import Login from '../pages/Login';
 import Signup from '../pages/Signup';
+import VideoConsultation from '../pages/VideoConsultation';
 
 export default function AppRouter() {
     return (
@@ -45,6 +46,11 @@ export default function AppRouter() {
                     <Route index element={<ReceptionDesk />} />
                 </Route>
                 
+                {/* Video Consultation Route */}
+                <Route path="/video/:roomId" element={<ProtectedRoute allowedRoles={['Doctor', 'Patient']} />}>
+                    <Route index element={<VideoConsultation />} />
+                </Route>
+
                 {/* Fallback */}
                 <Route path="/unauthorized" element={<div>Unauthorized Access</div>} />
                 <Route path="*" element={<Navigate to="/" replace />} />
