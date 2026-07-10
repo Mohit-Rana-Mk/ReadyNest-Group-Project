@@ -42,11 +42,11 @@ def init_model():
         
         X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
         
-        model = SVC(kernel='rbf', C=10, gamma=0.1, probability=True)
+        model = SVC(kernel='linear', C=0.5, class_weight='balanced', probability=True, random_state=42)
         model.fit(X_train, y_train)
         
         accuracy = accuracy_score(y_test, model.predict(X_test))
-        logger.info(f"SVM Model trained — Test Accuracy: {accuracy*100:.1f}%")
+        logger.info(f"Linear SVM Model trained — Test Accuracy: {accuracy*100:.1f}%")
     except Exception as e:
         logger.error(f"Failed to initialize Parkinson's prediction model: {e}", exc_info=True)
 
@@ -85,13 +85,25 @@ def predict_from_tests(data: dict) -> dict:
     tap_variability = float(data.get("tapVariabilityMs", 0))
     voice_match = float(data.get("voiceMatchPercent", 100))
 
-    # Map sensor data to approximate voice feature space
-    jitter_approx = min(tremor_var * 0.005, 0.05)           # MDVP:Jitter(%)
-    shimmer_approx = max(0.01, (1.0 - tap_count / 50) * 0.1)   # MDVP:Shimmer
-    nhr_approx = min(tap_variability / 8000, 0.4)           # NHR
-    hnr_approx = voice_match / 100 * 28                     # HNR (0–30 range)
-    rpde_approx = min(tap_interval / 2500, 1.0) * 0.5 + 0.2   # RPDE (0.2–0.8)
-    dfa_approx = 0.5 + (1.0 - tap_count / 50) * 0.2           # DFA
+    # Map sensor data to approximate voice feature space with clamped bounds to prevent outliers.
+    # Jitter — derived from tremor variance (higher tremor -> more pitch instability)
+    jitter_approx = max(0.002, min(tremor_var * 0.005, 0.03))          # MDVP:Jitter(%)
+    # Shimmer — derived from tapping ability (fewer taps -> worse amplitude stability)
+    shimmer_approx = max(0.01, min(0.12, (1.0 - tap_count / 50) * 0.1))  # MDVP:Shimmer
+    # NHR — noise-to-harmonics ratio, derived from tap variability
+    nhr_approx = max(0.005, min(tap_variability / 8000, 0.4))          # NHR
+    # HNR — harmonics-to-noise, derived from voice match quality
+    hnr_approx = max(10.0, min(28.0, voice_match / 100 * 28))          # HNR (10–28 range)
+    # RPDE — recurrence period density entropy, driven by tapping regularity
+    rpde_approx = max(0.30, min(0.75, min(tap_interval / 2500, 1.0) * 0.5 + 0.2))  # RPDE
+    # DFA — detrended fluctuation analysis, driven by tapping count
+    dfa_approx = max(0.55, min(0.80, 0.5 + (1.0 - tap_count / 50) * 0.2))  # DFA
+    # Nonlinear entropy features — most correlated with Parkinson's; derived from voice degradation
+    voice_factor = max(0.0, min(1.0, (100.0 - voice_match) / 100.0))
+    spread1_approx = -7.0 + voice_factor * 3.5   # spread1: -7.0 (healthy) -> -3.5 (severe)
+    spread2_approx = 0.14 + voice_factor * 0.18  # spread2: 0.14 (healthy) -> 0.32 (severe)
+    d2_approx = 2.0 + voice_factor * 0.8         # D2: 2.0 (healthy) -> 2.8 (severe)
+    ppe_approx = 0.10 + voice_factor * 0.20      # PPE: 0.10 (healthy) -> 0.30 (severe)
 
     # Build base feature vector from healthy dataset means
     healthy_means = data_df[data_df['status'] == 0][f_cols].mean().values
@@ -114,6 +126,10 @@ def predict_from_tests(data: dict) -> dict:
         "HNR":               hnr_approx,
         "RPDE":              rpde_approx,
         "DFA":               dfa_approx,
+        "spread1":           spread1_approx,
+        "spread2":           spread2_approx,
+        "D2":                d2_approx,
+        "PPE":               ppe_approx,
     }
 
     for feat_name, value in overrides.items():
@@ -141,7 +157,8 @@ def predict_from_tests(data: dict) -> dict:
     
     rule_score = min(rule_score, 100)
 
-    final_score = int((risk_percent_ml * 0.8) + (rule_score * 0.2))
+    # 70% ML model weight, 30% rule-based heuristics
+    final_score = int((risk_percent_ml * 0.7) + (rule_score * 0.3))
     label = "High Risk" if final_score >= 65 else "Moderate Risk" if final_score >= 35 else "Low Risk"
 
     return {

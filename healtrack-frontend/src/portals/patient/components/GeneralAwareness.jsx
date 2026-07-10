@@ -680,17 +680,39 @@ export default function GeneralAwareness() {
                 const said = normalize(finalTranscript);
                 const target = normalize(targetPhrase);
 
+                // Check if meaningful voice audio was captured (via amplitude data)
+                const activeAmplitudes = amplitudeData.filter(a => a > 0.02);
+                const voiceWasDetected = activeAmplitudes.length > 10;
+
                 let matchPercent = 0;
-                if (said) {
-                    const targetWords = target.split(/\s+/);
-                    const saidWords = said.split(/\s+/);
-                    let matchedWords = 0;
-                    targetWords.forEach(word => {
-                        if (saidWords.includes(word)) matchedWords++;
-                    });
-                    matchPercent = Math.round((matchedWords / targetWords.length) * 100);
+                if (hasSpeechRec) {
+                    if (said) {
+                        const targetWords = target.split(/\s+/);
+                        const saidWords = said.split(/\s+/);
+                        let matchedWords = 0;
+                        targetWords.forEach(word => {
+                            if (saidWords.includes(word)) matchedWords++;
+                        });
+                        const wordMatch = Math.round((matchedWords / targetWords.length) * 100);
+                        // If speech was detected acoustically but words didn't match (accent/language),
+                        // use acoustic signal quality as a floor to avoid false-positive Parkinson's risk.
+                        if (wordMatch === 0 && voiceWasDetected) {
+                            // User spoke but words didn't match — estimate pitch stability as proxy
+                            const activePitches = pitchData.filter(p => p > 0);
+                            const pitchQuality = activePitches.length > 20 ? 55 : 40;
+                            matchPercent = pitchQuality;
+                        } else {
+                            matchPercent = wordMatch;
+                        }
+                    } else if (voiceWasDetected) {
+                        // Audio detected but no transcript at all — use acoustic quality
+                        const activePitches = pitchData.filter(p => p > 0);
+                        matchPercent = activePitches.length > 20 ? 50 : 0;
+                    } else {
+                        matchPercent = 0; // No voice at all
+                    }
                 } else {
-                    // Simulation/fallback matching
+                    // Simulation/fallback matching (no speech recognition API)
                     const activePitches = pitchData.filter(p => p > 0);
                     if (activePitches.length > 20) {
                         matchPercent = 82; // standard baseline voice match
@@ -701,7 +723,7 @@ export default function GeneralAwareness() {
 
                 setVoiceResult({
                     transcript: finalTranscript || (matchPercent > 0 ? "✨ Voice pattern captured successfully." : "⚠️ No voice pattern detected."),
-                    matchPercent: matchPercent || 70, // default back to 70% baseline if voice failed but test completed
+                    matchPercent: matchPercent,
                     targetPhrase: targetPhrase
                 });
             }
@@ -724,7 +746,7 @@ export default function GeneralAwareness() {
             tapCount: tappingResult ? tappingResult.totalTaps : 22,
             tapAvgIntervalMs: tappingResult ? tappingResult.avgIntervalMs : 680,
             tapVariabilityMs: tappingResult ? tappingResult.variabilityMs : 90,
-            voiceMatchPercent: voiceResult ? voiceResult.matchPercent : 85
+            voiceMatchPercent: voiceResult ? (voiceResult.matchPercent ?? 70) : 70
         };
 
         try {
