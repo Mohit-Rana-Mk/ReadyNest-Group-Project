@@ -171,7 +171,7 @@ export default function VideoConsultation() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-900 flex flex-col relative overflow-hidden">
+        <div className="fixed inset-0 w-screen h-screen bg-slate-900 flex flex-col overflow-hidden">
             {/* Header */}
             <div className="absolute top-0 inset-x-0 p-6 flex justify-between items-center z-10 bg-gradient-to-b from-black/50 to-transparent">
                 <h1 className="text-white text-xl font-bold tracking-wide">HealTrack Video Consultation</h1>
