@@ -316,11 +316,14 @@ exports.submitTriage = async (req, res) => {
                 let mlServiceUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
                 mlServiceUrl = mlServiceUrl.replace(/\/+$/, '');
                 let infoResponse;
-                for (let attempt = 1; attempt <= 3; attempt++) {
+                for (let attempt = 1; attempt <= 4; attempt++) {
                     infoResponse = await fetch(`${mlServiceUrl}/api/v1/disease-info/${encodeURIComponent(directDiseaseMatch)}`);
                     if (infoResponse.ok) break;
                     console.warn(`ML service disease-info attempt ${attempt} failed with status: ${infoResponse.status}`);
-                    if (attempt < 3) await new Promise(res => setTimeout(res, 2000));
+                    if (attempt < 4) {
+                        const waitTime = (10000 + (attempt * 5000));
+                        await new Promise(res => setTimeout(res, waitTime));
+                    }
                 }
 
                 if (infoResponse.ok) {

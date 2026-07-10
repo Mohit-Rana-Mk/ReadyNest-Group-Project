@@ -4,7 +4,8 @@ const db = require('../config/db');
 // Helper to make HTTP POST requests using native fetch
 async function postJSON(urlStr, data) {
     let lastError;
-    for (let attempt = 1; attempt <= 3; attempt++) {
+    // Allow up to 4 attempts (1 initial + 3 retries)
+    for (let attempt = 1; attempt <= 4; attempt++) {
         try {
             const response = await fetch(urlStr, {
                 method: 'POST',
@@ -18,8 +19,12 @@ async function postJSON(urlStr, data) {
                 // If it's a 502/504 Gateway Timeout, we should retry
                 if (response.status === 502 || response.status === 504) {
                     console.warn(`Outbreak check attempt ${attempt} failed with status: ${response.status}`);
-                    if (attempt < 3) {
-                        await new Promise(res => setTimeout(res, 2000 * attempt));
+                    if (attempt < 4) {
+                        // Render cold starts can take 60+ seconds.
+                        // Wait 15s, 20s, 25s between retries (total 60s wait)
+                        const waitTime = (10000 + (attempt * 5000));
+                        console.log(`Waiting ${waitTime/1000}s before next attempt...`);
+                        await new Promise(res => setTimeout(res, waitTime));
                         continue;
                     }
                 }
@@ -29,10 +34,12 @@ async function postJSON(urlStr, data) {
             return await response.json();
         } catch (e) {
             lastError = e;
-            if (attempt === 3 || !(e.message.includes('502') || e.message.includes('504'))) {
+            if (attempt === 4 || !(e.message.includes('502') || e.message.includes('504'))) {
                 throw e;
             }
-            await new Promise(res => setTimeout(res, 2000 * attempt));
+            const waitTime = (10000 + (attempt * 5000));
+            console.log(`Error caught, waiting ${waitTime/1000}s before next attempt...`);
+            await new Promise(res => setTimeout(res, waitTime));
         }
     }
     throw lastError;
