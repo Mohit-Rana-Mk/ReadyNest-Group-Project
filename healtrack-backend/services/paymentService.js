@@ -20,7 +20,7 @@ class PaymentService {
         const cType = consultation_type || 'In-Person';
         let meetingLink = null;
         if (cType === 'Teleconsultation') {
-            meetingLink = `https://meet.jit.si/HealTrack_${crypto.randomUUID()}`;
+            meetingLink = `/video/${crypto.randomUUID()}`;
         }
 
         const appointmentId = await paymentRepository.createPendingAppointment(

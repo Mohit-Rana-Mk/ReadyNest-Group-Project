@@ -3,22 +3,46 @@ const db = require('../config/db');
 
 // Helper to make HTTP POST requests using native fetch
 async function postJSON(urlStr, data) {
-    try {
-        const response = await fetch(urlStr, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-            redirect: 'follow'
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Request failed with status code ${response.status}: ${await response.text()}`);
+    let lastError;
+    // Allow up to 4 attempts (1 initial + 3 retries)
+    for (let attempt = 1; attempt <= 4; attempt++) {
+        try {
+            const response = await fetch(urlStr, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+                redirect: 'follow'
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                // If it's a 502/504 Gateway Timeout, we should retry
+                if (response.status === 502 || response.status === 504) {
+                    console.warn(`Outbreak check attempt ${attempt} failed with status: ${response.status}`);
+                    if (attempt < 4) {
+                        // Render cold starts can take 60+ seconds.
+                        // Wait 15s, 20s, 25s between retries (total 60s wait)
+                        const waitTime = (10000 + (attempt * 5000));
+                        console.log(`Waiting ${waitTime/1000}s before next attempt...`);
+                        await new Promise(res => setTimeout(res, waitTime));
+                        continue;
+                    }
+                }
+                throw new Error(`Request failed with status code ${response.status}: ${errorText}`);
+            }
+            
+            return await response.json();
+        } catch (e) {
+            lastError = e;
+            if (attempt === 4 || !(e.message.includes('502') || e.message.includes('504'))) {
+                throw e;
+            }
+            const waitTime = (10000 + (attempt * 5000));
+            console.log(`Error caught, waiting ${waitTime/1000}s before next attempt...`);
+            await new Promise(res => setTimeout(res, waitTime));
         }
-        
-        return await response.json();
-    } catch (e) {
-        throw e;
     }
+    throw lastError;
 }
 
 // Perform the outbreak prediction check
@@ -71,7 +95,8 @@ async function runOutbreakCheck(io) {
         };
 
         console.log("Sending caseloads to ML Outbreak Service:", JSON.stringify(payload));
-        const mlServiceUrl = process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000';
+        let mlServiceUrl = process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000';
+        mlServiceUrl = mlServiceUrl.replace(/\/+$/, '');
         const response = await postJSON(`${mlServiceUrl}/api/v1/predict/outbreak`, payload);
         
         if (!response || !response.success || !response.results) {
