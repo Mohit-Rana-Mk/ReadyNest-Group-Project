@@ -2,7 +2,19 @@ const db = require('../config/db');
 
 const verifyClinicAccess = async (req, res, next) => {
     try {
-        const { clinicId, staffId, serviceId } = req.params;
+        let { clinicId, staffId, serviceId } = req.params;
+
+        // Fallback: Parse path parameters if req.params is not populated yet in router.use middleware
+        const pathParts = req.path.split('/').filter(Boolean);
+        if (pathParts[0] && /^\d+$/.test(pathParts[0])) {
+            clinicId = clinicId || pathParts[0];
+        }
+        if (pathParts[1] === 'staff' && pathParts[2] && /^\d+$/.test(pathParts[2])) {
+            staffId = staffId || pathParts[2];
+        }
+        if (pathParts[1] === 'departments' && pathParts[2] && /^\d+$/.test(pathParts[2])) {
+            serviceId = serviceId || pathParts[2];
+        }
 
         // 1. Verify Clinic Admin is accessing their own clinic
         if (clinicId) {
