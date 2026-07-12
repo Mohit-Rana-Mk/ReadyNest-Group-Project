@@ -52,7 +52,10 @@ exports.verifyPayment = async (req, res) => {
 // 3. Webhook Integration
 exports.handleWebhook = async (req, res) => {
     const signature = req.headers['x-razorpay-signature'];
-    const secret = process.env.RAZORPAY_WEBHOOK_SECRET || 'healtrack_webhook_secret_123';
+    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    if (!secret) {
+        return res.status(500).json({ message: 'Webhook secret is not configured' });
+    }
 
     if (!signature) {
         return res.status(400).json({ message: 'Webhook signature is required' });
@@ -195,8 +198,8 @@ exports.requestRefund = async (req, res) => {
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const razorpayInstance = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID || 'rzp_live_TA71n8rCCwsUJj',
-    key_secret: process.env.RAZORPAY_KEY_SECRET || '793jidqYIv9NU1upGmNzJHgq'
+    key_id: process.env.RAZORPAY_KEY_ID || '',
+    key_secret: process.env.RAZORPAY_KEY_SECRET || ''
 });
 
 // Creates a Razorpay order for an existing walk-in appointment
@@ -258,6 +261,9 @@ exports.verifyWalkInPayment = async (req, res) => {
     }
     try {
         const secret = process.env.RAZORPAY_KEY_SECRET;
+        if (!secret) {
+            return res.status(500).json({ message: 'Razorpay API Key Secret is not configured' });
+        }
         const body = razorpay_order_id + '|' + razorpay_payment_id;
         const expectedSignature = crypto.createHmac('sha256', secret).update(body).digest('hex');
         if (expectedSignature !== razorpay_signature) {

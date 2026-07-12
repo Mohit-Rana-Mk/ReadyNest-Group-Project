@@ -3,8 +3,8 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 
 const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID || 'rzp_live_TA71n8rCCwsUJj',
-    key_secret: process.env.RAZORPAY_KEY_SECRET || '793jidqYIv9NU1upGmNzJHgq'
+    key_id: process.env.RAZORPAY_KEY_ID || '',
+    key_secret: process.env.RAZORPAY_KEY_SECRET || ''
 });
 
 class PaymentService {
@@ -65,7 +65,7 @@ class PaymentService {
             orderId: rzpOrder.id,
             amount: rzpOrder.amount,
             currency: rzpOrder.currency,
-            keyId: process.env.RAZORPAY_KEY_ID || 'rzp_live_TA71n8rCCwsUJj'
+            keyId: process.env.RAZORPAY_KEY_ID
         };
     }
 
@@ -76,7 +76,10 @@ class PaymentService {
             throw new Error('Missing payment verification tokens');
         }
 
-        const secret = process.env.RAZORPAY_KEY_SECRET || '793jidqYIv9NU1upGmNzJHgq';
+        const secret = process.env.RAZORPAY_KEY_SECRET;
+        if (!secret) {
+            throw new Error('Razorpay API Key Secret is not configured on the server');
+        }
         const body = razorpay_order_id + "|" + razorpay_payment_id;
         const expectedSignature = crypto
             .createHmac("sha256", secret)
