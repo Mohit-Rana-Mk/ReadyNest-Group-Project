@@ -13,33 +13,39 @@ const reportsController = require('../controllers/clinic-admin/reportsController
 // Mount auth middleware to protect all clinic admin routes
 router.use(authMiddleware(['ClinicAdmin']));
 
-// A. Analytics & Financials
+// A. Global Routes (No clinic ownership checks needed)
+router.get('/services/global', departmentController.getAllGlobalServices);
+
+// B. Clinic Param Verification Middleware (Enforce clinic isolation / prevent IDOR)
+const verifyClinicAccess = require('../middleware/clinicAdminMiddleware');
+router.use(verifyClinicAccess);
+
+// C. Analytics & Financials
 router.get('/:clinicId/analytics', analyticsController.getAnalytics);
 router.get('/:clinicId/operational-dashboard', analyticsController.getOperationalDashboard);
 
-// B. Staff Management
+// D. Staff Management
 router.get('/:clinicId/staff', staffController.getStaff);
 router.post('/:clinicId/staff', staffController.addStaff);
 router.put('/:clinicId/staff/:staffId', staffController.updateStaff);
 router.delete('/:clinicId/staff/:staffId', staffController.deleteStaff);
 
-// C. Department Management
-router.get('/services/global', departmentController.getAllGlobalServices); // Note: Order matters or it catches as clinicId if placed below
+// E. Department Management
 router.get('/:clinicId/departments', departmentController.getDepartments);
 router.post('/:clinicId/departments', departmentController.addDepartment);
 router.put('/:clinicId/departments/:serviceId', departmentController.updateDepartment);
 router.delete('/:clinicId/departments/:serviceId', departmentController.deleteDepartment);
 
-// D. Operations
+// F. Operations
 router.get('/:clinicId/operations', operationsController.getOperations);
 router.get('/:clinicId/outbreak-alerts', operationsController.getOutbreakAlerts);
 router.post('/:clinicId/outbreak-alerts', operationsController.broadcastOutbreakAlert);
 
-// E. Clinic Settings
+// G. Clinic Settings
 router.get('/:clinicId/settings', settingsController.getClinicSettings);
 router.put('/:clinicId/settings', settingsController.updateClinicSettings);
 
-// F. Reports & Logs
+// H. Reports & Logs
 router.get('/:clinicId/logs', reportsController.getLogs);
 router.get('/:clinicId/reports/financial', reportsController.getFinancialReport);
 

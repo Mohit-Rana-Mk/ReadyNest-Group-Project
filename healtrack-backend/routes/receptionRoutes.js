@@ -5,6 +5,9 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 router.use(authMiddleware(['ClinicStaff'])); // Protect all routes
 
+const verifyClinicStaffAccess = require('../middleware/receptionMiddleware');
+router.use(verifyClinicStaffAccess);
+
 router.get('/:clinicId/lookup', receptionController.lookupPatient);
 
 router.get('/:clinicId/queue', receptionController.getQueue);

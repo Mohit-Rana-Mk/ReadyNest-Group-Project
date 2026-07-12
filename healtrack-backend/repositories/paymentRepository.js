@@ -101,6 +101,14 @@ class PaymentRepository {
         return patientRows.length > 0 ? patientRows[0].id : null;
     }
 
+    async getAppointmentByIdAndPatient(appointmentId, patientId) {
+        const [rows] = await db.query(
+            `SELECT id FROM appointments WHERE id = ? AND patient_id = ?`,
+            [appointmentId, patientId]
+        );
+        return rows.length > 0 ? rows[0] : null;
+    }
+
     async getPatientPayments(patientId) {
         const [payments] = await db.query(
             `SELECT p.id, p.amount, p.status, p.receipt_id, p.invoice_id, p.created_at, p.razorpay_payment_id,

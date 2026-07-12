@@ -76,6 +76,16 @@ class PaymentService {
             throw new Error('Missing payment verification tokens');
         }
 
+        // Verify that the appointment belongs to the logged-in patient
+        const patientId = await paymentRepository.getPatientIdByUserId(userId);
+        if (!patientId) {
+            throw new Error('Patient profile not found');
+        }
+        const appointmentExists = await paymentRepository.getAppointmentByIdAndPatient(appointment_id, patientId);
+        if (!appointmentExists) {
+            throw new Error('Unauthorized access to appointment details');
+        }
+
         const secret = process.env.RAZORPAY_KEY_SECRET;
         if (!secret) {
             throw new Error('Razorpay API Key Secret is not configured on the server');

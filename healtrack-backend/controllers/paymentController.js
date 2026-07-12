@@ -6,6 +6,18 @@ const paymentService = require('../services/paymentService');
 // 1. Create Razorpay Order & Pending Appointment
 exports.createOrder = async (req, res) => {
     try {
+        const userId = req.user.id;
+        const { patient_id } = req.body;
+
+        // Verify patient profile belongs to logged-in user to prevent IDOR
+        const [patientRows] = await db.query(
+            `SELECT id FROM patients WHERE id = ? AND user_id = ?`,
+            [patient_id, userId]
+        );
+        if (patientRows.length === 0) {
+            return res.status(403).json({ success: false, message: 'Forbidden: Unauthorized access to patient profile.' });
+        }
+
         const result = await paymentService.createOrder(req.body);
         res.status(201).json({ success: true, ...result });
     } catch (error) {
@@ -211,7 +223,18 @@ exports.createWalkInOrder = async (req, res) => {
     if (!appointment_id || !patient_id || !doctor_id || !clinic_id) {
         return res.status(400).json({ message: 'appointment_id, patient_id, doctor_id and clinic_id are required' });
     }
+    if (parseInt(clinic_id) !== parseInt(req.user.clinic_id)) {
+        return res.status(403).json({ message: 'Forbidden: Unauthorized clinic access.' });
+    }
     try {
+        // Verify appointment matches patient, doctor, and clinic to prevent IDOR
+        const [apptRows] = await db.query(
+            `SELECT id FROM appointments WHERE id = ? AND patient_id = ? AND doctor_id = ? AND clinic_id = ?`,
+            [appointment_id, patient_id, doctor_id, req.user.clinic_id]
+        );
+        if (apptRows.length === 0) {
+            return res.status(403).json({ message: 'Forbidden: Unauthorized appointment/clinic combination.' });
+        }
         // Get consultation fee
         const [feeRows] = await db.query(
             `SELECT COALESCE(cs.consultation_fee, 500.00) AS fee 
@@ -263,6 +286,14 @@ exports.verifyWalkInPayment = async (req, res) => {
         return res.status(400).json({ message: 'Missing payment verification tokens' });
     }
     try {
+        // Verify appointment belongs to this clinic
+        const [apptRows] = await db.query(
+            `SELECT id FROM appointments WHERE id = ? AND clinic_id = ?`,
+            [appointment_id, req.user.clinic_id]
+        );
+        if (apptRows.length === 0) {
+            return res.status(403).json({ message: 'Forbidden: Appointment does not belong to this clinic.' });
+        }
         const secret = process.env.RAZORPAY_KEY_SECRET;
         if (!secret) {
             return res.status(500).json({ message: 'Razorpay API Key Secret is not configured' });
@@ -308,7 +339,18 @@ exports.recordWalkInCash = async (req, res) => {
     if (!appointment_id || !patient_id || !doctor_id || !clinic_id) {
         return res.status(400).json({ message: 'appointment_id, patient_id, doctor_id and clinic_id are required' });
     }
+    if (parseInt(clinic_id) !== parseInt(req.user.clinic_id)) {
+        return res.status(403).json({ message: 'Forbidden: Unauthorized clinic access.' });
+    }
     try {
+        // Verify appointment matches patient, doctor, and clinic to prevent IDOR
+        const [apptRows] = await db.query(
+            `SELECT id FROM appointments WHERE id = ? AND patient_id = ? AND doctor_id = ? AND clinic_id = ?`,
+            [appointment_id, patient_id, doctor_id, req.user.clinic_id]
+        );
+        if (apptRows.length === 0) {
+            return res.status(403).json({ message: 'Forbidden: Unauthorized appointment/clinic combination.' });
+        }
         // Get fee
         const [feeRows] = await db.query(
             `SELECT COALESCE(cs.consultation_fee, 500.00) AS fee 
@@ -362,7 +404,7 @@ exports.recordWalkInCash = async (req, res) => {
 
 // 1. Get Clinic Bank Details
 exports.getClinicBankDetails = async (req, res) => {
-    const clinicId = req.query.clinic_id || req.user.clinic_id;
+    const clinicId = req.user.clinic_id;
 
     if (!clinicId) {
         return res.status(400).json({ message: 'Clinic ID is required' });
@@ -389,7 +431,7 @@ exports.getClinicBankDetails = async (req, res) => {
 
 // 2. Update Clinic Bank Details
 exports.updateClinicBankDetails = async (req, res) => {
-    const clinicId = req.body.clinic_id || req.user.clinic_id;
+    const clinicId = req.user.clinic_id;
     const { account_holder_name, bank_name, account_number, ifsc_code, branch_name, upi_id } = req.body;
 
     if (!clinicId || !account_holder_name || !bank_name || !account_number || !ifsc_code) {
@@ -426,7 +468,7 @@ exports.updateClinicBankDetails = async (req, res) => {
 // C. CLINIC DASHBOARD OVERVIEW
 
 exports.getClinicFinancials = async (req, res) => {
-    const clinicId = req.query.clinic_id || req.user.clinic_id;
+    const clinicId = req.user.clinic_id;
 
     if (!clinicId) {
         return res.status(400).json({ message: 'Clinic ID is required' });

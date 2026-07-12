@@ -10,8 +10,37 @@ exports.uploadReport = async (req, res) => {
             return res.status(400).json({ success: false, message: 'No file uploaded' });
         }
 
+        const allowedMimetypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+        if (!allowedMimetypes.includes(req.file.mimetype)) {
+            return res.status(400).json({ success: false, message: 'Invalid file type. Only PDF and images (JPEG/PNG/WEBP) are allowed.' });
+        }
+
         if (!patient_id || !appointment_id || !doctor_id) {
             return res.status(400).json({ success: false, message: 'Missing patient_id, appointment_id, or doctor_id' });
+        }
+
+        // Validate appointment relationship to prevent IDOR / invalid attachment
+        if (req.user.role === 'Doctor') {
+            if (parseInt(doctor_id) !== req.user.id) {
+                return res.status(403).json({ success: false, message: 'Forbidden: You cannot upload reports on behalf of another doctor.' });
+            }
+            const [appt] = await db.query(
+                `SELECT id FROM appointments WHERE id = ? AND patient_id = ? AND doctor_id = ?`,
+                [appointment_id, patient_id, req.user.id]
+            );
+            if (appt.length === 0) {
+                return res.status(403).json({ success: false, message: 'Forbidden: Unauthorized or invalid appointment combination.' });
+            }
+        } else if (req.user.role === 'ClinicStaff') {
+            const [appt] = await db.query(
+                `SELECT id FROM appointments WHERE id = ? AND patient_id = ? AND doctor_id = ? AND clinic_id = ?`,
+                [appointment_id, patient_id, doctor_id, req.user.clinic_id]
+            );
+            if (appt.length === 0) {
+                return res.status(403).json({ success: false, message: 'Forbidden: Unauthorized or invalid appointment combination for this clinic.' });
+            }
+        } else {
+            return res.status(403).json({ success: false, message: 'Forbidden: Unauthorized role.' });
         }
 
         // Check if real keys are missing and fallback to a mock URL if so
