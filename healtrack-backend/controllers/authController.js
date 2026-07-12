@@ -89,7 +89,11 @@ exports.login = async (req, res) => {
             auth_provider: user.auth_provider || 'local'
         };
 
-        const token = jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '24h' });
+        const secret = process.env.JWT_SECRET;
+        if (!secret) {
+            return res.status(500).json({ success: false, message: 'JWT Secret is not configured on the server' });
+        }
+        const token = jwt.sign(payload, secret, { expiresIn: '24h' });
 
         res.json({
             success: true,
@@ -168,7 +172,11 @@ exports.signupPatient = async (req, res) => {
             language: 'en',
             auth_provider: 'local'
         };
-        const token = jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '24h' });
+        const secret = process.env.JWT_SECRET;
+        if (!secret) {
+            return res.status(500).json({ success: false, message: 'JWT Secret is not configured on the server' });
+        }
+        const token = jwt.sign(payload, secret, { expiresIn: '24h' });
 
         res.status(201).json({
             success: true,
@@ -286,24 +294,12 @@ exports.firebaseAuth = async (req, res) => {
 
         // Verify the ID token using Firebase Admin SDK
         let decodedToken;
+        const isDev = process.env.NODE_ENV === 'development';
+        const allowBypass = isDev && process.env.ALLOW_UNVERIFIED_FIREBASE_JWT === 'true';
+
         if (!firebaseAdmin || !firebaseAdmin.apps || firebaseAdmin.apps.length === 0) {
-            console.warn("Firebase Admin SDK is not initialized. Using manual decode fallback.");
-            try {
-                const jwt = require('jsonwebtoken');
-                decodedToken = jwt.decode(idToken);
-                if (!decodedToken || !decodedToken.email) {
-                    throw new Error("Unable to parse email from token");
-                }
-                console.log("Successfully parsed token in verification fallback mode for user:", decodedToken.email);
-            } catch (fallbackError) {
-                return res.status(401).json({ success: false, message: 'Invalid or expired Firebase ID Token' });
-            }
-        } else {
-            try {
-                decodedToken = await firebaseAdmin.auth().verifyIdToken(idToken);
-            } catch (authError) {
-                console.error("Firebase token verification failed via Admin SDK:", authError.message);
-                console.log("Attempting to parse ID token manually as development fallback...");
+            if (allowBypass) {
+                console.warn("Firebase Admin SDK is not initialized. Using manual decode fallback (DEVELOPMENT ONLY).");
                 try {
                     const jwt = require('jsonwebtoken');
                     decodedToken = jwt.decode(idToken);
@@ -312,6 +308,29 @@ exports.firebaseAuth = async (req, res) => {
                     }
                     console.log("Successfully parsed token in verification fallback mode for user:", decodedToken.email);
                 } catch (fallbackError) {
+                    return res.status(401).json({ success: false, message: 'Invalid or expired Firebase ID Token' });
+                }
+            } else {
+                return res.status(500).json({ success: false, message: 'Firebase authentication is not configured on the server' });
+            }
+        } else {
+            try {
+                decodedToken = await firebaseAdmin.auth().verifyIdToken(idToken);
+            } catch (authError) {
+                console.error("Firebase token verification failed via Admin SDK:", authError.message);
+                if (allowBypass) {
+                    console.log("Attempting to parse ID token manually as development fallback...");
+                    try {
+                        const jwt = require('jsonwebtoken');
+                        decodedToken = jwt.decode(idToken);
+                        if (!decodedToken || !decodedToken.email) {
+                            throw new Error("Unable to parse email from token");
+                        }
+                        console.log("Successfully parsed token in verification fallback mode for user:", decodedToken.email);
+                    } catch (fallbackError) {
+                        return res.status(401).json({ success: false, message: 'Invalid or expired Firebase ID Token' });
+                    }
+                } else {
                     return res.status(401).json({ success: false, message: 'Invalid or expired Firebase ID Token' });
                 }
             }
@@ -393,7 +412,11 @@ exports.firebaseAuth = async (req, res) => {
             auth_provider: user.auth_provider || 'google'
         };
 
-        const localToken = jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '24h' });
+        const secret = process.env.JWT_SECRET;
+        if (!secret) {
+            return res.status(500).json({ success: false, message: 'JWT Secret is not configured on the server' });
+        }
+        const localToken = jwt.sign(payload, secret, { expiresIn: '24h' });
 
         res.json({
             success: true,

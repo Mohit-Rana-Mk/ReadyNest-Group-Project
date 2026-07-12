@@ -551,6 +551,15 @@ exports.predictParkinsons = async (req, res) => {
 exports.getAppointments = async (req, res) => {
     const { patientId } = req.params;
     try {
+        // IDOR Check: Ensure patientId belongs to the authenticated user
+        const [patientRows] = await db.query('SELECT user_id FROM patients WHERE id = ?', [patientId]);
+        if (patientRows.length === 0) {
+            return res.status(404).json({ message: 'Patient not found' });
+        }
+        if (patientRows[0].user_id !== req.user.id) {
+            return res.status(403).json({ message: 'Forbidden: Unauthorized access to patient record' });
+        }
+
         const appointments = await appointmentService.getAppointments(patientId);
         res.status(200).json(appointments);
     } catch (error) {
@@ -560,7 +569,7 @@ exports.getAppointments = async (req, res) => {
 };
 
 exports.getFamilyAppointments = async (req, res) => {
-    const userId = req.user?.id || req.query.user_id || 1;
+    const userId = req.user.id;
     try {
         const appointments = await appointmentService.getFamilyAppointments(userId);
         res.status(200).json(appointments);
@@ -574,7 +583,7 @@ exports.getFamilyAppointments = async (req, res) => {
 // E. Family Members (Dependents)
 // ─────────────────────────────────────────────────────────────
 exports.getFamilyMembers = async (req, res) => {
-    const userId = req.user?.id || req.query.user_id || 1;
+    const userId = req.user.id;
     try {
         const patients = await patientService.getFamilyMembers(userId);
         res.status(200).json(patients);
@@ -585,7 +594,7 @@ exports.getFamilyMembers = async (req, res) => {
 };
 
 exports.addFamilyMember = async (req, res) => {
-    const userId = req.user?.id || req.query.user_id || 1;
+    const userId = req.user.id;
     try {
         const result = await patientService.addFamilyMember(userId, req.body);
         res.status(201).json(result);
@@ -661,6 +670,16 @@ exports.getClinicDoctors = async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 exports.bookAppointment = async (req, res) => {
     try {
+        const { patient_id } = req.body;
+        if (!patient_id) {
+            return res.status(400).json({ message: 'Missing required booking fields: patient_id' });
+        }
+        // IDOR Check: Ensure patient_id belongs to the authenticated user
+        const [patientRows] = await db.query('SELECT user_id FROM patients WHERE id = ?', [patient_id]);
+        if (patientRows.length === 0 || patientRows[0].user_id !== req.user.id) {
+            return res.status(403).json({ message: 'Forbidden: Unauthorized patient_id' });
+        }
+
         const result = await appointmentService.bookAppointment(req.body);
         if (req.io) req.io.emit('QUEUE_UPDATE', { clinicId: result.clinicId });
         res.status(201).json({ message: 'Appointment booked successfully' });
@@ -676,6 +695,17 @@ exports.bookAppointment = async (req, res) => {
 exports.cancelAppointment = async (req, res) => {
     const { appointmentId } = req.params;
     try {
+        // IDOR Check: Ensure appointment belongs to the authenticated user
+        const [appRows] = await db.query(
+            `SELECT a.id FROM appointments a 
+             JOIN patients p ON a.patient_id = p.id 
+             WHERE a.id = ? AND p.user_id = ?`,
+            [appointmentId, req.user.id]
+        );
+        if (appRows.length === 0) {
+            return res.status(403).json({ message: 'Forbidden: Unauthorized access to appointment' });
+        }
+
         await appointmentService.cancelAppointment(appointmentId);
         if (req.io) req.io.emit('QUEUE_UPDATE', {}); 
         res.status(200).json({ message: 'Appointment canceled successfully' });
@@ -688,6 +718,17 @@ exports.cancelAppointment = async (req, res) => {
 exports.rescheduleAppointment = async (req, res) => {
     const { appointmentId } = req.params;
     try {
+        // IDOR Check: Ensure appointment belongs to the authenticated user
+        const [appRows] = await db.query(
+            `SELECT a.id FROM appointments a 
+             JOIN patients p ON a.patient_id = p.id 
+             WHERE a.id = ? AND p.user_id = ?`,
+            [appointmentId, req.user.id]
+        );
+        if (appRows.length === 0) {
+            return res.status(403).json({ message: 'Forbidden: Unauthorized access to appointment' });
+        }
+
         await appointmentService.rescheduleAppointment(appointmentId, req.body.new_date);
         if (req.io) req.io.emit('QUEUE_UPDATE', {});
         res.status(200).json({ message: 'Appointment rescheduled successfully' });
@@ -711,6 +752,12 @@ exports.submitClinicReview = async (req, res) => {
     }
 
     try {
+        // IDOR Check: Ensure patient_id belongs to the authenticated user
+        const [patientRows] = await db.query('SELECT user_id FROM patients WHERE id = ?', [patient_id]);
+        if (patientRows.length === 0 || patientRows[0].user_id !== req.user.id) {
+            return res.status(403).json({ message: 'Forbidden: Unauthorized patient_id' });
+        }
+
         await db.execute(
             `INSERT INTO clinic_reviews (clinic_id, patient_id, rating, review_text)
              VALUES (?, ?, ?, ?)

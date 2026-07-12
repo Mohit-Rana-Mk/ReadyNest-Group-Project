@@ -9,7 +9,11 @@ const authMiddleware = (allowedRoles = []) => {
         }
 
         try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+            const secret = process.env.JWT_SECRET;
+            if (!secret) {
+                return res.status(500).json({ message: 'JWT Secret is not configured on the server' });
+            }
+            const decoded = jwt.verify(token, secret);
             req.user = decoded;
             
             if (allowedRoles.length > 0 && !allowedRoles.includes(req.user.role)) {

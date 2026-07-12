@@ -116,10 +116,16 @@ class PaymentService {
         return await paymentRepository.getPatientPayments(patientId);
     }
 
-    async getPaymentDetails(paymentId) {
+    async getPaymentDetails(paymentId, userId, userRole) {
         const details = await paymentRepository.getPaymentDetails(paymentId);
         if (!details) {
             throw new Error('Payment record not found');
+        }
+        if (userRole === 'Patient') {
+            const patientId = await paymentRepository.getPatientIdByUserId(userId);
+            if (!patientId || details.patient_id !== patientId) {
+                throw new Error('Unauthorized access to payment details');
+            }
         }
         return details;
     }

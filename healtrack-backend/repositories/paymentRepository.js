@@ -121,7 +121,7 @@ class PaymentRepository {
 
     async getPaymentDetails(paymentId) {
         const [rows] = await db.query(
-            `SELECT p.id, p.amount, p.status, p.receipt_id, p.invoice_id, p.created_at, p.razorpay_payment_id, p.razorpay_order_id,
+            `SELECT p.id, p.amount, p.status, p.receipt_id, p.invoice_id, p.created_at, p.razorpay_payment_id, p.razorpay_order_id, p.patient_id,
                     c.name AS clinic_name, c.address AS clinic_address, c.city AS clinic_city, c.license_number AS clinic_license,
                     du.name AS doctor_name, 
                     pat.name AS patient_name, pat.mrn AS patient_mrn,

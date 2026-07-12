@@ -165,11 +165,14 @@ exports.getPatientPayments = async (req, res) => {
 exports.getPaymentDetails = async (req, res) => {
     const { paymentId } = req.params;
     try {
-        const details = await paymentService.getPaymentDetails(paymentId);
+        const details = await paymentService.getPaymentDetails(paymentId, req.user.id, req.user.role);
         res.status(200).json(details);
     } catch (error) {
         if (error.message === 'Payment record not found') {
             return res.status(404).json({ message: error.message });
+        }
+        if (error.message === 'Unauthorized access to payment details') {
+            return res.status(403).json({ message: error.message });
         }
         console.error('Fetch Payment Details Error:', error);
         res.status(500).json({ message: 'Internal Server Error' });
