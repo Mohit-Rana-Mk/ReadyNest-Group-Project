@@ -1,3 +1,10 @@
+import os
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 from fastapi import FastAPI
 from app.api.prediction import router as prediction_router
 

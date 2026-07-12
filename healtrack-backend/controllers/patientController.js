@@ -5,6 +5,14 @@ const appointmentService = require('../services/appointmentService');
 // In-memory cache for tracking the last queried/predicted disease per patient ID
 const patientLastDiseaseCache = {};
 
+const getMlHeaders = (extraHeaders = {}) => {
+    const headers = { ...extraHeaders };
+    if (process.env.ML_API_KEY) {
+        headers['X-API-Key'] = process.env.ML_API_KEY;
+    }
+    return headers;
+};
+
 // ─────────────────────────────────────────────────────────────
 // A. Preventive Recommendations
 // ─────────────────────────────────────────────────────────────
@@ -153,7 +161,9 @@ exports.submitTriage = async (req, res) => {
         try {
             let mlServiceUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
             mlServiceUrl = mlServiceUrl.replace(/\/+$/, '');
-            const symResponse = await fetch(`${mlServiceUrl}/api/v1/symptoms`);
+            const symResponse = await fetch(`${mlServiceUrl}/api/v1/symptoms`, {
+                headers: getMlHeaders()
+            });
             if (symResponse.ok) {
                 validSymptoms = await symResponse.json();
             }
@@ -236,7 +246,9 @@ exports.submitTriage = async (req, res) => {
                 try {
                     let mlServiceUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
                     mlServiceUrl = mlServiceUrl.replace(/\/+$/, '');
-                    const infoResponse = await fetch(`${mlServiceUrl}/api/v1/disease-info/${encodeURIComponent(cachedDisease)}`);
+                    const infoResponse = await fetch(`${mlServiceUrl}/api/v1/disease-info/${encodeURIComponent(cachedDisease)}`, {
+                        headers: getMlHeaders()
+                    });
                     if (infoResponse.ok) {
                         const infoData = await infoResponse.json();
                         if (infoData.success) {
@@ -317,7 +329,9 @@ exports.submitTriage = async (req, res) => {
                 mlServiceUrl = mlServiceUrl.replace(/\/+$/, '');
                 let infoResponse;
                 for (let attempt = 1; attempt <= 4; attempt++) {
-                    infoResponse = await fetch(`${mlServiceUrl}/api/v1/disease-info/${encodeURIComponent(directDiseaseMatch)}`);
+                    infoResponse = await fetch(`${mlServiceUrl}/api/v1/disease-info/${encodeURIComponent(directDiseaseMatch)}`, {
+                        headers: getMlHeaders()
+                    });
                     if (infoResponse.ok) break;
                     console.warn(`ML service disease-info attempt ${attempt} failed with status: ${infoResponse.status}`);
                     if (attempt < 4) {
@@ -408,7 +422,7 @@ exports.submitTriage = async (req, res) => {
                 for (let attempt = 1; attempt <= 3; attempt++) {
                     mlResponse = await fetch(`${mlServiceUrl}/api/v1/predict/disease`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: getMlHeaders({ 'Content-Type': 'application/json' }),
                         body: JSON.stringify({ symptoms: matchedSymptoms })
                     });
                     if (mlResponse.ok) break;
@@ -507,7 +521,7 @@ exports.predictParkinsons = async (req, res) => {
         const mlServiceUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
         const response = await fetch(`${mlServiceUrl}/api/v1/predict/parkinsons/from-tests`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getMlHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify({
                 tremorVariance: parseFloat(tremorVariance || 0),
                 tapCount: parseInt(tapCount || 0),

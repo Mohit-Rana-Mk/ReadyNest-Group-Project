@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, status
+import os
+from fastapi import APIRouter, HTTPException, status, Depends, Header
 
 from app.validation.schemas import (
     PatientInput,
@@ -20,9 +21,20 @@ from app.services.disease_prediction import (
 )
 from app.services.outbreak_prediction import predict_outbreak_risk
 
+ML_API_KEY = os.environ.get("ML_API_KEY")
+
+async def verify_api_key(x_api_key: str = Header(None)):
+    if ML_API_KEY:
+        if not x_api_key or x_api_key != ML_API_KEY:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or missing X-API-Key header",
+            )
+
 router = APIRouter(
     prefix="/api/v1",
     tags=["Risk Prediction"],
+    dependencies=[Depends(verify_api_key)]
 )
 
 

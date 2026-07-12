@@ -7,9 +7,13 @@ async function postJSON(urlStr, data) {
     // Allow up to 4 attempts (1 initial + 3 retries)
     for (let attempt = 1; attempt <= 4; attempt++) {
         try {
+            const headers = { 'Content-Type': 'application/json' };
+            if (process.env.ML_API_KEY) {
+                headers['X-API-Key'] = process.env.ML_API_KEY;
+            }
             const response = await fetch(urlStr, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
                 body: JSON.stringify(data),
                 redirect: 'follow'
             });
