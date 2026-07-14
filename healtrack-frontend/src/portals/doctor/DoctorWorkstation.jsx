@@ -39,7 +39,8 @@ export default function DoctorWorkstation() {
         height_cm: '',
         systolic_bp: '',
         diastolic_bp: '',
-        pulse_rate: ''
+        pulse_rate: '',
+        blood_sugar_mgdl: ''
     });
     const [prescriptionItems, setPrescriptionItems] = useState([
         { medicine_name: '', dosage: '', frequency: '1-0-1 (Morning/Night)', duration: '' }
@@ -116,7 +117,8 @@ export default function DoctorWorkstation() {
             height_cm: appt.height_cm || '',
             systolic_bp: appt.systolic_bp || '',
             diastolic_bp: appt.diastolic_bp || '',
-            pulse_rate: appt.pulse_rate || ''
+            pulse_rate: appt.pulse_rate || '',
+            blood_sugar_mgdl: appt.blood_sugar_mgdl || ''
         });
 
         setPrescriptionItems([
@@ -175,7 +177,8 @@ export default function DoctorWorkstation() {
                 height_cm: vitals.height_cm ? parseFloat(vitals.height_cm) : null,
                 systolic_bp: vitals.systolic_bp ? parseInt(vitals.systolic_bp) : null,
                 diastolic_bp: vitals.diastolic_bp ? parseInt(vitals.diastolic_bp) : null,
-                pulse_rate: vitals.pulse_rate ? parseInt(vitals.pulse_rate) : null
+                pulse_rate: vitals.pulse_rate ? parseInt(vitals.pulse_rate) : null,
+                blood_sugar_mgdl: vitals.blood_sugar_mgdl ? parseInt(vitals.blood_sugar_mgdl) : null
             },
             prescriptionItems: prescriptionItems.filter(item => item.medicine_name.trim() !== '')
         };
@@ -242,10 +245,10 @@ export default function DoctorWorkstation() {
                     </div>
                     <div className="h-6 w-px bg-[#e9ecef] hidden md:block"></div>
                     <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600 text-[11px]">
-                            DR
+                        <div className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600 text-[11px] uppercase">
+                            {user?.name ? user.name.substring(0, 2) : 'DR'}
                         </div>
-                        <span className="text-xs font-semibold text-slate-800 hidden lg:block">Doctor Portal</span>
+                        <span className="text-xs font-semibold text-slate-800 hidden lg:block">{user?.name ? `Dr. ${user.name}` : 'Doctor Portal'}</span>
                         <Button variant="outline" onClick={logout} className="ml-1 md:ml-2 p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition border-none bg-transparent" title="Logout">
                             <LogOut className="w-4 h-4" />
                         </Button>

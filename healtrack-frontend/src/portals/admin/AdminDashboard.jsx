@@ -180,10 +180,10 @@ export default function AdminDashboard() {
                             variant="outline"
                             key={item.id}
                             onClick={() => handleTabChange(item.id)}
-                            className={`w-full flex justify-start items-center gap-3 px-4 py-2.5 rounded-xl transition text-sm font-semibold border-none bg-transparent ${
+                            className={`w-full flex !justify-start items-center gap-3 pl-5 pr-4 py-2.5 rounded-xl transition text-sm font-semibold border-none bg-transparent ${
                                 isActive 
                                     ? activeClass 
-                                    : 'text-slate-500 hover:bg-[#f1f3f5] hover:text-slate-800'
+                                    : 'text-slate-500 hover:bg-[#f1f3f5] hover:text-slate-800 border-r-4 border-transparent'
                             }`}
                         >
                             <item.icon className="w-4 h-4" />
