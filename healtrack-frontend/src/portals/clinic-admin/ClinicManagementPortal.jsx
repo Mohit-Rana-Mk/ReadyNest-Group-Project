@@ -122,7 +122,7 @@ export default function ClinicManagementPortal() {
               variant="outline"
               key={item.id}
               onClick={() => handleTabChange(item.id)}
-              className={`w-full flex justify-start items-center space-x-3 px-4 py-3 rounded-lg transition-colors border-none bg-transparent ${
+              className={`w-full flex !justify-start items-center space-x-3 px-4 py-3 rounded-lg transition-colors border-none bg-transparent ${
                 isActive ? 'bg-indigo-800 text-white' : 'text-indigo-100 hover:bg-indigo-800/50 hover:text-white'
               }`}
             >
@@ -133,7 +133,7 @@ export default function ClinicManagementPortal() {
         })}
       </nav>
       <div className="p-4 border-t border-indigo-800">
-        <Button variant="outline" onClick={logout} className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-100 hover:bg-indigo-800/50 hover:text-white transition-colors border-none bg-transparent">
+        <Button variant="outline" onClick={logout} className="w-full flex !justify-start items-center space-x-3 px-4 py-3 rounded-lg text-indigo-100 hover:bg-indigo-800/50 hover:text-white transition-colors border-none bg-transparent">
           <LogOut className="w-5 h-5" />
           <span className="font-medium">Sign Out</span>
         </Button>

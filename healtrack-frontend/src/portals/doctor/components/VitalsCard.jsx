@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, Activity, Scale, Ruler } from 'lucide-react';
+import { Heart, Activity, Scale, Ruler, Droplets } from 'lucide-react';
 
 export function VitalsCard({ vitals, handleVitalsChange }) {
     return (
@@ -102,6 +102,29 @@ export function VitalsCard({ vitals, handleVitalsChange }) {
                                     className="w-12 bg-transparent border-b border-orange-300 focus:outline-none focus:border-orange-500 font-bold text-orange-950 text-sm p-0 placeholder-orange-300 text-center"
                                 />
                                 <span className="text-[10px] text-orange-700 font-semibold ml-1">bpm</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Blood Sugar */}
+                <div className="bg-blue-50 border border-blue-100 rounded-xl p-3.5 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                        <div className="text-blue-500 bg-white p-1.5 rounded-lg shadow-sm border border-blue-100">
+                            <Droplets className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <span className="block text-[10px] text-blue-800 font-semibold mb-0.5">Blood Sugar</span>
+                            <div className="flex items-baseline gap-1">
+                                <input 
+                                    type="number" 
+                                    name="blood_sugar_mgdl"
+                                    value={vitals.blood_sugar_mgdl}
+                                    onChange={handleVitalsChange}
+                                    placeholder="--"
+                                    className="w-12 bg-transparent border-b border-blue-300 focus:outline-none focus:border-blue-500 font-bold text-blue-950 text-sm p-0 placeholder-blue-300 text-center"
+                                />
+                                <span className="text-[10px] text-blue-700 font-semibold ml-1">mg/dL</span>
                             </div>
                         </div>
                     </div>

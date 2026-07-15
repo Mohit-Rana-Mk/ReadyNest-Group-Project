@@ -433,7 +433,7 @@ export default function ReceptionDesk() {
                   </div>
                 </div>
                 {existingPatients.length > 0 && (
-                  <div className="mt-2 p-3 bg-indigo-50 border border-indigo-100 rounded-xl">
+                  <div className="mt-4 p-4 bg-indigo-50 border border-indigo-100 rounded-xl">
                     <label className="block text-[10px] font-extrabold uppercase tracking-wider text-indigo-500 mb-1.5">Select Family Member</label>
                     <Select
                       value={selectedPatientId}
