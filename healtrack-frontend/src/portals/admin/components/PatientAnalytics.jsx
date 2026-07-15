@@ -1,5 +1,8 @@
+import { toast } from '../../../components/ui/Toast';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '../../../components/ui/Card';
+import { Button } from '../../../components/ui/Button';
+import { ConfirmModal } from '../../../components/ui/ConfirmModal';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend, PieChart, Pie, Cell
@@ -31,6 +34,7 @@ export function PatientAnalytics() {
   const [patientsLoading, setPatientsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
+  const [patientToDelete, setPatientToDelete] = useState(null);
 
   // Filter States
   const [minAge, setMinAge] = useState(2);
@@ -87,16 +91,18 @@ export function PatientAnalytics() {
       }
     } catch (err) {
       console.error('Failed to toggle patient status:', err);
-      alert('Failed to update patient account status.');
+      toast.error('Failed to update patient account status.');
     }
   };
 
-  const handleDeletePatient = async (patientId) => {
-    if (!window.confirm("Are you sure you want to permanently delete this patient? This action will permanently remove all medical records, vitals, appointments, and payments associated with this patient account and cannot be undone.")) {
-      return;
-    }
+  const handleDeletePatient = (patientId) => {
+    setPatientToDelete(patientId);
+  };
+
+  const confirmDeletePatient = async () => {
+    if (!patientToDelete) return;
     try {
-      const res = await axiosClient.delete(`/admin/patients/${patientId}`);
+      const res = await axiosClient.delete(`/admin/patients/${patientToDelete}`);
       if (res.data.success) {
         setStatusMessage(res.data.message);
         fetchPatientsList();
@@ -105,7 +111,9 @@ export function PatientAnalytics() {
       }
     } catch (err) {
       console.error('Failed to delete patient:', err);
-      alert('Failed to delete patient account.');
+      toast.error('Failed to delete patient account.');
+    } finally {
+      setPatientToDelete(null);
     }
   };
 

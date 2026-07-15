@@ -1,3 +1,4 @@
+import { toast } from '../../components/ui/Toast';
 import React, { useState, useEffect } from 'react';
 import { KpiBanner } from './components/KpiBanner';
 import { OpdQueueTable } from './components/OpdQueueTable';
@@ -96,7 +97,7 @@ export default function ReceptionDesk() {
       fetchPayments();
       fetchQueue();
     } catch (err) {
-      alert('Refund failed: ' + (err.response?.data?.message || err.message));
+      toast.error('Refund failed: ' + (err.response?.data?.message || err.message));
     } finally {
       setRefundLoading(false);
     }
@@ -217,7 +218,7 @@ export default function ReceptionDesk() {
       setPaymentDone({ method: 'Cash', receipt_id: res.data.receipt_id, fee: res.data.fee });
       fetchQueue();
     } catch (err) {
-      alert('Failed to record cash payment: ' + (err.response?.data?.message || err.message));
+      toast.error('Failed to record cash payment: ' + (err.response?.data?.message || err.message));
     } finally {
       setPaymentLoading(false);
     }
@@ -236,7 +237,7 @@ export default function ReceptionDesk() {
         script.onerror = () => resolve(false);
         document.body.appendChild(script);
       });
-      if (!rzpLoaded) { alert('Failed to load payment gateway.'); setPaymentLoading(false); return; }
+      if (!rzpLoaded) { toast.error('Failed to load payment gateway.'); setPaymentLoading(false); return; }
 
       // Create order
       const orderRes = await axiosClient.post('/payments/reception/walkin-order', {
@@ -264,17 +265,17 @@ export default function ReceptionDesk() {
             setPaymentDone({ method: 'Online', receipt_id: response.razorpay_payment_id, fee: orderRes.data.fee });
             fetchQueue();
           } catch (err) {
-            alert('Payment verification failed: ' + (err.response?.data?.message || err.message));
+            toast.error('Payment verification failed: ' + (err.response?.data?.message || err.message));
           }
         },
         theme: { color: '#6366f1' }
       };
       setPaymentLoading(false);
       const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', (resp) => alert('Payment failed: ' + resp.error.description));
+      rzp.on('payment.failed', (resp) => toast.error('Payment failed: ' + resp.error.description));
       rzp.open();
     } catch (err) {
-      alert('Error initiating payment: ' + (err.response?.data?.message || err.message));
+      toast.error('Error initiating payment: ' + (err.response?.data?.message || err.message));
       setPaymentLoading(false);
     }
   };
@@ -289,7 +290,7 @@ export default function ReceptionDesk() {
   const handleStatusChangeAttempt = (id, newStatus, appointment) => {
     if (appointment.consultation_type === 'In-Person' && appointment.payment_status === 'Pending') {
       if (newStatus !== 'Cancelled' && newStatus !== 'Canceled') {
-        alert('Payment must be completed first. Please click "Collect Payment" to record the payment.');
+        toast.info('Payment must be completed first. Please click "Collect Payment" to record the payment.');
         return;
       }
     }

@@ -1,3 +1,4 @@
+import { toast } from '../../../components/ui/Toast';
 import React, { useState, useEffect } from 'react';
 import { MapPin, Clock, ChevronRight, Building2, Star, Search, Filter, Navigation } from 'lucide-react';
 import { fetchClinics, fetchFamilyMembers, addFamilyMember, bookAppointment, submitClinicReview, fetchClinicWaitTime } from '../../../api/patientApi';
@@ -97,7 +98,7 @@ export default function ClinicDiscovery() {
                         lng: "77.2090",
                         radius: '10'
                     }));
-                    alert('Unable to retrieve real location due to browser restrictions. Using default mock location (New Delhi) for demonstration.');
+                    toast.error('Unable to retrieve real location due to browser restrictions. Using default mock location (New Delhi) for demonstration.');
                 }
             );
         }
@@ -164,7 +165,7 @@ export default function ClinicDiscovery() {
             });
 
             if (!orderData) {
-                alert('Failed to create payment order.');
+                toast.error('Failed to create payment order.');
                 return;
             }
 
@@ -190,12 +191,12 @@ export default function ClinicDiscovery() {
             });
 
             if (!rzpLoaded) {
-                alert('Failed to load payment gateway. Please check your internet connection.');
+                toast.error('Failed to load payment gateway. Please check your internet connection.');
                 return;
             }
 
             if (!orderData.orderId) {
-                alert('Failed to create payment order.');
+                toast.error('Failed to create payment order.');
                 return;
             }
 
@@ -222,11 +223,11 @@ export default function ClinicDiscovery() {
                                 setIsBookingModalOpen(false);
                             }, 2000);
                         } else {
-                            alert('Signature verification failed.');
+                            toast.error('Signature verification failed.');
                         }
                     } catch (err) {
                         console.error('Verify error:', err);
-                        alert('Verification error: ' + (err.response?.data?.message || err.message));
+                        toast.error('Verification error: ' + (err.response?.data?.message || err.message));
                     }
                 },
                 prefill: {
@@ -239,13 +240,13 @@ export default function ClinicDiscovery() {
 
             const rzp = new window.Razorpay(options);
             rzp.on('payment.failed', function (response) {
-                alert('Payment failed: ' + response.error.description);
+                toast.error('Payment failed: ' + response.error.description);
             });
             rzp.open();
 
         } catch (error) {
             console.error('Error booking:', error);
-            alert('Error creating booking/order: ' + (error.response?.data?.message || error.message));
+            toast.error('Error creating booking/order: ' + (error.response?.data?.message || error.message));
         }
     };
 

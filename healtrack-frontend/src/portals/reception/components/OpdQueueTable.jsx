@@ -1,3 +1,4 @@
+import { toast } from '../../../components/ui/Toast';
 import React, { useState } from 'react';
 import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
@@ -10,7 +11,7 @@ export function OpdQueueTable({ queue, onStatusChange, onCollectPayment }) {
   const handleStatusChangeAttempt = (appointmentId, newStatus, appointment) => {
     if (appointment.consultation_type === 'In-Person' && appointment.payment_status === 'Pending') {
       if (newStatus !== 'Cancelled' && newStatus !== 'Canceled') {
-        alert('Payment must be completed first. Please click "Collect Payment" to record the payment.');
+        toast.info('Payment must be completed first. Please click "Collect Payment" to record the payment.');
         return;
       }
     }

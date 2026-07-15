@@ -1,3 +1,4 @@
+import { toast } from '../../../components/ui/Toast';
 import React, { useState, useEffect } from 'react';
 import { ShieldAlert, Send, Mail, MessageSquare, MapPin, AlertTriangle, Check, Loader2 } from 'lucide-react';
 import axiosClient from '../../../api/axiosClient';
@@ -58,7 +59,7 @@ export function OutbreakAlerts({ clinicId = 1 }) {
             }
         } catch (err) {
             console.error('Failed to broadcast outbreak alert:', err);
-            alert('Failed to broadcast outbreak alert. Please try again.');
+            toast.error('Failed to broadcast outbreak alert. Please try again.');
         } finally {
             setSending(false);
             setTimeout(() => setSuccessMessage(''), 6000);

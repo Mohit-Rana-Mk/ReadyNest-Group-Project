@@ -281,20 +281,18 @@ export default function PatientApp() {
                         </div>
                         <div className="flex items-center gap-3">
                             <LanguageSwitcher />
-                            <Button 
-                                variant="outline"
+                            <button 
                                 onClick={() => setActiveTab('profile')} 
-                                className={`p-2 rounded-xl transition-colors border-slate-800/40 ${activeTab === 'profile' ? 'bg-[#7F3DEC] text-white' : 'text-slate-300 hover:text-white bg-slate-800/30'}`}
+                                className={`p-2 rounded-xl transition-colors border border-slate-800/40 focus:outline-none focus:ring-2 focus:ring-slate-500 ${activeTab === 'profile' ? 'bg-[#7F3DEC] text-white' : 'text-slate-300 hover:text-white bg-slate-800/30'}`}
                             >
                                 <User size={16} />
-                            </Button>
-                            <Button 
-                                variant="outline"
+                            </button>
+                            <button 
                                 onClick={logout} 
-                                className="p-2 text-slate-300 hover:text-white bg-slate-800/30 rounded-xl transition-colors border-slate-800/40"
+                                className="p-2 text-slate-300 hover:text-white bg-slate-800/30 rounded-xl transition-colors border border-slate-800/40 focus:outline-none focus:ring-2 focus:ring-slate-500"
                             >
                                 <LogOut size={16} />
-                            </Button>
+                            </button>
                         </div>
                     </div>
                 </header>

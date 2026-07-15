@@ -9,9 +9,9 @@ export default function BottomNav({ activeTab, onTabChange }) {
         { id: 'home', label: 'HOME', icon: Home },
         { id: 'find-care', label: 'SEARCH', icon: Search },
         { id: 'triage', label: 'AI TRIAGE', icon: Activity, isSpecial: true },
-        { id: 'awareness', label: 'AWARENESS', icon: BookOpen },
+        { id: 'awareness', label: 'AWARE', icon: BookOpen },
         { id: 'records', label: 'RECORDS', icon: ClipboardList },
-        { id: 'payments', label: 'PAYMENTS', icon: CreditCard },
+        { id: 'payments', label: 'PAY', icon: CreditCard },
     ];
 
     return (

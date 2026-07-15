@@ -1,3 +1,4 @@
+import { toast } from '../../../components/ui/Toast';
 import React, { useState, useEffect } from 'react';
 import { 
     Activity, AlertTriangle, Play, RefreshCw, Search, Sparkles, Clock, 
@@ -418,7 +419,7 @@ export default function GeneralAwareness() {
             try {
                 const permission = await DeviceMotionEvent.requestPermission();
                 if (permission !== 'granted') {
-                    alert('Permission to access accelerometer was denied. Simulation mode will be enabled.');
+                    toast.error('Permission to access accelerometer was denied. Simulation mode will be enabled.');
                     runTremorSimulation();
                     return;
                 }

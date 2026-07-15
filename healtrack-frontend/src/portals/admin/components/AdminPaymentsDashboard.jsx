@@ -1,3 +1,4 @@
+import { toast } from '../../../components/ui/Toast';
 import React, { useState, useEffect } from 'react';
 import { 
     Coins, 
@@ -26,6 +27,7 @@ import {
     fetchRefundRequests, 
     processRefundRequest 
 } from '../../../api/paymentApi';
+import { ConfirmModal } from '../../../components/ui/ConfirmModal';
 
 export function AdminPaymentsDashboard() {
     const [activeSubTab, setActiveSubTab] = useState('transactions'); // 'transactions', 'clinics', 'bank-approvals', 'refunds'
@@ -47,6 +49,10 @@ export function AdminPaymentsDashboard() {
     const [refNumber, setRefNumber] = useState('');
     const [remarks, setRemarks] = useState('');
     const [submittingSettlement, setSubmittingSettlement] = useState(false);
+
+    // Confirm Modals State
+    const [bankToApprove, setBankToApprove] = useState(null);
+    const [refundToProcess, setRefundToProcess] = useState(null);
 
     useEffect(() => {
         loadOverview();
@@ -85,28 +91,38 @@ export function AdminPaymentsDashboard() {
         }
     };
 
-    const handleApproveBank = async (id, approve) => {
-        const action = approve ? 'Approved' : 'Rejected';
-        if (!window.confirm(`Are you sure you want to set the bank account status to ${action}?`)) return;
+    const handleApproveBank = (id, approve) => {
+        setBankToApprove({ id, action: approve ? 'Approved' : 'Rejected' });
+    };
+
+    const confirmApproveBank = async () => {
+        if (!bankToApprove) return;
         try {
-            await approveBankDetails(id, action);
-            alert(`Bank details successfully ${action.toLowerCase()}`);
+            await approveBankDetails(bankToApprove.id, bankToApprove.action);
+            toast.success(`Bank details successfully ${bankToApprove.action.toLowerCase()}`);
             loadTabContent();
         } catch (error) {
-            alert('Failed to update bank account status.');
+            toast.error('Failed to update bank account status.');
+        } finally {
+            setBankToApprove(null);
         }
     };
 
-    const handleProcessRefund = async (id, approve) => {
-        const action = approve ? 'Approved' : 'Rejected';
-        if (!window.confirm(`Are you sure you want to mark this refund request as ${action}?`)) return;
+    const handleProcessRefund = (id, approve) => {
+        setRefundToProcess({ id, action: approve ? 'Approved' : 'Rejected' });
+    };
+
+    const confirmProcessRefund = async () => {
+        if (!refundToProcess) return;
         try {
-            await processRefundRequest(id, action);
-            alert(`Refund successfully ${action.toLowerCase()}`);
+            await processRefundRequest(refundToProcess.id, refundToProcess.action);
+            toast.success(`Refund successfully ${refundToProcess.action.toLowerCase()}`);
             loadTabContent();
             loadOverview();
         } catch (error) {
-            alert('Failed to process refund request.');
+            toast.error('Failed to process refund request.');
+        } finally {
+            setRefundToProcess(null);
         }
     };
 
@@ -121,7 +137,7 @@ export function AdminPaymentsDashboard() {
     const handleSettlementSubmit = async (e) => {
         e.preventDefault();
         if (parseFloat(settlementAmount) > selectedClinic.pending_settlement) {
-            alert('Settlement amount cannot exceed pending settlement balance.');
+            toast.error('Settlement amount cannot exceed pending settlement balance.');
             return;
         }
 
@@ -133,11 +149,11 @@ export function AdminPaymentsDashboard() {
                 reference_number: refNumber,
                 remarks
             });
-            alert('Settlement recorded successfully.');
+            toast.success('Settlement recorded successfully.');
             setIsSettlementModalOpen(false);
             loadTabContent();
         } catch (error) {
-            alert(error.response?.data?.message || 'Failed to record settlement.');
+            toast.error(error.response?.data?.message || 'Failed to record settlement.');
         } finally {
             setSubmittingSettlement(false);
         }
@@ -557,6 +573,27 @@ export function AdminPaymentsDashboard() {
                     </div>
                 </div>
             )}
+            
+            {/* Confirm Modals */}
+            <ConfirmModal
+                isOpen={!!bankToApprove}
+                onClose={() => setBankToApprove(null)}
+                onConfirm={confirmApproveBank}
+                title="Update Bank Account Status"
+                message={`Are you sure you want to set this bank account status to ${bankToApprove?.action}?`}
+                confirmText={`Yes, ${bankToApprove?.action}`}
+                isDestructive={bankToApprove?.action === 'Rejected'}
+            />
+
+            <ConfirmModal
+                isOpen={!!refundToProcess}
+                onClose={() => setRefundToProcess(null)}
+                onConfirm={confirmProcessRefund}
+                title="Process Refund Request"
+                message={`Are you sure you want to mark this refund request as ${refundToProcess?.action}?`}
+                confirmText={`Yes, ${refundToProcess?.action}`}
+                isDestructive={refundToProcess?.action === 'Rejected'}
+            />
         </div>
     );
 }
