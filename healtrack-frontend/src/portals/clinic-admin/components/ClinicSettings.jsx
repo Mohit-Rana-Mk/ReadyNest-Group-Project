@@ -1,3 +1,4 @@
+import { toast } from '../../../components/ui/Toast';
 import React, { useState, useEffect } from 'react';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
@@ -61,11 +62,11 @@ export function ClinicSettings({ clinicId }) {
             latitude: "28.613900",
             longitude: "77.209000"
           }));
-          alert("Unable to retrieve real location due to browser restrictions. Using default mock location (New Delhi) for demonstration.");
+          toast.error("Unable to retrieve real location due to browser restrictions. Using default mock location (New Delhi) for demonstration.");
         }
       );
     } else {
-      alert("Geolocation is not supported by your browser.");
+      toast.info("Geolocation is not supported by your browser.");
     }
   };
 
@@ -87,10 +88,10 @@ export function ClinicSettings({ clinicId }) {
         ...formData,
         operational_days: formData.operational_days.join(',')
       });
-      alert("Settings updated successfully!");
+      toast.success("Settings updated successfully!");
     } catch (err) {
       console.error("Failed to save settings", err);
-      alert("Failed to save settings.");
+      toast.error("Failed to save settings.");
     }
   };
 

@@ -1,3 +1,4 @@
+import { toast } from '../components/ui/Toast';
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -68,7 +69,7 @@ export default function VideoConsultation() {
 
             }).catch(err => {
                 console.error("Failed to get local stream", err);
-                alert("Failed to access camera/microphone");
+                toast.error("Failed to access camera/microphone");
             });
 
         return () => {

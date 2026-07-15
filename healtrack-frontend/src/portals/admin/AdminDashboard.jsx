@@ -1,3 +1,4 @@
+import { toast } from '../../components/ui/Toast';
 import React, { useState, useEffect } from 'react';
 import axiosClient from '../../api/axiosClient';
 
@@ -26,6 +27,7 @@ import { AuraCareDashboard } from './components/AuraCareDashboard';
 import { PatientAnalytics } from './components/PatientAnalytics';
 import { AdminPaymentsDashboard } from './components/AdminPaymentsDashboard';
 import { Button } from '../../components/ui/Button';
+import { ConfirmModal } from '../../components/ui/ConfirmModal';
 
 export default function AdminDashboard() {
     const { logout } = useAuth();
@@ -40,6 +42,7 @@ export default function AdminDashboard() {
     const [ecosystemStats, setEcosystemStats] = useState({ kpis: {}, reviews: [] });
     const [actionMessage, setActionMessage] = useState('');
     const [epiFilter, setEpiFilter] = useState(30);
+    const [deleteTarget, setDeleteTarget] = useState(null);
 
     useEffect(() => {
         loadDashboardData();
@@ -83,7 +86,7 @@ export default function AdminDashboard() {
             }
         } catch (error) {
             console.error("Verification failed:", error);
-            alert("Failed to update verification status.");
+            toast.error("Failed to update verification status.");
         }
     };
 
@@ -98,17 +101,19 @@ export default function AdminDashboard() {
             }
         } catch (error) {
             console.error("Direct onboarding failed:", error);
-            alert(error.response?.data?.message || "Failed to onboard clinic.");
+            toast.error(error.response?.data?.message || "Failed to onboard clinic.");
             throw error;
         }
     };
 
-    const handleDeleteClinic = async (clinicId) => {
-        if (!window.confirm("Are you sure you want to permanently delete this clinic facility? This action will permanently remove all associated appointments, reviews, outbreaks, and administrator accounts and cannot be undone.")) {
-            return;
-        }
+    const handleDeleteClinic = (clinicId) => {
+        setDeleteTarget(clinicId);
+    };
+
+    const confirmDeleteClinic = async () => {
+        if (!deleteTarget) return;
         try {
-            const res = await axiosClient.delete(`/admin/clinics/${clinicId}`);
+            const res = await axiosClient.delete(`/admin/clinics/${deleteTarget}`);
             if (res.data.success) {
                 setActionMessage(res.data.message);
                 loadDashboardData();
@@ -116,7 +121,9 @@ export default function AdminDashboard() {
             }
         } catch (error) {
             console.error("Failed to delete clinic:", error);
-            alert("Failed to delete clinic.");
+            toast.error("Failed to delete clinic.");
+        } finally {
+            setDeleteTarget(null);
         }
     };
 
@@ -206,6 +213,17 @@ export default function AdminDashboard() {
                     </aside>
                 </div>
             )}
+
+            {/* Confirm Modal for Clinic Deletion */}
+            <ConfirmModal
+                isOpen={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={confirmDeleteClinic}
+                title="Delete Clinic Facility?"
+                message="Are you sure you want to permanently delete this clinic facility? This action will permanently remove all associated appointments, reviews, outbreaks, and administrator accounts and cannot be undone."
+                confirmText="Yes, Delete Clinic"
+                isDestructive={true}
+            />
 
             {/* DESKTOP SIDEBAR */}
             <aside className="w-64 border-r hidden lg:flex flex-col shrink-0 bg-white border-[#e9ecef]">

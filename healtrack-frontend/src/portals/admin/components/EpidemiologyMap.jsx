@@ -2,6 +2,7 @@ import React from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { CustomDropdown } from '../../../components/ui/CustomDropdown';
 
 // Fix leaflet icon path issues in React
 delete L.Icon.Default.prototype._getIconUrl;
@@ -47,16 +48,17 @@ export function EpidemiologyMap({ outbreakStats, filter, setFilter }) {
                         <h3 className="font-bold text-slate-800 text-base">Geospatial Outbreak Heatmap</h3>
                         <p className="text-xs text-slate-400">Platform-wide disease tracking based on active prescriptions and clinic coordinates (SRID 4326).</p>
                     </div>
-                    <select
+                    <CustomDropdown
                         value={filter}
-                        onChange={(e) => setFilter(Number(e.target.value))}
-                        className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-gray-50 text-gray-700 outline-none focus:border-indigo-500 font-semibold shadow-sm"
-                    >
-                        <option value={7}>Last 7 Days</option>
-                        <option value={30}>Last 30 Days</option>
-                        <option value={90}>Last 90 Days</option>
-                        <option value={365}>Last 1 Year</option>
-                    </select>
+                        onChange={(val) => setFilter(Number(val))}
+                        className="w-[140px]"
+                        options={[
+                            { value: 7, label: "Last 7 Days" },
+                            { value: 30, label: "Last 30 Days" },
+                            { value: 90, label: "Last 90 Days" },
+                            { value: 365, label: "Last 1 Year" }
+                        ]}
+                    />
                 </div>
 
                 {/* Interactive Leaflet Map */}

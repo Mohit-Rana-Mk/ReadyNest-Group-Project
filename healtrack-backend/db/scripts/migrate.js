@@ -5,9 +5,13 @@ async function migrate() {
     try {
         console.log("Starting Migration...");
 
+        // 0. Add auth_provider and language to users
+        await db.query(`ALTER TABLE users ADD COLUMN auth_provider VARCHAR(50) DEFAULT 'local'`).catch(e => console.log("auth_provider might already exist.", e.message));
+        await db.query(`ALTER TABLE users ADD COLUMN language VARCHAR(10) DEFAULT 'en'`).catch(e => console.log("language might already exist.", e.message));
+
         // 1. Add `name` and `mrn` columns to patients
-        await db.query(`ALTER TABLE patients ADD COLUMN name VARCHAR(255) NULL`);
-        await db.query(`ALTER TABLE patients ADD COLUMN mrn VARCHAR(50) NULL`);
+        await db.query(`ALTER TABLE patients ADD COLUMN name VARCHAR(255) NULL`).catch(e => console.log("name might already exist.", e.message));
+        await db.query(`ALTER TABLE patients ADD COLUMN mrn VARCHAR(50) NULL`).catch(e => console.log("mrn might already exist.", e.message));
         console.log("Added name and mrn columns.");
 
         // 2. Drop the unique constraint on user_id

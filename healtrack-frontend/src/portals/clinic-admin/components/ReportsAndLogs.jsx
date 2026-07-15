@@ -1,3 +1,4 @@
+import { toast } from '../../../components/ui/Toast';
 import React, { useState, useEffect } from 'react';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
@@ -30,7 +31,7 @@ export function ReportsAndLogs({ clinicId }) {
       const ledger = res.data;
       
       if (ledger.length === 0) {
-        alert("No financial data available to download.");
+        toast.info("No financial data available to download.");
         setDownloading(false);
         return;
       }
@@ -55,7 +56,7 @@ export function ReportsAndLogs({ clinicId }) {
       document.body.removeChild(element);
     } catch (err) {
       console.error("Failed to download report", err);
-      alert("Failed to generate report.");
+      toast.error("Failed to generate report.");
     } finally {
       setDownloading(false);
     }

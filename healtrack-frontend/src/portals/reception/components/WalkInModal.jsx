@@ -1,3 +1,4 @@
+import { toast } from '../../../components/ui/Toast';
 import React, { useState, useEffect } from 'react';
 import { Modal } from '../../../components/ui/Modal';
 import { Button } from '../../../components/ui/Button';
@@ -99,7 +100,7 @@ export function WalkInModal({ isOpen, onClose, onRegister, doctors = [], clinicI
       const birthDate = new Date(dob);
       const today = new Date();
       if (birthDate > today) {
-        alert("Date of birth cannot be a future date.");
+        toast.error("Date of birth cannot be a future date.");
         return;
       }
     }

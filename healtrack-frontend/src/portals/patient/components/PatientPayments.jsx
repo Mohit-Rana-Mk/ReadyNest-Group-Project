@@ -1,3 +1,4 @@
+import { toast } from '../../../components/ui/Toast';
 import React, { useState, useEffect } from 'react';
 import { CreditCard, FileText, Download, ShieldAlert, ArrowLeft, Loader2, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import { fetchPatientPayments, fetchPaymentDetails, submitRefundRequest } from '../../../api/paymentApi';
@@ -36,7 +37,7 @@ export default function PatientPayments() {
             setSelectedPayment(detail);
             setViewingDetails(true);
         } catch (error) {
-            alert('Failed to load payment details.');
+            toast.error('Failed to load payment details.');
         }
     };
 
@@ -61,12 +62,12 @@ export default function PatientPayments() {
                 reason: refundReason
             });
             if (res.success) {
-                alert('Refund request submitted successfully and is pending review.');
+                toast.success('Refund request submitted successfully and is pending review.');
                 setIsRefundModalOpen(false);
                 loadPayments();
             }
         } catch (error) {
-            alert(error.response?.data?.message || 'Error submitting refund request');
+            toast.error(error.response?.data?.message || 'Error submitting refund request');
         } finally {
             setRefundSubmitting(false);
         }

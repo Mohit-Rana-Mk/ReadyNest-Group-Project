@@ -9,6 +9,7 @@ import AppointmentHistory from './components/AppointmentHistory';
 import GeneralAwareness from './components/GeneralAwareness';
 import PatientPayments from './components/PatientPayments';
 import PatientProfile from './components/PatientProfile';
+import { CustomDropdown } from '../../components/ui/CustomDropdown';
 import { fetchRecommendations, fetchClinics, fetchAppointments, dismissRecommendation, fetchProfile, updateProfile } from '../../api/patientApi';
 import { io } from 'socket.io-client';
 import { useTranslation } from 'react-i18next';
@@ -281,20 +282,18 @@ export default function PatientApp() {
                         </div>
                         <div className="flex items-center gap-3">
                             <LanguageSwitcher />
-                            <Button 
-                                variant="outline"
+                            <button 
                                 onClick={() => setActiveTab('profile')} 
-                                className={`p-2 rounded-xl transition-colors border-slate-800/40 ${activeTab === 'profile' ? 'bg-[#7F3DEC] text-white' : 'text-slate-300 hover:text-white bg-slate-800/30'}`}
+                                className={`p-2 rounded-xl transition-colors border border-slate-800/40 focus:outline-none focus:ring-2 focus:ring-slate-500 ${activeTab === 'profile' ? 'bg-[#7F3DEC] text-white' : 'text-slate-300 hover:text-white bg-slate-800/30'}`}
                             >
                                 <User size={16} />
-                            </Button>
-                            <Button 
-                                variant="outline"
+                            </button>
+                            <button 
                                 onClick={logout} 
-                                className="p-2 text-slate-300 hover:text-white bg-slate-800/30 rounded-xl transition-colors border-slate-800/40"
+                                className="p-2 text-slate-300 hover:text-white bg-slate-800/30 rounded-xl transition-colors border border-slate-800/40 focus:outline-none focus:ring-2 focus:ring-slate-500"
                             >
                                 <LogOut size={16} />
-                            </Button>
+                            </button>
                         </div>
                     </div>
                 </header>
@@ -562,19 +561,19 @@ export default function PatientApp() {
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Phone Number</label>
                                 <div className="flex gap-2">
                                     <div className="w-24 relative">
-                                        <select
+                                        <CustomDropdown
                                             value={modalCountryCode}
-                                            onChange={(e) => setModalCountryCode(e.target.value)}
-                                            className="w-full bg-[#F8FAFC] border border-slate-200 rounded-2xl px-2 py-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all shadow-sm appearance-none cursor-pointer"
-                                        >
-                                            <option value="+91">🇮🇳 +91</option>
-                                            <option value="+1">🇺🇸 +1</option>
-                                            <option value="+44">🇬🇧 +44</option>
-                                            <option value="+61">🇦🇺 +61</option>
-                                            <option value="+971">🇦🇪 +971</option>
-                                            <option value="+966">🇸🇦 +966</option>
-                                        </select>
-                                        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-500"></div>
+                                            onChange={setModalCountryCode}
+                                            className="w-full h-11"
+                                            options={[
+                                                { value: "+91", label: "🇮🇳 +91" },
+                                                { value: "+1", label: "🇺🇸 +1" },
+                                                { value: "+44", label: "🇬🇧 +44" },
+                                                { value: "+61", label: "🇦🇺 +61" },
+                                                { value: "+971", label: "🇦🇪 +971" },
+                                                { value: "+966", label: "🇸🇦 +966" }
+                                            ]}
+                                        />
                                     </div>
                                     <div className="flex-1 relative">
                                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-3.5 h-3.5" />
@@ -610,17 +609,17 @@ export default function PatientApp() {
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Gender</label>
                                 <div className="relative">
-                                    <select
+                                    <CustomDropdown
                                         value={modalGender}
-                                        onChange={(e) => setModalGender(e.target.value)}
-                                        className="w-full bg-[#F8FAFC] border border-slate-200 rounded-2xl px-3 py-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all shadow-sm appearance-none cursor-pointer"
-                                    >
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                        <option value="Other">Other</option>
-                                        <option value="Prefer Not to Say">Prefer Not to Say</option>
-                                    </select>
-                                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-500"></div>
+                                        onChange={setModalGender}
+                                        className="w-full h-11"
+                                        options={[
+                                            { value: "Male", label: "Male" },
+                                            { value: "Female", label: "Female" },
+                                            { value: "Other", label: "Other" },
+                                            { value: "Prefer Not to Say", label: "Prefer Not to Say" }
+                                        ]}
+                                    />
                                 </div>
                             </div>
 
@@ -628,22 +627,22 @@ export default function PatientApp() {
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Blood Group (Optional)</label>
                                 <div className="relative">
-                                    <select
+                                    <CustomDropdown
                                         value={modalBloodGroup}
-                                        onChange={(e) => setModalBloodGroup(e.target.value)}
-                                        className="w-full bg-[#F8FAFC] border border-slate-200 rounded-2xl px-3 py-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all shadow-sm appearance-none cursor-pointer"
-                                    >
-                                        <option value="">Select Blood Group</option>
-                                        <option value="A+">A+</option>
-                                        <option value="A-">A-</option>
-                                        <option value="B+">B+</option>
-                                        <option value="B-">B-</option>
-                                        <option value="AB+">AB+</option>
-                                        <option value="AB-">AB-</option>
-                                        <option value="O+">O+</option>
-                                        <option value="O-">O-</option>
-                                    </select>
-                                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-500"></div>
+                                        onChange={setModalBloodGroup}
+                                        className="w-full h-11"
+                                        options={[
+                                            { value: "", label: "Select Blood Group" },
+                                            { value: "A+", label: "A+" },
+                                            { value: "A-", label: "A-" },
+                                            { value: "B+", label: "B+" },
+                                            { value: "B-", label: "B-" },
+                                            { value: "AB+", label: "AB+" },
+                                            { value: "AB-", label: "AB-" },
+                                            { value: "O+", label: "O+" },
+                                            { value: "O-", label: "O-" }
+                                        ]}
+                                    />
                                 </div>
                             </div>
 

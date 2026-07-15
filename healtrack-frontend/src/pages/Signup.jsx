@@ -122,27 +122,41 @@ export default function Signup() {
                 try {
                     const firebaseCredential = await createUserWithEmailAndPassword(auth, email, password);
                     idToken = await firebaseCredential.user.getIdToken();
+                    
+                    const payload = {
+                        idToken,
+                        additionalDetails: {
+                            name,
+                            phone: combinedPhone,
+                            dob,
+                            gender,
+                            blood_group: bloodGroup
+                        }
+                    };
+                    const res = await axiosClient.post('/auth/firebase-auth', payload);
+                    if (res.data.success) {
+                        login(res.data.data.user, res.data.data.token);
+                        navigate('/patient');
+                    }
                 } catch (firebaseErr) {
-                    console.error("Firebase signup failed:", firebaseErr);
-                    setError(firebaseErr.message || 'Firebase registration failed');
-                    setLoading(false);
-                    return;
-                }
-
-                const payload = {
-                    idToken,
-                    additionalDetails: {
+                    console.warn("Firebase signup failed, falling back to custom auth:", firebaseErr.message);
+                    
+                    // Fallback to our custom backend if Firebase is broken or keys are dummy
+                    const customPayload = {
                         name,
+                        email,
                         phone: combinedPhone,
+                        password,
                         dob,
                         gender,
                         blood_group: bloodGroup
+                    };
+                    
+                    const res = await axiosClient.post('/auth/signup-patient', customPayload);
+                    if (res.data.success) {
+                        login(res.data.data.user, res.data.data.token);
+                        navigate('/patient');
                     }
-                };
-                const res = await axiosClient.post('/auth/firebase-auth', payload);
-                if (res.data.success) {
-                    login(res.data.data.user, res.data.data.token);
-                    navigate('/patient');
                 }
             }
         } catch (err) {
