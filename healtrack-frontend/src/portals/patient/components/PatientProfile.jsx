@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, Calendar, Lock, Shield, Activity, Camera, Check, AlertCircle, Save, Loader2 } from 'lucide-react';
 import { fetchProfile, updateProfile, changePassword, uploadProfileImage } from '../../../api/patientApi';
 import { Button } from '../../../components/ui/Button';
+import { CustomDropdown } from '../../../components/ui/CustomDropdown';
 
 export default function PatientProfile() {
     const [profile, setProfile] = useState(null);
@@ -420,19 +421,19 @@ export default function PatientProfile() {
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Phone Number</label>
                             <div className="flex gap-2">
                                 <div className="w-28 relative">
-                                    <select
+                                    <CustomDropdown
                                         value={countryCode}
-                                        onChange={(e) => setCountryCode(e.target.value)}
-                                        className="w-full bg-[#F8FAFC] border border-slate-200 rounded-2xl px-3 py-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all shadow-sm appearance-none cursor-pointer"
-                                    >
-                                        <option value="+91">🇮🇳 +91</option>
-                                        <option value="+1">🇺🇸 +1</option>
-                                        <option value="+44">🇬🇧 +44</option>
-                                        <option value="+61">🇦🇺 +61</option>
-                                        <option value="+971">🇦🇪 +971</option>
-                                        <option value="+966">🇸🇦 +966</option>
-                                    </select>
-                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-500"></div>
+                                        onChange={setCountryCode}
+                                        className="w-full h-11"
+                                        options={[
+                                            { value: "+91", label: "🇮🇳 +91" },
+                                            { value: "+1", label: "🇺🇸 +1" },
+                                            { value: "+44", label: "🇬🇧 +44" },
+                                            { value: "+61", label: "🇦🇺 +61" },
+                                            { value: "+971", label: "🇦🇪 +971" },
+                                            { value: "+966", label: "🇸🇦 +966" }
+                                        ]}
+                                    />
                                 </div>
                                 <div className="flex-1 relative">
                                     <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
@@ -466,17 +467,17 @@ export default function PatientProfile() {
                         <div className="space-y-1.5">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gender</label>
                             <div className="relative">
-                                <select 
+                                <CustomDropdown 
                                     value={gender} 
-                                    onChange={(e) => setGender(e.target.value)}
-                                    className="w-full bg-[#F8FAFC] border border-slate-200 rounded-2xl px-3.5 py-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all shadow-sm appearance-none cursor-pointer"
-                                >
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                    <option value="Other">Other</option>
-                                    <option value="Prefer Not to Say">Prefer Not to Say</option>
-                                </select>
-                                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-500"></div>
+                                    onChange={setGender}
+                                    className="w-full h-11"
+                                    options={[
+                                        { value: "Male", label: "Male" },
+                                        { value: "Female", label: "Female" },
+                                        { value: "Other", label: "Other" },
+                                        { value: "Prefer Not to Say", label: "Prefer Not to Say" }
+                                    ]}
+                                />
                             </div>
                         </div>
 
@@ -484,22 +485,22 @@ export default function PatientProfile() {
                         <div className="space-y-1.5">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Blood Group</label>
                             <div className="relative">
-                                <select 
+                                <CustomDropdown 
                                     value={bloodGroup} 
-                                    onChange={(e) => setBloodGroup(e.target.value)}
-                                    className="w-full bg-[#F8FAFC] border border-slate-200 rounded-2xl px-3.5 py-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all shadow-sm appearance-none cursor-pointer"
-                                >
-                                    <option value="">Select Blood Group</option>
-                                    <option value="A+">A+</option>
-                                    <option value="A-">A-</option>
-                                    <option value="B+">B+</option>
-                                    <option value="B-">B-</option>
-                                    <option value="AB+">AB+</option>
-                                    <option value="AB-">AB-</option>
-                                    <option value="O+">O+</option>
-                                    <option value="O-">O-</option>
-                                </select>
-                                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-500"></div>
+                                    onChange={setBloodGroup}
+                                    className="w-full h-11"
+                                    options={[
+                                        { value: "", label: "Select Blood Group" },
+                                        { value: "A+", label: "A+" },
+                                        { value: "A-", label: "A-" },
+                                        { value: "B+", label: "B+" },
+                                        { value: "B-", label: "B-" },
+                                        { value: "AB+", label: "AB+" },
+                                        { value: "AB-", label: "AB-" },
+                                        { value: "O+", label: "O+" },
+                                        { value: "O-", label: "O-" }
+                                    ]}
+                                />
                             </div>
                         </div>
 

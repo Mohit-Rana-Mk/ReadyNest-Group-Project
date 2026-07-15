@@ -1,5 +1,6 @@
 import React from 'react';
 import { User, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { CustomDropdown } from '../../../components/ui/CustomDropdown';
 
 export function PatientQueue({ appointments, selectedAppointment, handleSelectAppointment, dateFilter, setDateFilter }) {
     return (
@@ -11,16 +12,17 @@ export function PatientQueue({ appointments, selectedAppointment, handleSelectAp
                         Patient Queue
                     </h3>
                     {setDateFilter && (
-                        <select 
-                            value={dateFilter || 'today'} 
-                            onChange={(e) => setDateFilter(e.target.value)}
-                            className="text-xs border border-slate-200 rounded p-1 bg-white text-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                        >
-                            <option value="today">Today</option>
-                            <option value="past_week">Past 7 Days</option>
-                            <option value="past_month">Past 30 Days</option>
-                            <option value="all">All Time</option>
-                        </select>
+                        <CustomDropdown
+                            value={dateFilter || 'today'}
+                            onChange={setDateFilter}
+                            className="w-[130px] h-8"
+                            options={[
+                                { value: "today", label: "Today" },
+                                { value: "past_week", label: "Past 7 Days" },
+                                { value: "past_month", label: "Past 30 Days" },
+                                { value: "all", label: "All Time" }
+                            ]}
+                        />
                     )}
                 </div>
                 <p className="text-xs text-slate-500 mt-1">{appointments?.length || 0} Patients</p>

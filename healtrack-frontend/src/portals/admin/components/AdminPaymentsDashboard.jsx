@@ -28,6 +28,7 @@ import {
     processRefundRequest 
 } from '../../../api/paymentApi';
 import { ConfirmModal } from '../../../components/ui/ConfirmModal';
+import { CustomDropdown } from '../../../components/ui/CustomDropdown';
 
 export function AdminPaymentsDashboard() {
     const [activeSubTab, setActiveSubTab] = useState('transactions'); // 'transactions', 'clinics', 'bank-approvals', 'refunds'
@@ -246,17 +247,18 @@ export function AdminPaymentsDashboard() {
                             />
                         </div>
                         <div className="flex gap-2">
-                            <select
+                            <CustomDropdown
                                 value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value)}
-                                className="text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 focus:outline-none"
-                            >
-                                <option value="">All Statuses</option>
-                                <option value="Paid">Paid</option>
-                                <option value="Pending">Pending</option>
-                                <option value="Failed">Failed</option>
-                                <option value="Refunded">Refunded</option>
-                            </select>
+                                onChange={setStatusFilter}
+                                className="w-[140px] h-10 border-gray-200"
+                                options={[
+                                    { value: "", label: "All Statuses" },
+                                    { value: "Paid", label: "Paid" },
+                                    { value: "Pending", label: "Pending" },
+                                    { value: "Failed", label: "Failed" },
+                                    { value: "Refunded", label: "Refunded" }
+                                ]}
+                            />
                         </div>
                     </div>
                 )}

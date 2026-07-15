@@ -1,5 +1,6 @@
 import React from 'react';
 import { Calendar, Clock, User, Building2, FileText, Video, AlertTriangle, X, Loader2, ShieldAlert, CreditCard } from 'lucide-react';
+import { CustomDropdown } from '../../../components/ui/CustomDropdown';
 import axiosClient from '../../../api/axiosClient';
 
 const statusColors = {
@@ -132,16 +133,15 @@ export default function AppointmentHistory({ appointments, onRefresh }) {
                     <p className="text-xs text-gray-500 mt-0.5">Your family's health history</p>
                 </div>
                 {uniquePatients.length > 0 && (
-                    <select 
+                    <CustomDropdown 
                         value={selectedPatientId}
-                        onChange={(e) => setSelectedPatientId(e.target.value)}
-                        className="text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-lg p-1.5 focus:outline-none"
-                    >
-                        <option value="">All Family</option>
-                        {uniquePatients.map(([id, name]) => (
-                            <option key={id} value={id}>{name}</option>
-                        ))}
-                    </select>
+                        onChange={setSelectedPatientId}
+                        className="w-[150px] h-8 text-[10px]"
+                        options={[
+                            { value: "", label: "All Family" },
+                            ...uniquePatients.map(([id, name]) => ({ value: id.toString(), label: name }))
+                        ]}
+                    />
                 )}
             </div>
 

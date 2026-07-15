@@ -9,7 +9,7 @@ import { io } from 'socket.io-client';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { Select } from '../../components/ui/Select';
+import { CustomDropdown } from '../../components/ui/CustomDropdown';
 
 export default function ReceptionDesk() {
   const { user, logout } = useAuth();
@@ -436,10 +436,9 @@ export default function ReceptionDesk() {
                 {existingPatients.length > 0 && (
                   <div className="mt-4 p-4 bg-indigo-50 border border-indigo-100 rounded-xl">
                     <label className="block text-[10px] font-extrabold uppercase tracking-wider text-indigo-500 mb-1.5">Select Family Member</label>
-                    <Select
+                    <CustomDropdown
                       value={selectedPatientId}
-                      onChange={(e) => {
-                        const val = e.target.value;
+                      onChange={(val) => {
                         setSelectedPatientId(val);
                         if (val === 'new') { setWalkInName(''); setWalkInDob(''); }
                         else {
@@ -447,13 +446,12 @@ export default function ReceptionDesk() {
                           if (pt) { setWalkInName(pt.name); setWalkInDob(pt.date_of_birth?.split('T')[0] || ''); }
                         }
                       }}
-                      className="w-full px-3 py-2 bg-white border border-indigo-100 rounded-lg text-xs font-semibold text-slate-700 focus:outline-none"
-                    >
-                      {existingPatients.map(p => (
-                        <option key={p.id} value={p.id}>{p.name} {p.mrn ? `(${p.mrn})` : ''}</option>
-                      ))}
-                      <option value="new">+ Add New Family Member</option>
-                    </Select>
+                      className="w-full"
+                      options={[
+                        { value: 'new', label: 'Create New Member' },
+                        ...existingPatients.map(pt => ({ value: pt.id.toString(), label: `${pt.name} (${pt.date_of_birth?.split('T')[0] || 'No DOB'})` }))
+                      ]}
+                    />
                   </div>
                 )}
               </div>
@@ -488,17 +486,15 @@ export default function ReceptionDesk() {
               {/* Assign Doctor */}
               <div>
                 <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Assign Doctor *</label>
-                <Select
-                  required
+                <CustomDropdown
                   value={walkInDoctorId}
-                  onChange={(e) => setWalkInDoctorId(e.target.value)}
-                  className="w-full px-4 py-3 bg-[#F1F5F9] border-0 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400/30"
-                >
-                  <option value="">— Select Doctor —</option>
-                  {doctors.map(d => (
-                    <option key={d.id} value={d.id}>Dr. {d.name} (₹{d.consultation_fee || 500})</option>
-                  ))}
-                </Select>
+                  onChange={setWalkInDoctorId}
+                  className="w-full"
+                  options={[
+                    { value: "", label: "— Select Doctor —" },
+                    ...doctors.map(d => ({ value: d.id.toString(), label: `Dr. ${d.name} (₹${d.consultation_fee || 500})` }))
+                  ]}
+                />
               </div>
 
               {/* Pre-Consultation Remarks */}
@@ -556,7 +552,7 @@ export default function ReceptionDesk() {
           {activeTab === 'queue' && (
             <>
               {/* Active Queue */}
-              <div className="bg-white border border-slate-100 rounded-3xl shadow-sm overflow-hidden">
+              <div className="bg-white border border-slate-100 rounded-3xl shadow-sm mb-6">
                 <div className="px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div>
                     <h2 className="text-sm font-black text-slate-800 uppercase tracking-wider">Today's OPD Queue</h2>
@@ -586,7 +582,7 @@ export default function ReceptionDesk() {
                 ) : (
                   <div className="divide-y divide-slate-50">
                     {activeQueue.map((apt) => (
-                      <div key={apt.id} className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors">
+                      <div key={apt.id} className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors last:rounded-b-3xl">
                         <div className="flex items-center gap-4">
                           <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0 border border-indigo-100">
                             <span className="text-xs font-black text-indigo-700">{apt.patientName?.charAt(0)?.toUpperCase()}</span>
@@ -631,15 +627,12 @@ export default function ReceptionDesk() {
                             )
                           )}
                           {apt.status !== 'Cancelled' && apt.status !== 'Canceled' && (
-                            <Select
-                              value={apt.status}
-                              onChange={(e) => handleStatusChangeAttempt(apt.id, e.target.value, apt)}
-                              className="px-2 py-1.5 bg-[#F1F5F9] border-0 rounded-lg text-[9px] font-bold text-slate-600 focus:outline-none cursor-pointer"
-                            >
-                              {statusOptions.map(opt => (
-                                <option key={opt} value={opt}>{opt}</option>
-                              ))}
-                            </Select>
+                            <CustomDropdown
+                              value={statusOptions.includes(apt.status) ? apt.status : 'Scheduled'}
+                              onChange={(val) => handleStatusChangeAttempt(apt.id, val, apt)}
+                              className="w-[120px] h-8 text-[9px] border-0 bg-[#F1F5F9]"
+                              options={statusOptions.map(opt => ({ value: opt, label: opt }))}
+                            />
                           )}
                         </div>
                       </div>
@@ -649,7 +642,7 @@ export default function ReceptionDesk() {
               </div>
 
               {/* Completed Appointments */}
-              <div className="bg-white border border-slate-100 rounded-3xl shadow-sm overflow-hidden">
+              <div className="bg-white border border-slate-100 rounded-3xl shadow-sm">
                 <div className="px-6 py-4 border-b border-emerald-50 flex items-center justify-between bg-emerald-50/40">
                   <div>
                     <h2 className="text-sm font-black text-emerald-800 uppercase tracking-wider">Completed Appointments</h2>
@@ -706,17 +699,18 @@ export default function ReceptionDesk() {
                       className="w-full pl-9 pr-4 py-2 bg-[#F1F5F9] border-0 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400/30 placeholder-slate-400"
                     />
                   </div>
-                  <Select
+                  <CustomDropdown
                     value={paymentStatusFilter}
-                    onChange={(e) => setPaymentStatusFilter(e.target.value)}
-                    className="px-2 py-2 bg-[#F1F5F9] border-0 rounded-xl text-[10px] font-bold text-slate-600 focus:outline-none cursor-pointer"
-                  >
-                    <option value="">All Statuses</option>
-                    <option value="Paid">Paid</option>
-                    <option value="Refunded">Refunded</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Failed">Failed</option>
-                  </Select>
+                    onChange={setPaymentStatusFilter}
+                    className="w-[140px] h-9 border-0 bg-[#F1F5F9]"
+                    options={[
+                      { value: "", label: "All Statuses" },
+                      { value: "Paid", label: "Paid" },
+                      { value: "Refunded", label: "Refunded" },
+                      { value: "Pending", label: "Pending" },
+                      { value: "Failed", label: "Failed" }
+                    ]}
+                  />
                 </div>
               </div>
 

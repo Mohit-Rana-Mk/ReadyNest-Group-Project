@@ -29,7 +29,7 @@ export function CustomDropdown({
     return (
         <div className={`relative ${className}`} ref={dropdownRef}>
             <div 
-                className="w-full h-full min-h-[44px] flex items-center justify-between px-3 bg-[#eef2f6] rounded-xl cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 select-none"
+                className={`w-full h-full flex items-center justify-between px-3 bg-[#eef2f6] rounded-xl cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 select-none ${className?.includes('h-') ? '' : 'min-h-[44px]'}`}
                 onClick={() => setIsOpen(!isOpen)}
             >
                 <div className="flex-1 truncate mr-2">

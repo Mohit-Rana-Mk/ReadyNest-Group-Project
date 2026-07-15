@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { ConfirmModal } from '../../../components/ui/ConfirmModal';
+import { CustomDropdown } from '../../../components/ui/CustomDropdown';
 import { Heart, Activity, Eye, Bone, Edit2, Trash2 } from 'lucide-react';
 import axiosClient from '../../../api/axiosClient';
 
@@ -131,13 +132,16 @@ export function DepartmentManager({ departments, refreshData, clinicId = 1 }) {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Select Service</label>
-                    <select required value={formData.service_id} onChange={e => setFormData({...formData, service_id: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3">
-                      <option value="" disabled>-- Select a Service --</option>
-                      {globalServices.map(srv => (
-                        <option key={srv.id} value={srv.id}>{srv.name}</option>
-                      ))}
-                      <option value="custom">Other (Create Custom)</option>
-                    </select>
+                    <CustomDropdown 
+                      value={formData.service_id} 
+                      onChange={val => setFormData({...formData, service_id: val})} 
+                      className="w-full"
+                      options={[
+                        { value: "", label: "-- Select a Service --" },
+                        ...globalServices.map(srv => ({ value: srv.id.toString(), label: srv.name })),
+                        { value: "custom", label: "Other (Create Custom)" }
+                      ]}
+                    />
                   </div>
                   
                   {formData.service_id === 'custom' && (
