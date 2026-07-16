@@ -10,6 +10,7 @@ import GeneralAwareness from './components/GeneralAwareness';
 import PatientPayments from './components/PatientPayments';
 import PatientProfile from './components/PatientProfile';
 import { CustomDropdown } from '../../components/ui/CustomDropdown';
+import Skeleton from '../../components/ui/Skeleton';
 import { fetchRecommendations, fetchClinics, fetchAppointments, dismissRecommendation, fetchProfile, updateProfile } from '../../api/patientApi';
 import { io } from 'socket.io-client';
 import { useTranslation } from 'react-i18next';
@@ -184,8 +185,37 @@ export default function PatientApp() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-                <Loader2 size={32} className="text-indigo-500 animate-spin" />
+            <div className="min-h-screen bg-[#F8FAFC] flex flex-col md:flex-row">
+                <aside className="hidden md:flex w-64 flex-col bg-[#0B132B] h-screen shrink-0">
+                    <div className="p-6 border-b border-slate-800/60 flex items-center gap-3">
+                        <Skeleton className="w-8 h-8 rounded-lg bg-slate-700" />
+                        <div className="space-y-2">
+                            <Skeleton className="w-24 h-4 bg-slate-700" />
+                            <Skeleton className="w-16 h-2 bg-slate-700" />
+                        </div>
+                    </div>
+                    <div className="p-4 space-y-3 mt-2">
+                        {[1, 2, 3, 4, 5, 6, 7].map(i => (
+                            <Skeleton key={i} className="w-full h-11 bg-slate-800/50 rounded-xl" />
+                        ))}
+                    </div>
+                </aside>
+
+                <main className="flex-1 flex flex-col min-h-screen bg-[#F8FAFC] p-4 md:p-8 space-y-6">
+                    <div className="md:hidden flex items-center justify-between mb-2">
+                         <div className="flex items-center gap-3">
+                             <Skeleton className="w-8 h-8 rounded-lg" />
+                             <Skeleton className="w-24 h-4" />
+                         </div>
+                         <Skeleton className="w-8 h-8 rounded-xl" />
+                    </div>
+                    
+                    <Skeleton className="w-full h-32 md:h-40 rounded-3xl" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <Skeleton className="w-full h-80 rounded-3xl" />
+                        <Skeleton className="w-full h-80 rounded-3xl" />
+                    </div>
+                </main>
             </div>
         );
     }

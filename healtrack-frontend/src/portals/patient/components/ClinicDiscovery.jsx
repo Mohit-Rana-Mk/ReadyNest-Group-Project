@@ -6,6 +6,7 @@ import { createPaymentOrder, verifyPaymentSignature } from '../../../api/payment
 import { Modal } from '../../../components/ui/Modal';
 import { Button } from '../../../components/ui/Button';
 import { CustomDropdown } from '../../../components/ui/CustomDropdown';
+import Skeleton from '../../../components/ui/Skeleton';
 
 export default function ClinicDiscovery() {
     const [clinics, setClinics] = useState([]);
@@ -363,7 +364,23 @@ export default function ClinicDiscovery() {
 
             {/* Clinic Cards */}
             {loading ? (
-                <div className="flex justify-center py-10"><Clock className="animate-spin text-indigo-500" /></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
+                    {[1, 2, 3, 4, 5, 6].map(i => (
+                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-4">
+                            <div className="flex items-start justify-between">
+                                <div className="flex-1 space-y-2">
+                                    <Skeleton className="w-3/4 h-5" />
+                                    <Skeleton className="w-1/2 h-3" />
+                                    <Skeleton className="w-2/3 h-3" />
+                                </div>
+                            </div>
+                            <div className="flex gap-2 pt-2">
+                                <Skeleton className="flex-1 h-8 rounded-xl" />
+                                <Skeleton className="w-16 h-8 rounded-xl" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
             ) : clinics.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-gray-400">
                     <Building2 size={40} strokeWidth={1.2} />
