@@ -173,7 +173,7 @@ export default function ClinicManagementPortal() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="h-screen bg-gray-50 flex overflow-hidden">
       {/* MOBILE SIDEBAR OVERLAY */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 md:hidden">

@@ -414,10 +414,10 @@ export default function ReceptionDesk() {
               </div>
             )}
 
-            <form onSubmit={handleWalkInSubmit} className="space-y-4">
+            <form onSubmit={handleWalkInSubmit} className="space-y-6">
               {/* Phone lookup */}
               <div>
-                <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Phone (Patient Lookup)</label>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Phone (Patient Lookup)</label>
                 <div className="relative">
                   <Input
                     type="tel"
@@ -435,7 +435,7 @@ export default function ReceptionDesk() {
                 </div>
                 {existingPatients.length > 0 && (
                   <div className="mt-4 p-4 bg-indigo-50 border border-indigo-100 rounded-xl">
-                    <label className="block text-[10px] font-extrabold uppercase tracking-wider text-indigo-500 mb-1.5">Select Family Member</label>
+                    <label className="block text-xs font-semibold text-indigo-600 mb-1.5">Select Family Member</label>
                     <CustomDropdown
                       value={selectedPatientId}
                       onChange={(val) => {
@@ -458,7 +458,7 @@ export default function ReceptionDesk() {
 
               {/* Patient Name */}
               <div>
-                <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Patient Name *</label>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Patient Name *</label>
                 <Input
                   type="text"
                   required
@@ -473,7 +473,7 @@ export default function ReceptionDesk() {
               {/* Date of Birth */}
               {(selectedPatientId === 'new' || existingPatients.length === 0) && (
                 <div>
-                  <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Date of Birth</label>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">Date of Birth</label>
                   <Input
                     type="date"
                     value={walkInDob}
@@ -485,7 +485,7 @@ export default function ReceptionDesk() {
 
               {/* Assign Doctor */}
               <div>
-                <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Assign Doctor *</label>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Assign Doctor *</label>
                 <CustomDropdown
                   value={walkInDoctorId}
                   onChange={setWalkInDoctorId}
@@ -499,7 +499,7 @@ export default function ReceptionDesk() {
 
               {/* Pre-Consultation Remarks */}
               <div>
-                <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Remarks</label>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Remarks</label>
                 <textarea
                   rows={3}
                   value={walkInRemarks}
@@ -526,13 +526,13 @@ export default function ReceptionDesk() {
         {/* RIGHT PANEL: Queue Control (8 columns) */}
         <div className="lg:col-span-8 space-y-6">
           {/* Sub Tab Navigation */}
-          <div className="bg-white border border-slate-100 p-1.5 rounded-2xl flex gap-2">
+          <div className="bg-slate-100 p-1.5 rounded-2xl flex gap-1">
             <button
               onClick={() => setActiveTab('queue')}
               className={`flex-1 text-center py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                 activeTab === 'queue'
-                  ? 'bg-[#6366f1] text-white shadow-md'
-                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                  ? 'bg-white text-slate-800 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               OPD Queue Management
@@ -541,8 +541,8 @@ export default function ReceptionDesk() {
               onClick={() => setActiveTab('payments')}
               className={`flex-1 text-center py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                 activeTab === 'payments'
-                  ? 'bg-[#6366f1] text-white shadow-md'
-                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                  ? 'bg-white text-slate-800 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               Payment Ledger & History
@@ -577,12 +577,12 @@ export default function ReceptionDesk() {
                     <div className="w-14 h-14 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 border border-slate-100">
                       <Users className="w-7 h-7 text-slate-300" />
                     </div>
-                    <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">No active patients in queue</p>
+                    <p className="text-sm text-slate-500 font-medium">No active patients in queue</p>
                   </div>
                 ) : (
                   <div className="divide-y divide-slate-50">
                     {activeQueue.map((apt) => (
-                      <div key={apt.id} className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors last:rounded-b-3xl">
+                      <div key={apt.id} className="px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors last:rounded-b-3xl">
                         <div className="flex items-center gap-4">
                           <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0 border border-indigo-100">
                             <span className="text-xs font-black text-indigo-700">{apt.patientName?.charAt(0)?.toUpperCase()}</span>
@@ -654,13 +654,13 @@ export default function ReceptionDesk() {
                 </div>
 
                 {completedQueue.length === 0 ? (
-                  <div className="p-8 text-center text-xs text-slate-400 font-bold uppercase tracking-wider">
+                  <div className="p-8 text-center text-sm text-slate-500 font-medium">
                     No completed appointments yet.
                   </div>
                 ) : (
                   <div className="divide-y divide-slate-50">
                     {completedQueue.map((apt) => (
-                      <div key={apt.id} className="px-6 py-4 flex items-center justify-between opacity-75 hover:opacity-100 transition-opacity">
+                      <div key={apt.id} className="px-6 py-5 flex items-center justify-between opacity-75 hover:opacity-100 transition-opacity">
                         <div className="flex items-center gap-4">
                           <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 border border-emerald-100">
                             <CheckCircle className="w-5 h-5 text-emerald-500" />

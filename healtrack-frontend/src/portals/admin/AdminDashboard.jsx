@@ -204,7 +204,7 @@ export default function AdminDashboard() {
     );
 
     return (
-        <div className="min-h-screen flex font-sans antialiased selection:bg-indigo-100 selection:text-indigo-900 bg-[#f8f9fa] text-slate-700">
+        <div className="h-screen overflow-hidden flex font-sans antialiased selection:bg-indigo-100 selection:text-indigo-900 bg-[#f8f9fa] text-slate-700">
             {/* MOBILE SIDEBAR OVERLAY */}
             {sidebarOpen && (
                 <div className="fixed inset-0 z-40 lg:hidden">

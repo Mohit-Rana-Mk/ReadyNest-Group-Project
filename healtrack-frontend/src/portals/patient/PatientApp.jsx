@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, Loader2, LogOut, Home, Search, Activity, FileText, BookOpen, CreditCard, User, AlertCircle, Calendar, Phone } from 'lucide-react';
+import { Heart, Loader2, LogOut, Home, Search, Activity, FileText, BookOpen, CreditCard, User, AlertCircle, Calendar, Phone, MapPin } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import BottomNav from './components/BottomNav';
 import PreventiveAlertBanner from './components/PreventiveAlertBanner';
@@ -446,7 +446,7 @@ export default function PatientApp() {
                                                                 <span>{aptDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                                                 <span className="font-bold text-indigo-600">{apt.consultation_type}</span>
                                                             </div>
-                                                            {isTele && apt.meeting_link && (
+                                                            {isTele && apt.meeting_link ? (
                                                                 <a 
                                                                     href={apt.meeting_link}
                                                                     target="_blank"
@@ -454,6 +454,16 @@ export default function PatientApp() {
                                                                     className="w-full flex items-center justify-center gap-1.5 p-2 bg-[#7F3DEC] hover:bg-[#6c2ed2] text-white text-[10px] font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm cursor-pointer"
                                                                 >
                                                                     Join Video Call
+                                                                </a>
+                                                            ) : !isTele && (
+                                                                <a 
+                                                                    href={apt.clinic_latitude && apt.clinic_longitude && Number(apt.clinic_latitude) !== 0 ? `https://maps.google.com/?q=${apt.clinic_latitude},${apt.clinic_longitude}` : `https://maps.google.com/?q=${encodeURIComponent(`${apt.clinic_address || apt.clinic_name} ${apt.clinic_city || ''}`.trim())}`}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="w-full flex items-center justify-center gap-1.5 p-2 bg-[#7F3DEC] hover:bg-[#6c2ed2] text-white text-[10px] font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm cursor-pointer"
+                                                                >
+                                                                    <MapPin size={12} />
+                                                                    Navigate
                                                                 </a>
                                                             )}
                                                         </div>
