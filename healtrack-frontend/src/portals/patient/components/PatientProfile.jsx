@@ -3,6 +3,7 @@ import { User, Mail, Phone, Calendar, Lock, Shield, Activity, Camera, Check, Ale
 import { fetchProfile, updateProfile, changePassword, uploadProfileImage } from '../../../api/patientApi';
 import { Button } from '../../../components/ui/Button';
 import { CustomDropdown } from '../../../components/ui/CustomDropdown';
+import Skeleton from '../../../components/ui/Skeleton';
 
 export default function PatientProfile() {
     const [profile, setProfile] = useState(null);
@@ -297,9 +298,32 @@ export default function PatientProfile() {
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[400px]">
-                <Loader2 size={32} className="text-indigo-500 animate-spin" />
-                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-4">Loading Profile...</p>
+            <div className="space-y-8 max-w-5xl mx-auto">
+                <div className="bg-gradient-to-br from-[#0F172A] to-[#1E293B] rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-6">
+                    <Skeleton className="w-28 h-28 rounded-full shrink-0 bg-slate-700" />
+                    <div className="flex-1 space-y-4 w-full flex flex-col items-center md:items-start">
+                        <Skeleton className="h-8 w-48 bg-slate-700" />
+                        <div className="flex flex-wrap justify-center md:justify-start gap-4">
+                            <Skeleton className="h-4 w-32 bg-slate-700" />
+                            <Skeleton className="h-4 w-28 bg-slate-700" />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6">
+                    <Skeleton className="h-6 w-48 mb-6" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                        <Skeleton className="h-11 w-full" />
+                        <Skeleton className="h-11 w-full" />
+                        <Skeleton className="h-11 w-full" />
+                        <Skeleton className="h-11 w-full" />
+                        <Skeleton className="h-11 w-full" />
+                        <Skeleton className="h-11 w-full" />
+                    </div>
+                    <div className="flex justify-end pt-4">
+                        <Skeleton className="h-12 w-full md:w-40 rounded-xl" />
+                    </div>
+                </div>
             </div>
         );
     }
@@ -323,7 +347,7 @@ export default function PatientProfile() {
                         
                         {uploading && (
                             <div className="absolute inset-0 bg-slate-900/80 flex items-center justify-center">
-                                <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
+                                <Skeleton className="w-full h-full rounded-full opacity-30 bg-indigo-400" />
                             </div>
                         )}
                     </div>

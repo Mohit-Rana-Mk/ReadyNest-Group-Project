@@ -13,6 +13,7 @@ import { ClinicSettings } from './components/ClinicSettings';
 import ClinicFinancials from './components/ClinicFinancials';
 import { io } from 'socket.io-client';
 import { Button } from '../../components/ui/Button';
+import Skeleton from '../../components/ui/Skeleton';
 
 export default function ClinicManagementPortal() {
   const { user, logout } = useAuth();
@@ -81,7 +82,37 @@ export default function ClinicManagementPortal() {
   };
 
   const renderContent = () => {
-    if (loading) return <div className="p-8 text-center text-gray-500">Loading portal data...</div>;
+    if (loading) return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="bg-white rounded-xl p-5 shadow-sm space-y-3">
+              <Skeleton className="w-24 h-4" />
+              <Skeleton className="w-12 h-8" />
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm min-h-[400px] flex flex-col">
+             <Skeleton className="w-48 h-6 mb-6" />
+             <div className="flex-1 space-y-4">
+               <Skeleton className="w-full h-16 rounded-lg" />
+               <Skeleton className="w-full h-16 rounded-lg" />
+               <Skeleton className="w-full h-16 rounded-lg" />
+             </div>
+          </div>
+          <div className="bg-white rounded-xl p-6 shadow-sm min-h-[400px] flex flex-col">
+             <Skeleton className="w-32 h-6 mb-6" />
+             <div className="flex-1 space-y-4">
+               <Skeleton className="w-full h-12 rounded-lg" />
+               <Skeleton className="w-full h-12 rounded-lg" />
+               <Skeleton className="w-full h-12 rounded-lg" />
+               <Skeleton className="w-full h-12 rounded-lg" />
+             </div>
+          </div>
+        </div>
+      </div>
+    );
 
     switch (activeTab) {
       case 'dashboard': return <AnalyticsDashboard data={portalData.analytics} clinicId={clinicId} />;

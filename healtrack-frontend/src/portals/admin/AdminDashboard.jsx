@@ -28,6 +28,7 @@ import { PatientAnalytics } from './components/PatientAnalytics';
 import { AdminPaymentsDashboard } from './components/AdminPaymentsDashboard';
 import { Button } from '../../components/ui/Button';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
+import Skeleton from '../../components/ui/Skeleton';
 
 export default function AdminDashboard() {
     const { logout } = useAuth();
@@ -272,64 +273,87 @@ export default function AdminDashboard() {
                         </div>
                     )}
 
-                    {/* Metrics Ribbon Grid */}
-                    {activeTab !== 'auracare' && activeTab !== 'patient-analytics' && activeTab !== 'payments' && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                            <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
-                                <div>
-                                    <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Triage Triggers</span>
-                                    <span className="text-2xl font-extrabold text-slate-800 mt-1 block">
-                                        {aiHealthStats?.triageCount ?? 0}
-                                    </span>
-                                </div>
-                                <div className="text-indigo-600 bg-indigo-50 p-2.5 rounded-xl">
-                                    <Activity className="w-5 h-5 stroke-[2]" />
-                                </div>
-                            </div>
-                            <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
-                                <div>
-                                    <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Pending Approvals</span>
-                                    <span className="text-2xl font-extrabold text-slate-800 mt-1 block">
-                                        {pendingClinics?.length || 0}
-                                    </span>
-                                </div>
-                                <div className="text-yellow-600 bg-yellow-50 p-2.5 rounded-xl">
-                                    <ShieldCheck className="w-5 h-5 stroke-[2]" />
-                                </div>
-                            </div>
-                            <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
-                                <div>
-                                    <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">SVM Inference Status</span>
-                                    <span className="text-2xl font-extrabold text-slate-850 mt-1 block text-emerald-600 flex items-center gap-1.5">
-                                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                        Active
-                                    </span>
-                                </div>
-                                <div className="text-emerald-600 bg-emerald-50 p-2.5 rounded-xl">
-                                    <Globe className="w-5 h-5 stroke-[2]" />
-                                </div>
-                            </div>
-                            <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
-                                <div>
-                                    <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">System Availability</span>
-                                    <span className="text-2xl font-extrabold text-slate-800 mt-1 block">
-                                        99.98%
-                                    </span>
-                                </div>
-                                <div className="text-indigo-600 bg-indigo-50 p-2.5 rounded-xl">
-                                    <RefreshCw className="w-5 h-5 stroke-[2]" />
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
                     {loading && activeTab !== 'auracare' ? (
-                        <div className="flex flex-col items-center justify-center h-64 space-y-2">
-                            <div className="w-8 h-8 border-3 border-indigo-700/20 border-t-indigo-700 rounded-full animate-spin"></div>
-                            <span className="text-xs text-slate-400">Loading system metrics...</span>
+                        <div className="space-y-6">
+                            {activeTab !== 'patient-analytics' && activeTab !== 'payments' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    {[1, 2, 3, 4].map(i => (
+                                        <div key={i} className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
+                                            <div className="space-y-3">
+                                                <Skeleton className="w-24 h-3" />
+                                                <Skeleton className="w-12 h-6" />
+                                            </div>
+                                            <Skeleton className="w-10 h-10 rounded-xl" />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            <div className="bg-white border border-[#e9ecef] rounded-2xl p-6 shadow-sm min-h-[400px] flex flex-col space-y-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <Skeleton className="w-48 h-6" />
+                                    <Skeleton className="w-32 h-8 rounded-lg" />
+                                </div>
+                                <div className="space-y-4">
+                                    <Skeleton className="w-full h-16 rounded-xl" />
+                                    <Skeleton className="w-full h-16 rounded-xl" />
+                                    <Skeleton className="w-full h-16 rounded-xl" />
+                                </div>
+                            </div>
                         </div>
                     ) : (
-                        renderContent()
+                        <>
+                            {/* Metrics Ribbon Grid */}
+                            {activeTab !== 'auracare' && activeTab !== 'patient-analytics' && activeTab !== 'payments' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                                    <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
+                                        <div>
+                                            <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Triage Triggers</span>
+                                            <span className="text-2xl font-extrabold text-slate-800 mt-1 block">
+                                                {aiHealthStats?.triageCount ?? 0}
+                                            </span>
+                                        </div>
+                                        <div className="text-indigo-600 bg-indigo-50 p-2.5 rounded-xl">
+                                            <Activity className="w-5 h-5 stroke-[2]" />
+                                        </div>
+                                    </div>
+                                    <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
+                                        <div>
+                                            <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Pending Approvals</span>
+                                            <span className="text-2xl font-extrabold text-slate-800 mt-1 block">
+                                                {pendingClinics?.length || 0}
+                                            </span>
+                                        </div>
+                                        <div className="text-yellow-600 bg-yellow-50 p-2.5 rounded-xl">
+                                            <ShieldCheck className="w-5 h-5 stroke-[2]" />
+                                        </div>
+                                    </div>
+                                    <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
+                                        <div>
+                                            <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">SVM Inference Status</span>
+                                            <span className="text-2xl font-extrabold text-slate-850 mt-1 block text-emerald-600 flex items-center gap-1.5">
+                                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                                Active
+                                            </span>
+                                        </div>
+                                        <div className="text-emerald-600 bg-emerald-50 p-2.5 rounded-xl">
+                                            <Globe className="w-5 h-5 stroke-[2]" />
+                                        </div>
+                                    </div>
+                                    <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
+                                        <div>
+                                            <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">System Availability</span>
+                                            <span className="text-2xl font-extrabold text-slate-800 mt-1 block">
+                                                99.98%
+                                            </span>
+                                        </div>
+                                        <div className="text-indigo-600 bg-indigo-50 p-2.5 rounded-xl">
+                                            <RefreshCw className="w-5 h-5 stroke-[2]" />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            {renderContent()}
+                        </>
                     )}
                 </main>
             </div>
