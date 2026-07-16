@@ -4,10 +4,10 @@ import { CustomDropdown } from '../../../components/ui/CustomDropdown';
 
 export function PatientQueue({ appointments, selectedAppointment, handleSelectAppointment, dateFilter, setDateFilter }) {
     return (
-        <div className="flex flex-col h-full bg-white border-r border-[#e9ecef] w-72 shrink-0">
+        <div className="flex flex-col h-full bg-white border-r border-[#e9ecef] w-80 shrink-0">
             <div className="p-4 border-b border-[#e9ecef] bg-slate-50">
-                <div className="flex justify-between items-center mb-1">
-                    <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                <div className="flex justify-between items-center mb-1 gap-3">
+                    <h3 className="font-bold text-slate-800 flex items-center gap-2 whitespace-nowrap">
                         <User className="w-4 h-4 text-emerald-600" />
                         Patient Queue
                     </h3>
@@ -15,7 +15,7 @@ export function PatientQueue({ appointments, selectedAppointment, handleSelectAp
                         <CustomDropdown
                             value={dateFilter || 'today'}
                             onChange={setDateFilter}
-                            className="w-[130px] h-8"
+                            className="w-[120px] h-8 shrink-0"
                             options={[
                                 { value: "today", label: "Today" },
                                 { value: "past_week", label: "Past 7 Days" },
