@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Clock, User, Building2, FileText, Video, AlertTriangle, X, Loader2, ShieldAlert, CreditCard } from 'lucide-react';
+import { Calendar, Clock, User, Building2, FileText, Video, AlertTriangle, X, Loader2, ShieldAlert, CreditCard, MapPin } from 'lucide-react';
 import { CustomDropdown } from '../../../components/ui/CustomDropdown';
 import axiosClient from '../../../api/axiosClient';
 
@@ -299,7 +299,7 @@ export default function AppointmentHistory({ appointments, onRefresh }) {
 
                             <div className="mt-3">
                                 {/* Join Call Button */}
-                                {appt.consultation_type === 'Teleconsultation' && appt.meeting_link && appt.status !== 'Completed' && appt.status !== 'Cancelled' && appt.status !== 'Canceled' && (
+                                {appt.consultation_type === 'Teleconsultation' && appt.meeting_link && appt.status !== 'Completed' && appt.status !== 'Cancelled' && appt.status !== 'Canceled' ? (
                                     <div className="pt-2">
                                         <button 
                                             onClick={() => window.open(appt.meeting_link, '_blank')}
@@ -308,6 +308,18 @@ export default function AppointmentHistory({ appointments, onRefresh }) {
                                             <Video size={14} />
                                             Join Video Call
                                         </button>
+                                    </div>
+                                ) : appt.consultation_type !== 'Teleconsultation' && appt.status !== 'Completed' && appt.status !== 'Cancelled' && appt.status !== 'Canceled' && (
+                                    <div className="pt-2">
+                                        <a 
+                                            href={appt.clinic_latitude && appt.clinic_longitude && Number(appt.clinic_latitude) !== 0 ? `https://maps.google.com/?q=${appt.clinic_latitude},${appt.clinic_longitude}` : `https://maps.google.com/?q=${encodeURIComponent(`${appt.clinic_address || appt.clinic_name} ${appt.clinic_city || ''}`.trim())}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-lg transition-colors cursor-pointer"
+                                        >
+                                            <MapPin size={14} />
+                                            Navigate to Clinic
+                                        </a>
                                     </div>
                                 )}
 

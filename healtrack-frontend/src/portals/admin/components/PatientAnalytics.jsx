@@ -477,6 +477,17 @@ export function PatientAnalytics() {
           )}
         </Card>
       </div>
+
+      {/* Confirm Modal for Patient Deletion */}
+      <ConfirmModal
+        isOpen={!!patientToDelete}
+        onClose={() => setPatientToDelete(null)}
+        onConfirm={confirmDeletePatient}
+        title="Delete Patient Account?"
+        message="Are you sure you want to permanently delete this patient account? This will remove all their appointments and records. This action cannot be undone."
+        confirmText="Yes, Delete Patient"
+        isDestructive={true}
+      />
     </div>
   );
 }

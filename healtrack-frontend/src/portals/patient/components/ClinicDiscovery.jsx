@@ -388,7 +388,14 @@ export default function ClinicDiscovery() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
-                    {clinics.map(clinic => (
+                    {clinics.map(clinic => {
+                        const hasCoords = clinic.latitude && clinic.longitude && Number(clinic.latitude) !== 0 && Number(clinic.longitude) !== 0;
+                        const fullAddress = `${clinic.address || ''}${clinic.city ? `, ${clinic.city}` : ''}`.trim();
+                        const mapUrl = hasCoords 
+                            ? `https://maps.google.com/?q=${clinic.latitude},${clinic.longitude}` 
+                            : `https://maps.google.com/?q=${encodeURIComponent(fullAddress)}`;
+                            
+                        return (
                         <div
                             key={clinic.id}
                             className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow duration-200 group"
@@ -403,9 +410,9 @@ export default function ClinicDiscovery() {
                                         </span>
                                     </div>
 
-                                    <div className="flex items-center gap-1.5 mt-1.5">
-                                        <MapPin size={12} className="text-gray-400 flex-shrink-0" />
-                                        <p className="text-xs text-gray-500 truncate">
+                                    <div className="flex items-start gap-1.5 mt-1.5">
+                                        <MapPin size={12} className="text-gray-400 mt-0.5 flex-shrink-0" />
+                                        <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
                                             {clinic.address}{clinic.city ? `, ${clinic.city}` : ''}
                                         </p>
                                     </div>
@@ -424,19 +431,29 @@ export default function ClinicDiscovery() {
                             <div className="mt-4 flex gap-2">
                                 <button 
                                     onClick={() => openBookingModal(clinic)}
-                                    className="flex-1 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors"
+                                    className="flex-1 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors shadow-sm truncate"
                                 >
                                     Book Appointment
                                 </button>
                                 <button 
                                     onClick={() => openReviewModal(clinic)}
-                                    className="px-3 py-2 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors"
+                                    className="flex-none px-4 py-2 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors"
                                 >
                                     Review
                                 </button>
+                                <a 
+                                    href={mapUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex-none px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl transition-colors flex items-center justify-center"
+                                    title="Open in Google Maps"
+                                >
+                                    <MapPin size={16} />
+                                </a>
                             </div>
                         </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
 

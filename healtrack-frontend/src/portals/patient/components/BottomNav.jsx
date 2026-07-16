@@ -29,11 +29,11 @@ export default function BottomNav({ activeTab, onTabChange }) {
                                 className="flex flex-col items-center relative -top-3 cursor-pointer group"
                             >
                                 {/* Floating Dark Circle */}
-                                <div className={`w-14 h-14 bg-[#0B132B] rounded-full flex items-center justify-center shadow-lg border-4 border-white transition-all duration-200 ${
-                                    isActive ? 'scale-110 bg-indigo-950' : 'group-hover:scale-105'
+                                <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg border-4 border-white transition-all duration-200 ${
+                                    isActive ? 'scale-110 bg-[#38bdf8]' : 'bg-[#0B132B] group-hover:scale-105'
                                 }`}>
-                                    {/* Pulse line/Heartbeat icon in cyan */}
-                                    <Icon className="w-6 h-6 text-[#38bdf8]" strokeWidth={2.5} />
+                                    {/* Pulse line/Heartbeat icon */}
+                                    <Icon className={`w-6 h-6 ${isActive ? 'text-[#0B132B]' : 'text-[#38bdf8]'}`} strokeWidth={2.5} />
                                 </div>
                                 <span 
                                     className={`font-extrabold tracking-widest transition-all duration-300 ease-in-out ${ 
