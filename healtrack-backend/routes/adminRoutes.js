@@ -29,4 +29,11 @@ router.delete('/clinics/:clinicId/departments/:serviceId', adminController.remov
 router.post('/users/:userId/status', adminController.updateUserStatus);
 router.delete('/users/:userId', adminController.deleteUser);
 
+// Standalone Pharmacy Account Management
+router.get('/pharmacy-accounts', adminController.listPharmacyAccounts);
+router.post('/pharmacy-accounts', adminController.createPharmacyAccount);
+router.post('/pharmacy-accounts/:userId/status', adminController.updatePharmacyAccountStatus);
+router.post('/pharmacy-accounts/:userId/reset-password', adminController.resetPharmacyPassword);
+router.delete('/pharmacy-accounts/:userId', adminController.deletePharmacyAccount);
+
 module.exports = router;

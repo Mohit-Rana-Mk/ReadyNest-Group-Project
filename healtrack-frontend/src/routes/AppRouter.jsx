@@ -7,9 +7,11 @@ import DoctorWorkstation from '../portals/doctor/DoctorWorkstation';
 import PatientApp from '../portals/patient/PatientApp';
 import ReceptionDesk from '../portals/reception/ReceptionDesk';
 import AdminDashboard from '../portals/admin/AdminDashboard';
+import MedicinePortal from '../portals/medicine/MedicinePortal';
 import ProtectedRoute from './ProtectedRoute';
 import Login from '../pages/Login';
 import Signup from '../pages/Signup';
+import PharmacyLogin from '../pages/PharmacyLogin';
 import VideoConsultation from '../pages/VideoConsultation';
 
 export default function AppRouter() {
@@ -20,6 +22,7 @@ export default function AppRouter() {
                 <Route path="/" element={<Navigate to="/login" replace />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
+                <Route path="/medicine/login" element={<PharmacyLogin />} />
 
                 {/* Super Admin Workstation Routes */}
                 <Route path="/admin" element={<ProtectedRoute allowedRoles={['SuperAdmin']} />}>
@@ -44,6 +47,11 @@ export default function AppRouter() {
                 {/* Reception Portal Routes */}
                 <Route path="/reception" element={<ProtectedRoute allowedRoles={['ClinicStaff']} />}>
                     <Route index element={<ReceptionDesk />} />
+                </Route>
+
+                {/* Medicine Portal Routes */}
+                <Route path="/medicine" element={<ProtectedRoute allowedRoles={['Medicine']} />}>
+                    <Route index element={<MedicinePortal />} />
                 </Route>
                 
                 {/* Video Consultation Route */}

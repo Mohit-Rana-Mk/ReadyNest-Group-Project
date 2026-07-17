@@ -13,7 +13,8 @@ import {
     Menu,
     X,
     Users,
-    Coins
+    Coins,
+    FlaskConical
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -25,6 +26,7 @@ import { EcosystemAnalytics } from './components/EcosystemAnalytics';
 import { AuraCareDashboard } from './components/AuraCareDashboard';
 import { PatientAnalytics } from './components/PatientAnalytics';
 import { AdminPaymentsDashboard } from './components/AdminPaymentsDashboard';
+import PharmacyAccounts from './components/PharmacyAccounts';
 import { Button } from '../../components/ui/Button';
 
 export default function AdminDashboard() {
@@ -46,7 +48,7 @@ export default function AdminDashboard() {
     }, [activeTab, epiFilter]);
 
     const loadDashboardData = async () => {
-        if (activeTab === 'auracare' || activeTab === 'patient-analytics' || activeTab === 'payments') return; // Handled internally by component
+        if (activeTab === 'auracare' || activeTab === 'patient-analytics' || activeTab === 'payments' || activeTab === 'pharmacy-accounts') return; // Handled internally by component
         setLoading(true);
         try {
             if (activeTab === 'onboarding') {
@@ -127,7 +129,8 @@ export default function AdminDashboard() {
         { id: 'analytics', name: 'Ecosystem Analytics', icon: PieChart },
         { id: 'patient-analytics', name: 'Patient Analytics', icon: Users },
         { id: 'auracare', name: 'AuraCare Predictive AI', icon: Globe },
-        { id: 'payments', name: 'Payments & Settlements', icon: Coins }
+        { id: 'payments', name: 'Payments & Settlements', icon: Coins },
+        { id: 'pharmacy-accounts', name: 'Pharmacy Accounts', icon: FlaskConical }
     ];
 
     const handleTabChange = (tabId) => {
@@ -151,6 +154,8 @@ export default function AdminDashboard() {
                 return <AdminPaymentsDashboard />;
             case 'auracare':
                 return <AuraCareDashboard />;
+            case 'pharmacy-accounts':
+                return <PharmacyAccounts />;
             default:
                 return <ClinicOnboarding pendingClinics={pendingClinics} onVerify={handleVerifyClinic} onOnboardClinic={handleOnboardClinic} />;
         }
@@ -255,7 +260,7 @@ export default function AdminDashboard() {
                     )}
 
                     {/* Metrics Ribbon Grid */}
-                    {activeTab !== 'auracare' && activeTab !== 'patient-analytics' && activeTab !== 'payments' && (
+                    {activeTab !== 'auracare' && activeTab !== 'patient-analytics' && activeTab !== 'payments' && activeTab !== 'pharmacy-accounts' && (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                             <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
                                 <div>

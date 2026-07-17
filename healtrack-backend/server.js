@@ -15,6 +15,7 @@ const clinicAdminRoutes = require('./routes/clinicAdminRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const authRoutes = require('./routes/authRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const medicineRoutes = require('./routes/medicineRoutes');
 
 const app = express();
 const allowedOrigins = process.env.ALLOWED_ORIGINS 
@@ -100,6 +101,7 @@ app.use('/api/clinic-admin', clinicAdminRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/medicine', medicineRoutes);
 
 // Health check
 app.get('/health', (req, res) => res.send('Server is running'));

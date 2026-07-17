@@ -432,3 +432,73 @@ exports.firebaseAuth = async (req, res) => {
     }
 };
 
+exports.registerPharmacy = async (req, res) => {
+    try {
+        const { name, email, phone, password } = req.body;
+
+        if (!name || !phone || !password) {
+            return res.status(400).json({ success: false, message: 'Name, phone, and password are required.' });
+        }
+
+        if (email && !validateEmail(email)) {
+            return res.status(400).json({ success: false, message: 'Invalid email address format.' });
+        }
+
+        if (!validatePassword(password)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Password must consist of at least 6 characters, containing 1 uppercase letter, 1 lowercase letter, 1 special character, and 1 numeric value.' 
+            });
+        }
+
+        if (!validateCombinedPhone(phone)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Invalid phone number format or length for the selected country code.' 
+            });
+        }
+
+        // Check if phone or email already exists
+        const [existing] = await db.query('SELECT id FROM users WHERE phone = ? OR (email = ? AND email IS NOT NULL)', [phone, email]);
+        if (existing.length > 0) {
+            return res.status(400).json({ success: false, message: 'Phone or email already registered.' });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create User
+        const [userResult] = await db.execute(
+            `INSERT INTO users (name, email, phone, password, role, status, auth_provider, clinic_id) 
+             VALUES (?, ?, ?, ?, 'Medicine', 'Active', 'local', NULL)`,
+            [name, email || null, phone, hashedPassword]
+        );
+        const userId = userResult.insertId;
+
+        // Generate Token (Auto Login)
+        const payload = {
+            id: userId,
+            name: name,
+            email: email,
+            role: 'Medicine',
+            clinic_id: null,
+            language: 'en',
+            auth_provider: 'local'
+        };
+        const secret = process.env.JWT_SECRET;
+        if (!secret) {
+            return res.status(500).json({ success: false, message: 'JWT Secret is not configured on the server' });
+        }
+        const token = jwt.sign(payload, secret, { expiresIn: '24h' });
+
+        res.status(201).json({
+            success: true,
+            message: 'Pharmacy registered successfully.',
+            data: { user: payload, token }
+        });
+    } catch (error) {
+        console.error("Pharmacy signup error:", error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+};
+
+

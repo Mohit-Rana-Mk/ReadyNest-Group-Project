@@ -255,15 +255,47 @@ exports.createWalkInOrder = async (req, res) => {
         // Create payment record
         const receipt_id = `REC-WLK-${Date.now()}-${appointment_id}`;
         const invoice_id = `INV-WLK-${Date.now()}-${appointment_id}`;
-        await db.execute(
-            `INSERT INTO payments (patient_id, doctor_id, clinic_id, appointment_id, razorpay_order_id, amount, status, receipt_id, invoice_id)
-             VALUES (?, ?, ?, ?, ?, ?, 'Pending', ?, ?)`,
-            [patient_id, doctor_id, clinic_id, appointment_id, rzpOrder.id, fee, receipt_id, invoice_id]
-        );
-        await db.execute(
-            `INSERT INTO razorpay_orders (appointment_id, order_id, amount, status) VALUES (?, ?, ?, 'created')`,
-            [appointment_id, rzpOrder.id, fee]
-        );
+
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+
+            const [existing] = await connection.query(`SELECT id FROM payments WHERE appointment_id = ?`, [appointment_id]);
+            if (existing.length > 0) {
+                await connection.execute(
+                    `UPDATE payments 
+                     SET razorpay_order_id = ?, amount = ?, status = 'Pending', receipt_id = ?, invoice_id = ?
+                     WHERE appointment_id = ?`,
+                    [rzpOrder.id, fee, receipt_id, invoice_id, appointment_id]
+                );
+            } else {
+                await connection.execute(
+                    `INSERT INTO payments (patient_id, doctor_id, clinic_id, appointment_id, razorpay_order_id, amount, status, receipt_id, invoice_id)
+                     VALUES (?, ?, ?, ?, ?, ?, 'Pending', ?, ?)`,
+                    [patient_id, doctor_id, clinic_id, appointment_id, rzpOrder.id, fee, receipt_id, invoice_id]
+                );
+            }
+
+            const [existingRzp] = await connection.query(`SELECT id FROM razorpay_orders WHERE appointment_id = ?`, [appointment_id]);
+            if (existingRzp.length > 0) {
+                await connection.execute(
+                    `UPDATE razorpay_orders SET order_id = ?, amount = ?, status = 'created' WHERE appointment_id = ?`,
+                    [rzpOrder.id, fee, appointment_id]
+                );
+            } else {
+                await connection.execute(
+                    `INSERT INTO razorpay_orders (appointment_id, order_id, amount, status) VALUES (?, ?, ?, 'created')`,
+                    [appointment_id, rzpOrder.id, fee]
+                );
+            }
+
+            await connection.commit();
+        } catch (err) {
+            await connection.rollback();
+            throw err;
+        } finally {
+            connection.release();
+        }
 
         res.status(201).json({
             success: true,
@@ -957,6 +989,56 @@ exports.processReceptionRefund = async (req, res) => {
     } catch (error) {
         console.error('Reception Process Refund Error:', error);
         res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+// Cancels/Rollbacks a pending walk-in payment
+exports.cancelWalkInPayment = async (req, res) => {
+    const { appointment_id } = req.body;
+    if (!appointment_id) {
+        return res.status(400).json({ message: 'appointment_id is required' });
+    }
+    try {
+        const [apptRows] = await db.query(
+            `SELECT id FROM appointments WHERE id = ? AND clinic_id = ?`,
+            [appointment_id, req.user.clinic_id]
+        );
+        if (apptRows.length === 0) {
+            return res.status(403).json({ message: 'Forbidden: Appointment does not belong to this clinic.' });
+        }
+
+        const [paymentRows] = await db.query(
+            `SELECT id, status FROM payments WHERE appointment_id = ?`,
+            [appointment_id]
+        );
+        if (paymentRows.length === 0) {
+            return res.status(200).json({ success: true, message: 'No payment record to cancel' });
+        }
+
+        const payment = paymentRows[0];
+        if (payment.status === 'Paid') {
+            return res.status(400).json({ message: 'Cannot cancel a paid payment' });
+        }
+
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+            // Delete payments and razorpay_orders
+            await connection.execute(`DELETE FROM payments WHERE appointment_id = ?`, [appointment_id]);
+            await connection.execute(`DELETE FROM razorpay_orders WHERE appointment_id = ?`, [appointment_id]);
+            await connection.commit();
+        } catch (err) {
+            await connection.rollback();
+            throw err;
+        } finally {
+            connection.release();
+        }
+
+        if (req.io) req.io.emit('QUEUE_UPDATE', { message: 'Walk-in payment order cancelled' });
+        res.status(200).json({ success: true, message: 'Walk-in payment order cancelled successfully.' });
+    } catch (error) {
+        console.error('Cancel WalkIn Payment Error:', error);
+        res.status(500).json({ message: 'Error cancelling payment order: ' + error.message });
     }
 };
 

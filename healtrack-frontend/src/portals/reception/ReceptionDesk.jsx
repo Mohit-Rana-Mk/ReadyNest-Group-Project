@@ -246,6 +246,8 @@ export default function ReceptionDesk() {
         clinic_id: paymentModal.clinicId
       });
 
+      let paymentProcessed = false;
+
       const options = {
         key: orderRes.data.keyId,
         amount: orderRes.data.amount,
@@ -254,6 +256,7 @@ export default function ReceptionDesk() {
         description: `Consultation with Dr. ${paymentModal.doctorName}`,
         order_id: orderRes.data.orderId,
         handler: async function (response) {
+          paymentProcessed = true;
           try {
             await axiosClient.post('/payments/reception/walkin-verify', {
               appointment_id: paymentModal.appointmentId,
@@ -265,6 +268,19 @@ export default function ReceptionDesk() {
             fetchQueue();
           } catch (err) {
             alert('Payment verification failed: ' + (err.response?.data?.message || err.message));
+          }
+        },
+        modal: {
+          ondismiss: async () => {
+            if (paymentProcessed) return;
+            try {
+              await axiosClient.post('/payments/reception/walkin-cancel', {
+                appointment_id: paymentModal.appointmentId
+              });
+            } catch (err) {
+              console.error('Error cancelling payment order:', err);
+            }
+            fetchQueue();
           }
         },
         theme: { color: '#6366f1' }

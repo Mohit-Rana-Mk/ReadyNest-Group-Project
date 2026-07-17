@@ -37,6 +37,7 @@ export default function Login() {
                     case 'ClinicAdmin': navigate('/clinic'); break;
                     case 'Doctor': navigate('/doctor'); break;
                     case 'ClinicStaff': navigate('/reception'); break;
+                    case 'Medicine': navigate('/medicine'); break;
                     case 'Patient': navigate('/patient'); break;
                     default: navigate('/unauthorized');
                 }
@@ -65,6 +66,7 @@ export default function Login() {
                     case 'ClinicAdmin': navigate('/clinic'); break;
                     case 'Doctor': navigate('/doctor'); break;
                     case 'ClinicStaff': navigate('/reception'); break;
+                    case 'Medicine': navigate('/medicine'); break;
                     case 'Patient': navigate('/patient'); break;
                     default: navigate('/unauthorized');
                 }
@@ -92,6 +94,9 @@ export default function Login() {
                         break;
                     case 'ClinicStaff':
                         navigate('/reception');
+                        break;
+                    case 'Medicine':
+                        navigate('/medicine');
                         break;
                     case 'Patient':
                         navigate('/patient');

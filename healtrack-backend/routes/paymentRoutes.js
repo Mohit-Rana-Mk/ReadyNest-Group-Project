@@ -19,6 +19,7 @@ router.post('/refund-request', authMiddleware(['Patient']), paymentController.re
 router.post('/reception/walkin-order', authMiddleware(['ClinicStaff']), paymentController.createWalkInOrder);
 router.post('/reception/walkin-verify', authMiddleware(['ClinicStaff']), paymentController.verifyWalkInPayment);
 router.post('/reception/walkin-cash', authMiddleware(['ClinicStaff']), paymentController.recordWalkInCash);
+router.post('/reception/walkin-cancel', authMiddleware(['ClinicStaff']), paymentController.cancelWalkInPayment);
 router.get('/reception/payments', authMiddleware(['ClinicStaff']), paymentController.getReceptionPayments);
 router.post('/reception/refund', authMiddleware(['ClinicStaff']), paymentController.processReceptionRefund);
 

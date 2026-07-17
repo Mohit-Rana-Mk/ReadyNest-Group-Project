@@ -355,8 +355,8 @@ class ClinicAdminRepository {
              FROM users u
              LEFT JOIN doctor_schedules ds ON u.id = ds.doctor_id
              LEFT JOIN services s ON u.service_id = s.id
-             WHERE u.role IN ('Doctor', 'ClinicStaff') 
-             AND (ds.clinic_id = ? OR (u.role = 'ClinicStaff' AND u.clinic_id = ?))
+             WHERE u.role IN ('Doctor', 'ClinicStaff', 'Medicine') 
+             AND (ds.clinic_id = ? OR ((u.role = 'ClinicStaff' OR u.role = 'Medicine') AND u.clinic_id = ?))
              GROUP BY u.id, u.name, u.role, u.status, s.name, u.service_id`,
              [clinicId, clinicId]
         );
@@ -368,7 +368,7 @@ class ClinicAdminRepository {
         
         const [result] = await db.execute(
             `INSERT INTO users (name, email, phone, password, role, status, service_id, clinic_id) VALUES (?, ?, ?, ?, ?, 'Active', ?, ?)`,
-            [name, email, phone, hashedPassword, role, role === 'Doctor' ? service_id : null, role === 'ClinicStaff' ? clinicId : null]
+            [name, email, phone, hashedPassword, role, role === 'Doctor' ? service_id : null, (role === 'ClinicStaff' || role === 'Medicine') ? clinicId : null]
         );
         
         const newUserId = result.insertId;
@@ -436,7 +436,7 @@ class ClinicAdminRepository {
             await connection.query('DELETE FROM doctor_schedules WHERE doctor_id = ?', [staffId]);
 
             // 8. Delete user
-            await connection.query('DELETE FROM users WHERE id = ? AND role IN (\'Doctor\', \'ClinicStaff\')', [staffId]);
+            await connection.query('DELETE FROM users WHERE id = ? AND role IN (\'Doctor\', \'ClinicStaff\', \'Medicine\')', [staffId]);
 
             await connection.query('SET FOREIGN_KEY_CHECKS = 1');
             await connection.commit();

@@ -845,3 +845,107 @@ exports.deleteUser = async (req, res) => {
         res.status(500).json({ success: false, message: "Failed to delete user account", error: error.message });
     }
 };
+
+// ─────────────────────────────────────────────────────────────
+// PHARMACY ACCOUNT MANAGEMENT (standalone, no clinic_id needed)
+// ─────────────────────────────────────────────────────────────
+const bcrypt = require('bcrypt');
+
+exports.listPharmacyAccounts = async (req, res) => {
+    try {
+        const [rows] = await db.query(
+            `SELECT id, name, email, phone, status, created_at
+             FROM users WHERE role = 'Medicine'
+             ORDER BY created_at DESC`
+        );
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        console.error('List Pharmacy Accounts Error:', error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+};
+
+exports.createPharmacyAccount = async (req, res) => {
+    const { name, email, phone, password } = req.body;
+    if (!name || !email || !phone || !password) {
+        return res.status(400).json({ success: false, message: 'Name, email, phone, and password are required.' });
+    }
+    try {
+        const [existing] = await db.query(
+            `SELECT id FROM users WHERE email = ? OR phone = ?`, [email, phone]
+        );
+        if (existing.length > 0) {
+            return res.status(400).json({ success: false, message: 'A user with this email or phone already exists.' });
+        }
+
+        const hash = await bcrypt.hash(password, 10);
+        const [result] = await db.execute(
+            `INSERT INTO users (name, email, phone, password, role, status, clinic_id, service_id)
+             VALUES (?, ?, ?, ?, 'Medicine', 'Active', NULL, NULL)`,
+            [name, email, phone, hash]
+        );
+        res.status(201).json({
+            success: true,
+            message: 'Pharmacy account created successfully.',
+            userId: result.insertId
+        });
+    } catch (error) {
+        console.error('Create Pharmacy Account Error:', error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+};
+
+exports.updatePharmacyAccountStatus = async (req, res) => {
+    const { userId } = req.params;
+    const { status } = req.body;
+    if (!['Active', 'Suspended'].includes(status)) {
+        return res.status(400).json({ success: false, message: "Status must be 'Active' or 'Suspended'." });
+    }
+    try {
+        const [rows] = await db.query(`SELECT id FROM users WHERE id = ? AND role = 'Medicine'`, [userId]);
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Pharmacy account not found.' });
+        }
+        await db.execute(`UPDATE users SET status = ? WHERE id = ?`, [status, userId]);
+        res.json({ success: true, message: `Pharmacy account ${status === 'Active' ? 'activated' : 'suspended'}.` });
+    } catch (error) {
+        console.error('Update Pharmacy Status Error:', error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+};
+
+exports.resetPharmacyPassword = async (req, res) => {
+    const { userId } = req.params;
+    const { newPassword } = req.body;
+    if (!newPassword || newPassword.length < 6) {
+        return res.status(400).json({ success: false, message: 'Password must be at least 6 characters.' });
+    }
+    try {
+        const [rows] = await db.query(`SELECT id FROM users WHERE id = ? AND role = 'Medicine'`, [userId]);
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Pharmacy account not found.' });
+        }
+        const hash = await bcrypt.hash(newPassword, 10);
+        await db.execute(`UPDATE users SET password = ? WHERE id = ?`, [hash, userId]);
+        res.json({ success: true, message: 'Password reset successfully.' });
+    } catch (error) {
+        console.error('Reset Pharmacy Password Error:', error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+};
+
+exports.deletePharmacyAccount = async (req, res) => {
+    const { userId } = req.params;
+    try {
+        const [rows] = await db.query(`SELECT id FROM users WHERE id = ? AND role = 'Medicine'`, [userId]);
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Pharmacy account not found.' });
+        }
+        await db.execute(`DELETE FROM users WHERE id = ?`, [userId]);
+        res.json({ success: true, message: 'Pharmacy account deleted.' });
+    } catch (error) {
+        console.error('Delete Pharmacy Account Error:', error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+};
+

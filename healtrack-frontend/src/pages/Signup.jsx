@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
 import { useAuth } from '../context/AuthContext';
-import { UserPlus, Building, Heart, Brain, Activity } from 'lucide-react';
+import { UserPlus, Building, Heart, Brain, Activity, FlaskConical } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import { Button } from '../components/ui/Button';
@@ -12,7 +12,7 @@ import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } f
 
 export default function Signup() {
     const { t } = useTranslation();
-    const [isClinic, setIsClinic] = useState(false);
+    const [signupType, setSignupType] = useState('patient'); // 'patient' | 'clinic' | 'pharmacy'
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
@@ -90,7 +90,7 @@ export default function Signup() {
 
         const combinedPhone = `${countryCode}${phone.replace(/\D/g, '')}`;
 
-        if (!isClinic) {
+        if (signupType === 'patient') {
             const today = new Date();
             const birthDate = new Date(dob);
             if (birthDate > today) {
@@ -101,7 +101,7 @@ export default function Signup() {
         }
 
         try {
-            if (isClinic) {
+            if (signupType === 'clinic') {
                 const payload = {
                     clinic_name: clinicName,
                     license_number: license,
@@ -115,6 +115,18 @@ export default function Signup() {
                 const res = await axiosClient.post('/auth/register-clinic', payload);
                 if (res.data.success) {
                     setSuccessMessage(res.data.message);
+                }
+            } else if (signupType === 'pharmacy') {
+                const payload = {
+                    name,
+                    email,
+                    phone: combinedPhone,
+                    password
+                };
+                const res = await axiosClient.post('/auth/register-pharmacy', payload);
+                if (res.data.success) {
+                    login(res.data.data.user, res.data.data.token);
+                    navigate('/medicine');
                 }
             } else {
                 let idToken;
@@ -251,23 +263,31 @@ export default function Signup() {
                                 </p>
                             </div>
 
-                            {/* Clinic / Patient Switcher */}
+                             {/* Clinic / Patient / Pharmacy Switcher */}
                             <div className="flex bg-[#eef2f6] p-1 rounded-xl mb-6">
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() => setIsClinic(false)}
-                                    className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-150 flex items-center justify-center gap-1.5 border-none ${!isClinic ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400 hover:text-slate-600 bg-transparent'}`}
+                                    onClick={() => setSignupType('patient')}
+                                    className={`flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-lg transition-all duration-150 flex items-center justify-center gap-1 border-none ${signupType === 'patient' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400 hover:text-slate-600 bg-transparent'}`}
                                 >
-                                    <UserPlus className="w-4 h-4" /> Patient
+                                    <UserPlus className="w-3.5 h-3.5" /> Patient
                                 </Button>
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() => setIsClinic(true)}
-                                    className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-150 flex items-center justify-center gap-1.5 border-none ${isClinic ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400 hover:text-slate-600 bg-transparent'}`}
+                                    onClick={() => setSignupType('clinic')}
+                                    className={`flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-lg transition-all duration-150 flex items-center justify-center gap-1 border-none ${signupType === 'clinic' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400 hover:text-slate-600 bg-transparent'}`}
                                 >
-                                    <Building className="w-4 h-4" /> Clinic
+                                    <Building className="w-3.5 h-3.5" /> Clinic
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setSignupType('pharmacy')}
+                                    className={`flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-lg transition-all duration-150 flex items-center justify-center gap-1 border-none ${signupType === 'pharmacy' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400 hover:text-slate-600 bg-transparent'}`}
+                                >
+                                    <FlaskConical className="w-3.5 h-3.5" /> Pharmacy
                                 </Button>
                             </div>
 
@@ -290,7 +310,7 @@ export default function Signup() {
                                 <>
                                     <form className="space-y-4" onSubmit={handleSubmit}>
 
-                                    {isClinic && (
+                                    {signupType === 'clinic' && (
                                         <div className="space-y-4">
                                             <h3 className="text-xs font-extrabold text-slate-800 border-b pb-2 uppercase tracking-wider">Clinic Details</h3>
                                             <div>
@@ -312,11 +332,15 @@ export default function Signup() {
                                     )}
 
                                     <div className="space-y-4">
-                                        <h3 className="text-xs font-extrabold text-slate-800 border-b pb-2 pt-2 uppercase tracking-wider">{isClinic ? 'Admin Account Details' : 'Personal Details'}</h3>
+                                        <h3 className="text-xs font-extrabold text-slate-800 border-b pb-2 pt-2 uppercase tracking-wider">
+                                            {signupType === 'clinic' ? 'Admin Account Details' : signupType === 'pharmacy' ? 'Pharmacy Details' : 'Personal Details'}
+                                        </h3>
                                         
                                         <div>
-                                            <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Full Name</label>
-                                            <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400" placeholder="John Doe" />
+                                            <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">
+                                                {signupType === 'pharmacy' ? 'Pharmacy Name' : 'Full Name'}
+                                            </label>
+                                            <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400" placeholder={signupType === 'pharmacy' ? 'e.g. Apex Pharmacy' : 'John Doe'} />
                                         </div>
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -351,7 +375,7 @@ export default function Signup() {
                                             </div>
                                         </div>
 
-                                        {!isClinic && (
+                                        {signupType === 'patient' && (
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <div>
                                                     <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Date of Birth</label>
@@ -390,13 +414,13 @@ export default function Signup() {
                                                     Loading...
                                                 </>
                                             ) : (
-                                                isClinic ? 'Register Clinic' : 'Create Account'
+                                                signupType === 'clinic' ? 'Register Clinic' : signupType === 'pharmacy' ? 'Register Pharmacy' : 'Create Account'
                                             )}
                                         </Button>
                                     </div>
                                 </form>
 
-                                {!isClinic && (
+                                 {signupType === 'patient' && (
                                     <>
                                         <div className="relative my-6">
                                             <div className="absolute inset-0 flex items-center">

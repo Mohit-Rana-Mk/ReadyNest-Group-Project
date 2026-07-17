@@ -118,7 +118,11 @@ export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
                 <tr key={member.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{member.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${member.role === 'Doctor' ? 'bg-purple-100 text-purple-700' : 'bg-indigo-100 text-indigo-700'}`}>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${
+                      member.role === 'Doctor' ? 'bg-purple-100 text-purple-700' :
+                      member.role === 'Medicine' ? 'bg-emerald-100 text-emerald-700' :
+                      'bg-indigo-100 text-indigo-700'
+                    }`}>
                       {member.role}
                     </span>
                   </td>
@@ -192,6 +196,7 @@ export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
                   <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3">
                     <option value="Doctor">Doctor</option>
                     <option value="ClinicStaff">ClinicStaff</option>
+                    <option value="Medicine">Medicine Staff</option>
                   </select>
                 </div>
 

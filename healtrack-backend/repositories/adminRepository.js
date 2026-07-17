@@ -269,6 +269,14 @@ class AdminRepository {
             [clinicId]
         );
 
+        // Medicine Staff
+        const [medicineStaff] = await db.query(
+            `SELECT u.id, u.name, u.email, u.phone, u.status
+             FROM users u
+             WHERE u.role = 'Medicine' AND u.clinic_id = ?`,
+            [clinicId]
+        );
+
         // Departments (clinic services)
         const [departments] = await db.query(
             `SELECT cs.service_id, s.name, cs.consultation_fee
@@ -287,6 +295,7 @@ class AdminRepository {
             clinic,
             doctors,
             receptionists,
+            medicineStaff,
             departments,
             availableServices
         };
@@ -320,7 +329,7 @@ class AdminRepository {
 
     async updateUserStatus(userId, status) {
         await db.execute(
-            `UPDATE users SET status = ? WHERE id = ? AND role IN ('Doctor', 'ClinicStaff')`,
+            `UPDATE users SET status = ? WHERE id = ? AND role IN ('Doctor', 'ClinicStaff', 'Medicine')`,
             [status, userId]
         );
     }
