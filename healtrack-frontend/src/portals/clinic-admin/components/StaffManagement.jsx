@@ -78,7 +78,8 @@ export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
       if (refreshData) refreshData();
     } catch (err) {
       console.error("Error saving staff:", err);
-      alert("Error saving staff. Please try again.");
+      const errMsg = err.response?.data?.message || "Error saving staff. Please try again.";
+      alert(errMsg);
     }
   };
 

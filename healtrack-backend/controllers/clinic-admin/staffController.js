@@ -16,12 +16,18 @@ exports.addStaff = async (req, res) => {
         const result = await clinicAdminService.addStaff(req.params.clinicId, req.body);
         res.status(201).json({ message: 'Staff added successfully', ...result });
     } catch (error) {
-        if (error.message === 'Missing required fields') {
-            return res.status(400).json({ message: error.message });
-        }
         console.error('Add Staff Error:', error);
         if (error.code === 'ER_DUP_ENTRY') {
             return res.status(400).json({ message: 'A user with this email or phone number already exists.' });
+        }
+        const validationErrors = [
+            'Missing required fields',
+            'Invalid email format',
+            'Invalid phone format or length for the selected country code.',
+            'Password must consist of at least 6 characters, containing 1 uppercase letter, 1 lowercase letter, 1 special character, and 1 numeric value.'
+        ];
+        if (validationErrors.includes(error.message)) {
+            return res.status(400).json({ message: error.message });
         }
         res.status(500).json({ message: 'Internal Server Error' });
     }
