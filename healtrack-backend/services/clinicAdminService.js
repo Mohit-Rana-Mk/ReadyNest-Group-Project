@@ -165,7 +165,7 @@ class ClinicAdminService {
             generatedPassword = `HT@staff${randomStr}`; // contains uppercase, lowercase, special, digits, and length >= 6
         }
 
-        const bcrypt = require('bcrypt');
+        const bcrypt = require('bcryptjs');
         const hashedPassword = await bcrypt.hash(generatedPassword, 10);
 
         const newUserId = await clinicAdminRepository.addStaffMember({

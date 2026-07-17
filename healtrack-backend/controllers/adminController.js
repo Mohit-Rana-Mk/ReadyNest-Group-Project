@@ -849,7 +849,7 @@ exports.deleteUser = async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 // PHARMACY ACCOUNT MANAGEMENT (standalone, no clinic_id needed)
 // ─────────────────────────────────────────────────────────────
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 exports.listPharmacyAccounts = async (req, res) => {
     try {

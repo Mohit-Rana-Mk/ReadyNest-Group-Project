@@ -96,7 +96,7 @@ class AdminService {
                 throw new Error("A user account with this email or phone already exists.");
             }
 
-            const bcrypt = require('bcrypt');
+            const bcrypt = require('bcryptjs');
             const hashedPassword = await bcrypt.hash(generatedPassword, 10);
             adminData = { admin_name, admin_email, admin_phone, hashedPassword };
         }
