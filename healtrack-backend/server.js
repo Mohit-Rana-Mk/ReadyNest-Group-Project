@@ -105,6 +105,7 @@ app.use('/api/medicine', medicineRoutes);
 
 // Health check
 app.get('/health', (req, res) => res.send('Server is running'));
+app.get('/api/test-deploy', (req, res) => res.json({ version: "v2-bcryptjs-medicine", deployTime: new Date() }));
 
 const db = require('./config/db');
 const { initOutbreakScheduler } = require('./services/outbreakScheduler');
