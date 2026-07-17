@@ -44,3 +44,6 @@ healtrack-ml-service/venv/
 __pycache__/
 
 *.pyc
+
+# Local Tracking
+changes_tracker.md

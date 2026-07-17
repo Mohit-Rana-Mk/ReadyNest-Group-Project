@@ -20,6 +20,7 @@ import {
     Unlock
 } from 'lucide-react';
 import axiosClient from '../../../api/axiosClient';
+import { ConfirmModal } from '../../../components/ui/ConfirmModal';
 
 export function EcosystemAnalytics({ ecosystemStats, onVerify, onDeleteClinic }) {
     const [selectedClinicId, setSelectedClinicId] = useState(null);
@@ -27,6 +28,8 @@ export function EcosystemAnalytics({ ecosystemStats, onVerify, onDeleteClinic })
     const [activeModalTab, setActiveModalTab] = useState('details');
     const [loadingDetails, setLoadingDetails] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
+    const [deptToDelete, setDeptToDelete] = useState(null);
+    const [userToDelete, setUserToDelete] = useState(null);
 
     // Forms
     const [detailsForm, setDetailsForm] = useState({
@@ -120,10 +123,14 @@ export function EcosystemAnalytics({ ecosystemStats, onVerify, onDeleteClinic })
         }
     };
 
-    const handleRemoveDepartment = async (serviceId) => {
-        if (!window.confirm("Are you sure you want to remove this department from the clinic?")) return;
+    const handleRemoveDepartment = (serviceId) => {
+        setDeptToDelete(serviceId);
+    };
+
+    const confirmRemoveDepartment = async () => {
+        if (!deptToDelete) return;
         try {
-            const res = await axiosClient.delete(`/admin/clinics/${selectedClinicId}/departments/${serviceId}`);
+            const res = await axiosClient.delete(`/admin/clinics/${selectedClinicId}/departments/${deptToDelete}`);
             if (res.data.success) {
                 showTempMessage('success', res.data.message);
                 fetchClinicDetails(selectedClinicId);
@@ -131,6 +138,8 @@ export function EcosystemAnalytics({ ecosystemStats, onVerify, onDeleteClinic })
         } catch (error) {
             console.error("Error removing department:", error);
             showTempMessage('error', 'Failed to remove department.');
+        } finally {
+            setDeptToDelete(null);
         }
     };
 
@@ -148,17 +157,23 @@ export function EcosystemAnalytics({ ecosystemStats, onVerify, onDeleteClinic })
         }
     };
 
-    const handleDeleteUser = async (userId, role) => {
-        if (!window.confirm(`Are you sure you want to permanently delete this ${role.toLowerCase()} account? This action cannot be undone.`)) return;
+    const handleDeleteUser = (userId, role) => {
+        setUserToDelete({ id: userId, role });
+    };
+
+    const confirmDeleteUser = async () => {
+        if (!userToDelete) return;
         try {
-            const res = await axiosClient.delete(`/admin/users/${userId}`);
+            const res = await axiosClient.delete(`/admin/users/${userToDelete.id}`);
             if (res.data.success) {
                 showTempMessage('success', res.data.message);
                 fetchClinicDetails(selectedClinicId);
             }
         } catch (error) {
             console.error("Error deleting user:", error);
-            showTempMessage('error', 'Failed to delete user account.');
+            showTempMessage('error', 'Failed to delete user.');
+        } finally {
+            setUserToDelete(null);
         }
     };
 
@@ -690,6 +705,26 @@ export function EcosystemAnalytics({ ecosystemStats, onVerify, onDeleteClinic })
                     </div>
                 </div>
             )}
+            {/* Confirm Modals */}
+            <ConfirmModal
+                isOpen={!!deptToDelete}
+                onClose={() => setDeptToDelete(null)}
+                onConfirm={confirmRemoveDepartment}
+                title="Remove Department?"
+                message="Are you sure you want to remove this department from the clinic?"
+                confirmText="Yes, Remove"
+                isDestructive={true}
+            />
+
+            <ConfirmModal
+                isOpen={!!userToDelete}
+                onClose={() => setUserToDelete(null)}
+                onConfirm={confirmDeleteUser}
+                title="Delete Account?"
+                message={`Are you sure you want to permanently delete this ${userToDelete?.role?.toLowerCase()} account? This action cannot be undone.`}
+                confirmText="Yes, Delete"
+                isDestructive={true}
+            />
         </div>
     );
 }

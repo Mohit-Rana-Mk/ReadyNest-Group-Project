@@ -1,3 +1,4 @@
+import { toast } from '../../../components/ui/Toast';
 import React, { useState, useEffect } from 'react';
 import { Landmark, CreditCard, ChevronRight, CheckCircle2, AlertCircle, FileText, Loader2, ArrowRight } from 'lucide-react';
 import { fetchClinicFinancials, fetchClinicBankDetails, updateClinicBankDetails } from '../../../api/paymentApi';
@@ -57,11 +58,11 @@ export default function ClinicFinancials({ clinicId }) {
                 clinic_id: clinicId,
                 ...bankDetails
             });
-            alert('Bank details updated. Status set to Pending approval.');
+            toast.info('Bank details updated. Status set to Pending approval.');
             setBankEditMode(false);
             loadData();
         } catch (error) {
-            alert(error.response?.data?.message || 'Error updating bank details');
+            toast.error(error.response?.data?.message || 'Error updating bank details');
         } finally {
             setSubmittingBank(false);
         }

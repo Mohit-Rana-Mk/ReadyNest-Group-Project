@@ -1,5 +1,7 @@
+import { toast } from '../../../components/ui/Toast';
 import React, { useState, useEffect } from 'react';
 import { ShieldAlert, Send, Mail, MessageSquare, MapPin, AlertTriangle, Check, Loader2 } from 'lucide-react';
+import { CustomDropdown } from '../../../components/ui/CustomDropdown';
 import axiosClient from '../../../api/axiosClient';
 
 export function OutbreakAlerts({ clinicId = 1 }) {
@@ -58,7 +60,7 @@ export function OutbreakAlerts({ clinicId = 1 }) {
             }
         } catch (err) {
             console.error('Failed to broadcast outbreak alert:', err);
-            alert('Failed to broadcast outbreak alert. Please try again.');
+            toast.error('Failed to broadcast outbreak alert. Please try again.');
         } finally {
             setSending(false);
             setTimeout(() => setSuccessMessage(''), 6000);
@@ -166,15 +168,16 @@ export function OutbreakAlerts({ clinicId = 1 }) {
 
                         <div>
                             <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Severity</label>
-                            <select 
+                            <CustomDropdown 
                                 value={form.severity}
-                                onChange={(e) => setForm({ ...form, severity: e.target.value })}
-                                className="w-full bg-[#f8f9fa] border border-[#e9ecef] rounded-xl px-3.5 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition"
-                            >
-                                <option value="Low">Low</option>
-                                <option value="Medium">Medium</option>
-                                <option value="High">High</option>
-                            </select>
+                                onChange={(val) => setForm({ ...form, severity: val })}
+                                className="w-full"
+                                options={[
+                                    { value: "Low", label: "Low" },
+                                    { value: "Medium", label: "Medium" },
+                                    { value: "High", label: "High" }
+                                ]}
+                            />
                         </div>
 
                         <div>

@@ -1,3 +1,4 @@
+import { toast } from '../../components/ui/Toast';
 import React, { useState, useEffect } from 'react';
 import { KpiBanner } from './components/KpiBanner';
 import { OpdQueueTable } from './components/OpdQueueTable';
@@ -8,7 +9,7 @@ import { io } from 'socket.io-client';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { Select } from '../../components/ui/Select';
+import { CustomDropdown } from '../../components/ui/CustomDropdown';
 
 export default function ReceptionDesk() {
   const { user, logout } = useAuth();
@@ -96,7 +97,7 @@ export default function ReceptionDesk() {
       fetchPayments();
       fetchQueue();
     } catch (err) {
-      alert('Refund failed: ' + (err.response?.data?.message || err.message));
+      toast.error('Refund failed: ' + (err.response?.data?.message || err.message));
     } finally {
       setRefundLoading(false);
     }
@@ -217,7 +218,7 @@ export default function ReceptionDesk() {
       setPaymentDone({ method: 'Cash', receipt_id: res.data.receipt_id, fee: res.data.fee });
       fetchQueue();
     } catch (err) {
-      alert('Failed to record cash payment: ' + (err.response?.data?.message || err.message));
+      toast.error('Failed to record cash payment: ' + (err.response?.data?.message || err.message));
     } finally {
       setPaymentLoading(false);
     }
@@ -236,7 +237,7 @@ export default function ReceptionDesk() {
         script.onerror = () => resolve(false);
         document.body.appendChild(script);
       });
-      if (!rzpLoaded) { alert('Failed to load payment gateway.'); setPaymentLoading(false); return; }
+      if (!rzpLoaded) { toast.error('Failed to load payment gateway.'); setPaymentLoading(false); return; }
 
       // Create order
       const orderRes = await axiosClient.post('/payments/reception/walkin-order', {
@@ -267,7 +268,7 @@ export default function ReceptionDesk() {
             setPaymentDone({ method: 'Online', receipt_id: response.razorpay_payment_id, fee: orderRes.data.fee });
             fetchQueue();
           } catch (err) {
-            alert('Payment verification failed: ' + (err.response?.data?.message || err.message));
+            toast.error('Payment verification failed: ' + (err.response?.data?.message || err.message));
           }
         },
         modal: {
@@ -287,10 +288,10 @@ export default function ReceptionDesk() {
       };
       setPaymentLoading(false);
       const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', (resp) => alert('Payment failed: ' + resp.error.description));
+      rzp.on('payment.failed', (resp) => toast.error('Payment failed: ' + resp.error.description));
       rzp.open();
     } catch (err) {
-      alert('Error initiating payment: ' + (err.response?.data?.message || err.message));
+      toast.error('Error initiating payment: ' + (err.response?.data?.message || err.message));
       setPaymentLoading(false);
     }
   };
@@ -305,7 +306,7 @@ export default function ReceptionDesk() {
   const handleStatusChangeAttempt = (id, newStatus, appointment) => {
     if (appointment.consultation_type === 'In-Person' && appointment.payment_status === 'Pending') {
       if (newStatus !== 'Cancelled' && newStatus !== 'Canceled') {
-        alert('Payment must be completed first. Please click "Collect Payment" to record the payment.');
+        toast.info('Payment must be completed first. Please click "Collect Payment" to record the payment.');
         return;
       }
     }
@@ -429,10 +430,10 @@ export default function ReceptionDesk() {
               </div>
             )}
 
-            <form onSubmit={handleWalkInSubmit} className="space-y-4">
+            <form onSubmit={handleWalkInSubmit} className="space-y-6">
               {/* Phone lookup */}
               <div>
-                <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Phone (Patient Lookup)</label>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Phone (Patient Lookup)</label>
                 <div className="relative">
                   <Input
                     type="tel"
@@ -449,12 +450,11 @@ export default function ReceptionDesk() {
                   </div>
                 </div>
                 {existingPatients.length > 0 && (
-                  <div className="mt-2 p-3 bg-indigo-50 border border-indigo-100 rounded-xl">
-                    <label className="block text-[10px] font-extrabold uppercase tracking-wider text-indigo-500 mb-1.5">Select Family Member</label>
-                    <Select
+                  <div className="mt-4 p-4 bg-indigo-50 border border-indigo-100 rounded-xl">
+                    <label className="block text-xs font-semibold text-indigo-600 mb-1.5">Select Family Member</label>
+                    <CustomDropdown
                       value={selectedPatientId}
-                      onChange={(e) => {
-                        const val = e.target.value;
+                      onChange={(val) => {
                         setSelectedPatientId(val);
                         if (val === 'new') { setWalkInName(''); setWalkInDob(''); }
                         else {
@@ -462,20 +462,19 @@ export default function ReceptionDesk() {
                           if (pt) { setWalkInName(pt.name); setWalkInDob(pt.date_of_birth?.split('T')[0] || ''); }
                         }
                       }}
-                      className="w-full px-3 py-2 bg-white border border-indigo-100 rounded-lg text-xs font-semibold text-slate-700 focus:outline-none"
-                    >
-                      {existingPatients.map(p => (
-                        <option key={p.id} value={p.id}>{p.name} {p.mrn ? `(${p.mrn})` : ''}</option>
-                      ))}
-                      <option value="new">+ Add New Family Member</option>
-                    </Select>
+                      className="w-full"
+                      options={[
+                        { value: 'new', label: 'Create New Member' },
+                        ...existingPatients.map(pt => ({ value: pt.id.toString(), label: `${pt.name} (${pt.date_of_birth?.split('T')[0] || 'No DOB'})` }))
+                      ]}
+                    />
                   </div>
                 )}
               </div>
 
               {/* Patient Name */}
               <div>
-                <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Patient Name *</label>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Patient Name *</label>
                 <Input
                   type="text"
                   required
@@ -490,7 +489,7 @@ export default function ReceptionDesk() {
               {/* Date of Birth */}
               {(selectedPatientId === 'new' || existingPatients.length === 0) && (
                 <div>
-                  <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Date of Birth</label>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">Date of Birth</label>
                   <Input
                     type="date"
                     value={walkInDob}
@@ -502,23 +501,21 @@ export default function ReceptionDesk() {
 
               {/* Assign Doctor */}
               <div>
-                <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Assign Doctor *</label>
-                <Select
-                  required
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Assign Doctor *</label>
+                <CustomDropdown
                   value={walkInDoctorId}
-                  onChange={(e) => setWalkInDoctorId(e.target.value)}
-                  className="w-full px-4 py-3 bg-[#F1F5F9] border-0 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400/30"
-                >
-                  <option value="">— Select Doctor —</option>
-                  {doctors.map(d => (
-                    <option key={d.id} value={d.id}>Dr. {d.name} (₹{d.consultation_fee || 500})</option>
-                  ))}
-                </Select>
+                  onChange={setWalkInDoctorId}
+                  className="w-full"
+                  options={[
+                    { value: "", label: "— Select Doctor —" },
+                    ...doctors.map(d => ({ value: d.id.toString(), label: `Dr. ${d.name} (₹${d.consultation_fee || 500})` }))
+                  ]}
+                />
               </div>
 
               {/* Pre-Consultation Remarks */}
               <div>
-                <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Remarks</label>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Remarks</label>
                 <textarea
                   rows={3}
                   value={walkInRemarks}
@@ -545,13 +542,13 @@ export default function ReceptionDesk() {
         {/* RIGHT PANEL: Queue Control (8 columns) */}
         <div className="lg:col-span-8 space-y-6">
           {/* Sub Tab Navigation */}
-          <div className="bg-white border border-slate-100 p-1.5 rounded-2xl flex gap-2">
+          <div className="bg-slate-100 p-1.5 rounded-2xl flex gap-1">
             <button
               onClick={() => setActiveTab('queue')}
               className={`flex-1 text-center py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                 activeTab === 'queue'
-                  ? 'bg-[#6366f1] text-white shadow-md'
-                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                  ? 'bg-white text-slate-800 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               OPD Queue Management
@@ -560,8 +557,8 @@ export default function ReceptionDesk() {
               onClick={() => setActiveTab('payments')}
               className={`flex-1 text-center py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                 activeTab === 'payments'
-                  ? 'bg-[#6366f1] text-white shadow-md'
-                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                  ? 'bg-white text-slate-800 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               Payment Ledger & History
@@ -571,7 +568,7 @@ export default function ReceptionDesk() {
           {activeTab === 'queue' && (
             <>
               {/* Active Queue */}
-              <div className="bg-white border border-slate-100 rounded-3xl shadow-sm overflow-hidden">
+              <div className="bg-white border border-slate-100 rounded-3xl shadow-sm mb-6">
                 <div className="px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div>
                     <h2 className="text-sm font-black text-slate-800 uppercase tracking-wider">Today's OPD Queue</h2>
@@ -596,12 +593,12 @@ export default function ReceptionDesk() {
                     <div className="w-14 h-14 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 border border-slate-100">
                       <Users className="w-7 h-7 text-slate-300" />
                     </div>
-                    <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">No active patients in queue</p>
+                    <p className="text-sm text-slate-500 font-medium">No active patients in queue</p>
                   </div>
                 ) : (
                   <div className="divide-y divide-slate-50">
                     {activeQueue.map((apt) => (
-                      <div key={apt.id} className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors">
+                      <div key={apt.id} className="px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors last:rounded-b-3xl">
                         <div className="flex items-center gap-4">
                           <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0 border border-indigo-100">
                             <span className="text-xs font-black text-indigo-700">{apt.patientName?.charAt(0)?.toUpperCase()}</span>
@@ -646,15 +643,12 @@ export default function ReceptionDesk() {
                             )
                           )}
                           {apt.status !== 'Cancelled' && apt.status !== 'Canceled' && (
-                            <Select
-                              value={apt.status}
-                              onChange={(e) => handleStatusChangeAttempt(apt.id, e.target.value, apt)}
-                              className="px-2 py-1.5 bg-[#F1F5F9] border-0 rounded-lg text-[9px] font-bold text-slate-600 focus:outline-none cursor-pointer"
-                            >
-                              {statusOptions.map(opt => (
-                                <option key={opt} value={opt}>{opt}</option>
-                              ))}
-                            </Select>
+                            <CustomDropdown
+                              value={statusOptions.includes(apt.status) ? apt.status : 'Scheduled'}
+                              onChange={(val) => handleStatusChangeAttempt(apt.id, val, apt)}
+                              className="w-[120px] h-8 text-[9px] border-0 bg-[#F1F5F9]"
+                              options={statusOptions.map(opt => ({ value: opt, label: opt }))}
+                            />
                           )}
                         </div>
                       </div>
@@ -664,7 +658,7 @@ export default function ReceptionDesk() {
               </div>
 
               {/* Completed Appointments */}
-              <div className="bg-white border border-slate-100 rounded-3xl shadow-sm overflow-hidden">
+              <div className="bg-white border border-slate-100 rounded-3xl shadow-sm">
                 <div className="px-6 py-4 border-b border-emerald-50 flex items-center justify-between bg-emerald-50/40">
                   <div>
                     <h2 className="text-sm font-black text-emerald-800 uppercase tracking-wider">Completed Appointments</h2>
@@ -676,13 +670,13 @@ export default function ReceptionDesk() {
                 </div>
 
                 {completedQueue.length === 0 ? (
-                  <div className="p-8 text-center text-xs text-slate-400 font-bold uppercase tracking-wider">
+                  <div className="p-8 text-center text-sm text-slate-500 font-medium">
                     No completed appointments yet.
                   </div>
                 ) : (
                   <div className="divide-y divide-slate-50">
                     {completedQueue.map((apt) => (
-                      <div key={apt.id} className="px-6 py-4 flex items-center justify-between opacity-75 hover:opacity-100 transition-opacity">
+                      <div key={apt.id} className="px-6 py-5 flex items-center justify-between opacity-75 hover:opacity-100 transition-opacity">
                         <div className="flex items-center gap-4">
                           <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 border border-emerald-100">
                             <CheckCircle className="w-5 h-5 text-emerald-500" />
@@ -721,17 +715,18 @@ export default function ReceptionDesk() {
                       className="w-full pl-9 pr-4 py-2 bg-[#F1F5F9] border-0 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400/30 placeholder-slate-400"
                     />
                   </div>
-                  <Select
+                  <CustomDropdown
                     value={paymentStatusFilter}
-                    onChange={(e) => setPaymentStatusFilter(e.target.value)}
-                    className="px-2 py-2 bg-[#F1F5F9] border-0 rounded-xl text-[10px] font-bold text-slate-600 focus:outline-none cursor-pointer"
-                  >
-                    <option value="">All Statuses</option>
-                    <option value="Paid">Paid</option>
-                    <option value="Refunded">Refunded</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Failed">Failed</option>
-                  </Select>
+                    onChange={setPaymentStatusFilter}
+                    className="w-[140px] h-9 border-0 bg-[#F1F5F9]"
+                    options={[
+                      { value: "", label: "All Statuses" },
+                      { value: "Paid", label: "Paid" },
+                      { value: "Refunded", label: "Refunded" },
+                      { value: "Pending", label: "Pending" },
+                      { value: "Failed", label: "Failed" }
+                    ]}
+                  />
                 </div>
               </div>
 

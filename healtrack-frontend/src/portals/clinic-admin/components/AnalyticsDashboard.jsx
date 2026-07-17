@@ -188,7 +188,7 @@ export function AnalyticsDashboard({ clinicId = 1 }) {
         </div>
 
         {/* FILTERS (Right 1 column) */}
-        <div className="xl:col-span-1 bg-white rounded-lg shadow-sm border border-gray-200 p-5 space-y-4">
+        <div className="xl:col-span-1 bg-white rounded-lg shadow-sm border border-gray-200 p-5 space-y-4 sticky top-4 self-start max-h-[calc(100vh-2rem)] overflow-y-auto">
           <div className="flex items-center gap-2 text-slate-700 font-bold border-b pb-2">
             <Filter className="w-4 h-4 text-blue-500" />
             <span className="text-sm">Filter Dashboard</span>

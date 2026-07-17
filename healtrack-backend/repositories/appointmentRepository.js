@@ -5,7 +5,7 @@ class AppointmentRepository {
         const [appointments] = await db.query(
             `SELECT a.id, a.appointment_date, a.status, a.pre_remarks, a.post_remarks,
                     a.consultation_type, a.meeting_link,
-                    c.name AS clinic_name, du.name AS doctor_name,
+                    c.name AS clinic_name, c.address AS clinic_address, c.city AS clinic_city, c.latitude AS clinic_latitude, c.longitude AS clinic_longitude, du.name AS doctor_name,
                     v.weight_kg, v.height_cm, v.systolic_bp, v.diastolic_bp, v.blood_sugar_mgdl, v.pulse_rate,
                     pr.report_url, pr.file_name,
                     pay.id AS payment_id, pay.status AS payment_status, pay.amount AS payment_amount,
@@ -41,7 +41,7 @@ class AppointmentRepository {
         const [appointments] = await db.query(
             `SELECT a.id, a.appointment_date, a.status, a.pre_remarks, a.post_remarks,
                     a.consultation_type, a.meeting_link,
-                    c.name AS clinic_name, du.name AS doctor_name,
+                    c.name AS clinic_name, c.address AS clinic_address, c.city AS clinic_city, c.latitude AS clinic_latitude, c.longitude AS clinic_longitude, du.name AS doctor_name,
                     p.id AS patient_id, p.name AS patient_name,
                     v.weight_kg, v.height_cm, v.systolic_bp, v.diastolic_bp, v.blood_sugar_mgdl, v.pulse_rate,
                     pr.report_url, pr.file_name,

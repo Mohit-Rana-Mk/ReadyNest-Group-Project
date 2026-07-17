@@ -1,3 +1,4 @@
+import { toast } from '../../components/ui/Toast';
 import React, { useState, useEffect } from 'react';
 import axiosClient from '../../api/axiosClient';
 
@@ -28,6 +29,8 @@ import { PatientAnalytics } from './components/PatientAnalytics';
 import { AdminPaymentsDashboard } from './components/AdminPaymentsDashboard';
 import PharmacyAccounts from './components/PharmacyAccounts';
 import { Button } from '../../components/ui/Button';
+import { ConfirmModal } from '../../components/ui/ConfirmModal';
+import Skeleton from '../../components/ui/Skeleton';
 
 export default function AdminDashboard() {
     const { logout } = useAuth();
@@ -42,6 +45,7 @@ export default function AdminDashboard() {
     const [ecosystemStats, setEcosystemStats] = useState({ kpis: {}, reviews: [] });
     const [actionMessage, setActionMessage] = useState('');
     const [epiFilter, setEpiFilter] = useState(30);
+    const [deleteTarget, setDeleteTarget] = useState(null);
 
     useEffect(() => {
         loadDashboardData();
@@ -85,7 +89,7 @@ export default function AdminDashboard() {
             }
         } catch (error) {
             console.error("Verification failed:", error);
-            alert("Failed to update verification status.");
+            toast.error("Failed to update verification status.");
         }
     };
 
@@ -100,17 +104,19 @@ export default function AdminDashboard() {
             }
         } catch (error) {
             console.error("Direct onboarding failed:", error);
-            alert(error.response?.data?.message || "Failed to onboard clinic.");
+            toast.error(error.response?.data?.message || "Failed to onboard clinic.");
             throw error;
         }
     };
 
-    const handleDeleteClinic = async (clinicId) => {
-        if (!window.confirm("Are you sure you want to permanently delete this clinic facility? This action will permanently remove all associated appointments, reviews, outbreaks, and administrator accounts and cannot be undone.")) {
-            return;
-        }
+    const handleDeleteClinic = (clinicId) => {
+        setDeleteTarget(clinicId);
+    };
+
+    const confirmDeleteClinic = async () => {
+        if (!deleteTarget) return;
         try {
-            const res = await axiosClient.delete(`/admin/clinics/${clinicId}`);
+            const res = await axiosClient.delete(`/admin/clinics/${deleteTarget}`);
             if (res.data.success) {
                 setActionMessage(res.data.message);
                 loadDashboardData();
@@ -118,7 +124,9 @@ export default function AdminDashboard() {
             }
         } catch (error) {
             console.error("Failed to delete clinic:", error);
-            alert("Failed to delete clinic.");
+            toast.error("Failed to delete clinic.");
+        } finally {
+            setDeleteTarget(null);
         }
     };
 
@@ -185,10 +193,10 @@ export default function AdminDashboard() {
                             variant="outline"
                             key={item.id}
                             onClick={() => handleTabChange(item.id)}
-                            className={`w-full flex justify-start items-center gap-3 px-4 py-2.5 rounded-xl transition text-sm font-semibold border-none bg-transparent ${
+                            className={`w-full flex !justify-start items-center gap-3 pl-5 pr-4 py-2.5 rounded-xl transition text-sm font-semibold border-none bg-transparent ${
                                 isActive 
                                     ? activeClass 
-                                    : 'text-slate-500 hover:bg-[#f1f3f5] hover:text-slate-800'
+                                    : 'text-slate-500 hover:bg-[#f1f3f5] hover:text-slate-800 border-r-4 border-transparent'
                             }`}
                         >
                             <item.icon className="w-4 h-4" />
@@ -201,7 +209,7 @@ export default function AdminDashboard() {
     );
 
     return (
-        <div className="min-h-screen flex font-sans antialiased selection:bg-indigo-100 selection:text-indigo-900 bg-[#f8f9fa] text-slate-700">
+        <div className="h-screen overflow-hidden flex font-sans antialiased selection:bg-indigo-100 selection:text-indigo-900 bg-[#f8f9fa] text-slate-700">
             {/* MOBILE SIDEBAR OVERLAY */}
             {sidebarOpen && (
                 <div className="fixed inset-0 z-40 lg:hidden">
@@ -211,6 +219,17 @@ export default function AdminDashboard() {
                     </aside>
                 </div>
             )}
+
+            {/* Confirm Modal for Clinic Deletion */}
+            <ConfirmModal
+                isOpen={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={confirmDeleteClinic}
+                title="Delete Clinic Facility?"
+                message="Are you sure you want to permanently delete this clinic facility? This action will permanently remove all associated appointments, reviews, outbreaks, and administrator accounts and cannot be undone."
+                confirmText="Yes, Delete Clinic"
+                isDestructive={true}
+            />
 
             {/* DESKTOP SIDEBAR */}
             <aside className="w-64 border-r hidden lg:flex flex-col shrink-0 bg-white border-[#e9ecef]">
@@ -259,64 +278,87 @@ export default function AdminDashboard() {
                         </div>
                     )}
 
-                    {/* Metrics Ribbon Grid */}
-                    {activeTab !== 'auracare' && activeTab !== 'patient-analytics' && activeTab !== 'payments' && activeTab !== 'pharmacy-accounts' && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                            <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
-                                <div>
-                                    <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Triage Triggers</span>
-                                    <span className="text-2xl font-extrabold text-slate-800 mt-1 block">
-                                        {aiHealthStats?.triageCount ?? 0}
-                                    </span>
-                                </div>
-                                <div className="text-indigo-600 bg-indigo-50 p-2.5 rounded-xl">
-                                    <Activity className="w-5 h-5 stroke-[2]" />
-                                </div>
-                            </div>
-                            <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
-                                <div>
-                                    <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Pending Approvals</span>
-                                    <span className="text-2xl font-extrabold text-slate-800 mt-1 block">
-                                        {pendingClinics?.length || 0}
-                                    </span>
-                                </div>
-                                <div className="text-yellow-600 bg-yellow-50 p-2.5 rounded-xl">
-                                    <ShieldCheck className="w-5 h-5 stroke-[2]" />
-                                </div>
-                            </div>
-                            <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
-                                <div>
-                                    <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">SVM Inference Status</span>
-                                    <span className="text-2xl font-extrabold text-slate-850 mt-1 block text-emerald-600 flex items-center gap-1.5">
-                                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                        Active
-                                    </span>
-                                </div>
-                                <div className="text-emerald-600 bg-emerald-50 p-2.5 rounded-xl">
-                                    <Globe className="w-5 h-5 stroke-[2]" />
-                                </div>
-                            </div>
-                            <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
-                                <div>
-                                    <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">System Availability</span>
-                                    <span className="text-2xl font-extrabold text-slate-800 mt-1 block">
-                                        99.98%
-                                    </span>
-                                </div>
-                                <div className="text-indigo-600 bg-indigo-50 p-2.5 rounded-xl">
-                                    <RefreshCw className="w-5 h-5 stroke-[2]" />
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
                     {loading && activeTab !== 'auracare' ? (
-                        <div className="flex flex-col items-center justify-center h-64 space-y-2">
-                            <div className="w-8 h-8 border-3 border-indigo-700/20 border-t-indigo-700 rounded-full animate-spin"></div>
-                            <span className="text-xs text-slate-400">Loading system metrics...</span>
+                        <div className="space-y-6">
+                            {activeTab !== 'patient-analytics' && activeTab !== 'payments' && activeTab !== 'pharmacy-accounts' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    {[1, 2, 3, 4].map(i => (
+                                        <div key={i} className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
+                                            <div className="space-y-3">
+                                                <Skeleton className="w-24 h-3" />
+                                                <Skeleton className="w-12 h-6" />
+                                            </div>
+                                            <Skeleton className="w-10 h-10 rounded-xl" />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            <div className="bg-white border border-[#e9ecef] rounded-2xl p-6 shadow-sm min-h-[400px] flex flex-col space-y-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <Skeleton className="w-48 h-6" />
+                                    <Skeleton className="w-32 h-8 rounded-lg" />
+                                </div>
+                                <div className="space-y-4">
+                                    <Skeleton className="w-full h-16 rounded-xl" />
+                                    <Skeleton className="w-full h-16 rounded-xl" />
+                                    <Skeleton className="w-full h-16 rounded-xl" />
+                                </div>
+                            </div>
                         </div>
                     ) : (
-                        renderContent()
+                        <>
+                            {/* Metrics Ribbon Grid */}
+                            {activeTab !== 'auracare' && activeTab !== 'patient-analytics' && activeTab !== 'payments' && activeTab !== 'pharmacy-accounts' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                                    <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
+                                        <div>
+                                            <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Triage Triggers</span>
+                                            <span className="text-2xl font-extrabold text-slate-800 mt-1 block">
+                                                {aiHealthStats?.triageCount ?? 0}
+                                            </span>
+                                        </div>
+                                        <div className="text-indigo-600 bg-indigo-50 p-2.5 rounded-xl">
+                                            <Activity className="w-5 h-5 stroke-[2]" />
+                                        </div>
+                                    </div>
+                                    <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
+                                        <div>
+                                            <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Pending Approvals</span>
+                                            <span className="text-2xl font-extrabold text-slate-800 mt-1 block">
+                                                {pendingClinics?.length || 0}
+                                            </span>
+                                        </div>
+                                        <div className="text-yellow-600 bg-yellow-50 p-2.5 rounded-xl">
+                                            <ShieldCheck className="w-5 h-5 stroke-[2]" />
+                                        </div>
+                                    </div>
+                                    <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
+                                        <div>
+                                            <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">SVM Inference Status</span>
+                                            <span className="text-2xl font-extrabold text-slate-850 mt-1 block text-emerald-600 flex items-center gap-1.5">
+                                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                                Active
+                                            </span>
+                                        </div>
+                                        <div className="text-emerald-600 bg-emerald-50 p-2.5 rounded-xl">
+                                            <Globe className="w-5 h-5 stroke-[2]" />
+                                        </div>
+                                    </div>
+                                    <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
+                                        <div>
+                                            <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">System Availability</span>
+                                            <span className="text-2xl font-extrabold text-slate-800 mt-1 block">
+                                                99.98%
+                                            </span>
+                                        </div>
+                                        <div className="text-indigo-600 bg-indigo-50 p-2.5 rounded-xl">
+                                            <RefreshCw className="w-5 h-5 stroke-[2]" />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            {renderContent()}
+                        </>
                     )}
                 </main>
             </div>

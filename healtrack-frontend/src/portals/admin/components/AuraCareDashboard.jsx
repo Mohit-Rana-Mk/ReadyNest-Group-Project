@@ -31,6 +31,8 @@ import {
     ExternalLink
 } from 'lucide-react';
 
+import { CustomDropdown } from '../../../components/ui/CustomDropdown';
+
 Chart.register(...registerables);
 
 // Custom Chart.js Glow Plugin
@@ -965,24 +967,34 @@ export function AuraCareDashboard() {
                 <div className="control-panel">
 
                     
-                    <div className="select-wrapper">
-                        <select value={dept} onChange={(e) => setDept(e.target.value)}>
-                            <option value="all">All Departments</option>
-                            <option value="cardiology">Cardiology</option>
-                            <option value="pediatrics">Pediatrics</option>
-                            <option value="emergency">Emergency Room</option>
-                            <option value="oncology">Oncology</option>
-                            <option value="neurology">Neurology</option>
-                            <option value="orthopedics">Orthopedics</option>
-                        </select>
+                    <div className="select-wrapper border-none p-0 bg-transparent">
+                        <CustomDropdown
+                            value={dept}
+                            onChange={setDept}
+                            className="w-[200px]"
+                            options={[
+                                { value: "all", label: "All Departments" },
+                                { value: "cardiology", label: "Cardiology" },
+                                { value: "pediatrics", label: "Pediatrics" },
+                                { value: "emergency", label: "Emergency Room" },
+                                { value: "oncology", label: "Oncology" },
+                                { value: "neurology", label: "Neurology" },
+                                { value: "orthopedics", label: "Orthopedics" }
+                            ]}
+                        />
                     </div>
 
-                    <div className="select-wrapper">
-                        <select value={time} onChange={(e) => setTime(e.target.value)}>
-                            <option value="daily">Real-Time (Daily)</option>
-                            <option value="weekly">Historical (Weekly)</option>
-                            <option value="monthly">Predictive (Monthly)</option>
-                        </select>
+                    <div className="select-wrapper border-none p-0 bg-transparent">
+                        <CustomDropdown
+                            value={time}
+                            onChange={setTime}
+                            className="w-[200px]"
+                            options={[
+                                { value: "daily", label: "Real-Time (Daily)" },
+                                { value: "weekly", label: "Historical (Weekly)" },
+                                { value: "monthly", label: "Predictive (Monthly)" }
+                            ]}
+                        />
                     </div>
 
                     <button 

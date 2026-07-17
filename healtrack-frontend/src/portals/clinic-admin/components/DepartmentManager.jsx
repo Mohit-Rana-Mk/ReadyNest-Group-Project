@@ -1,6 +1,9 @@
+import { toast } from '../../../components/ui/Toast';
 import React, { useState, useEffect } from 'react';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
+import { ConfirmModal } from '../../../components/ui/ConfirmModal';
+import { CustomDropdown } from '../../../components/ui/CustomDropdown';
 import { Heart, Activity, Eye, Bone, Edit2, Trash2 } from 'lucide-react';
 import axiosClient from '../../../api/axiosClient';
 
@@ -13,6 +16,7 @@ const iconMap = {
 
 export function DepartmentManager({ departments, refreshData, clinicId = 1 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [departmentToDelete, setDepartmentToDelete] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [globalServices, setGlobalServices] = useState([]);
   const [formData, setFormData] = useState({ service_id: '', custom_service_name: '', consultation_fee: '' });
@@ -42,14 +46,19 @@ export function DepartmentManager({ departments, refreshData, clinicId = 1 }) {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (serviceId) => {
-    if (window.confirm("Are you sure you want to remove this department from your clinic?")) {
-      try {
-        await axiosClient.delete(`/clinic-admin/${clinicId}/departments/${serviceId}`);
-        if (refreshData) refreshData();
-      } catch (err) {
-        alert("Failed to delete department");
-      }
+  const handleDelete = (serviceId) => {
+    setDepartmentToDelete(serviceId);
+  };
+
+  const confirmDelete = async () => {
+    if (!departmentToDelete) return;
+    try {
+      await axiosClient.delete(`/clinic-admin/${clinicId}/departments/${departmentToDelete}`);
+      if (refreshData) refreshData();
+    } catch (err) {
+      toast.error("Failed to delete department");
+    } finally {
+      setDepartmentToDelete(null);
     }
   };
 
@@ -71,7 +80,7 @@ export function DepartmentManager({ departments, refreshData, clinicId = 1 }) {
       if (refreshData) refreshData();
     } catch (err) {
       console.error("Error saving department:", err);
-      alert("Error saving department.");
+      toast.error("Error saving department.");
     }
   };
 
@@ -123,13 +132,16 @@ export function DepartmentManager({ departments, refreshData, clinicId = 1 }) {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Select Service</label>
-                    <select required value={formData.service_id} onChange={e => setFormData({...formData, service_id: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3">
-                      <option value="" disabled>-- Select a Service --</option>
-                      {globalServices.map(srv => (
-                        <option key={srv.id} value={srv.id}>{srv.name}</option>
-                      ))}
-                      <option value="custom">Other (Create Custom)</option>
-                    </select>
+                    <CustomDropdown 
+                      value={formData.service_id} 
+                      onChange={val => setFormData({...formData, service_id: val})} 
+                      className="w-full"
+                      options={[
+                        { value: "", label: "-- Select a Service --" },
+                        ...globalServices.map(srv => ({ value: srv.id.toString(), label: srv.name })),
+                        { value: "custom", label: "Other (Create Custom)" }
+                      ]}
+                    />
                   </div>
                   
                   {formData.service_id === 'custom' && (
@@ -154,6 +166,17 @@ export function DepartmentManager({ departments, refreshData, clinicId = 1 }) {
           </div>
         </div>
       )}
+
+      {/* Confirm Modal for Department Deletion */}
+      <ConfirmModal
+        isOpen={!!departmentToDelete}
+        onClose={() => setDepartmentToDelete(null)}
+        onConfirm={confirmDelete}
+        title="Remove Department?"
+        message="Are you sure you want to remove this department from your clinic? This may affect associated doctors and appointments."
+        confirmText="Yes, Remove"
+        isDestructive={true}
+      />
     </div>
   );
 }

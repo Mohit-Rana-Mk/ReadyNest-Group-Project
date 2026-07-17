@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { CustomDropdown } from '../components/ui/CustomDropdown';
 import { auth } from '../api/firebase';
 import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
@@ -133,27 +134,41 @@ export default function Signup() {
                 try {
                     const firebaseCredential = await createUserWithEmailAndPassword(auth, email, password);
                     idToken = await firebaseCredential.user.getIdToken();
+                    
+                    const payload = {
+                        idToken,
+                        additionalDetails: {
+                            name,
+                            phone: combinedPhone,
+                            dob,
+                            gender,
+                            blood_group: bloodGroup
+                        }
+                    };
+                    const res = await axiosClient.post('/auth/firebase-auth', payload);
+                    if (res.data.success) {
+                        login(res.data.data.user, res.data.data.token);
+                        navigate('/patient');
+                    }
                 } catch (firebaseErr) {
-                    console.error("Firebase signup failed:", firebaseErr);
-                    setError(firebaseErr.message || 'Firebase registration failed');
-                    setLoading(false);
-                    return;
-                }
-
-                const payload = {
-                    idToken,
-                    additionalDetails: {
+                    console.warn("Firebase signup failed, falling back to custom auth:", firebaseErr.message);
+                    
+                    // Fallback to our custom backend if Firebase is broken or keys are dummy
+                    const customPayload = {
                         name,
+                        email,
                         phone: combinedPhone,
+                        password,
                         dob,
                         gender,
                         blood_group: bloodGroup
+                    };
+                    
+                    const res = await axiosClient.post('/auth/signup-patient', customPayload);
+                    if (res.data.success) {
+                        login(res.data.data.user, res.data.data.token);
+                        navigate('/patient');
                     }
-                };
-                const res = await axiosClient.post('/auth/firebase-auth', payload);
-                if (res.data.success) {
-                    login(res.data.data.user, res.data.data.token);
-                    navigate('/patient');
                 }
             }
         } catch (err) {
@@ -315,17 +330,17 @@ export default function Signup() {
                                             <h3 className="text-xs font-extrabold text-slate-800 border-b pb-2 uppercase tracking-wider">Clinic Details</h3>
                                             <div>
                                                 <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Clinic Name</label>
-                                                <input type="text" required value={clinicName} onChange={(e) => setClinicName(e.target.value)} className="w-full px-4 py-3 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400" placeholder="e.g. City General Clinic" />
+                                                <input type="text" required value={clinicName} onChange={(e) => setClinicName(e.target.value)} className="w-full px-4 h-11 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400" placeholder="e.g. City General Clinic" />
                                             </div>
                                             <div>
                                                 <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">License Number</label>
-                                                <input type="text" required value={license} onChange={(e) => setLicense(e.target.value)} className="w-full px-4 py-3 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400" placeholder="e.g. LIC-98234-87" />
+                                                <input type="text" required value={license} onChange={(e) => setLicense(e.target.value)} className="w-full px-4 h-11 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400" placeholder="e.g. LIC-98234-87" />
                                             </div>
                                             <div>
                                                 <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Address & City</label>
                                                 <div className="flex gap-2">
-                                                    <input type="text" placeholder="Address" required value={address} onChange={(e) => setAddress(e.target.value)} className="w-2/3 px-4 py-3 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400" />
-                                                    <input type="text" placeholder="City" required value={city} onChange={(e) => setCity(e.target.value)} className="w-1/3 px-4 py-3 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400" />
+                                                    <input type="text" placeholder="Address" required value={address} onChange={(e) => setAddress(e.target.value)} className="w-2/3 px-4 h-11 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400" />
+                                                    <input type="text" placeholder="City" required value={city} onChange={(e) => setCity(e.target.value)} className="w-1/3 px-4 h-11 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400" />
                                                 </div>
                                             </div>
                                         </div>
@@ -340,35 +355,37 @@ export default function Signup() {
                                             <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">
                                                 {signupType === 'pharmacy' ? 'Pharmacy Name' : 'Full Name'}
                                             </label>
-                                            <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400" placeholder={signupType === 'pharmacy' ? 'e.g. Apex Pharmacy' : 'John Doe'} />
+                                            <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 h-11 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400" placeholder={signupType === 'pharmacy' ? 'e.g. Apex Pharmacy' : 'John Doe'} />
                                         </div>
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Email Address</label>
-                                                <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-3 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400" placeholder="john@example.com" />
+                                                <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 h-11 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400" placeholder="john@example.com" />
                                             </div>
                                             <div>
                                                 <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Phone Number</label>
-                                                <div className="flex gap-2">
-                                                    <select
+                                                <div className="flex gap-1.5 items-center">
+                                                    <CustomDropdown
                                                         value={countryCode}
-                                                        onChange={(e) => setCountryCode(e.target.value)}
-                                                        className="px-3 py-3 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700"
-                                                    >
-                                                        <option value="+91">🇮🇳 +91</option>
-                                                        <option value="+1">🇺🇸 +1</option>
-                                                        <option value="+44">🇬🇧 +44</option>
-                                                        <option value="+61">🇦🇺 +61</option>
-                                                        <option value="+971">🇦🇪 +971</option>
-                                                        <option value="+966">🇸🇦 +966</option>
-                                                    </select>
+                                                        onChange={setCountryCode}
+                                                        className="w-[85px] h-11"
+                                                        options={[
+                                                            { value: '+91', label: '🇮🇳 +91' },
+                                                            { value: '+1', label: '🇺🇸 +1' },
+                                                            { value: '+44', label: '🇬🇧 +44' },
+                                                            { value: '+61', label: '🇦🇺 +61' },
+                                                            { value: '+971', label: '🇦🇪 +971' },
+                                                            { value: '+966', label: '🇸🇦 +966' }
+                                                        ]}
+                                                        renderSelected={(opt) => opt.value}
+                                                    />
                                                     <input
                                                         type="tel"
                                                         required
                                                         value={phone}
                                                         onChange={(e) => setPhone(e.target.value)}
-                                                        className="flex-1 px-4 py-3 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400"
+                                                        className="flex-1 min-w-0 h-11 px-2.5 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400"
                                                         placeholder="98765 43210"
                                                     />
                                                 </div>
@@ -379,23 +396,28 @@ export default function Signup() {
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <div>
                                                     <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Date of Birth</label>
-                                                    <input type="date" required value={dob} max={new Date().toISOString().split('T')[0]} onChange={(e) => setDob(e.target.value)} className="w-full px-4 py-3 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400" />
+                                                    <input type="date" required value={dob} max={new Date().toISOString().split('T')[0]} onChange={(e) => setDob(e.target.value)} className="w-full px-4 h-11 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400" />
                                                 </div>
                                                 <div>
                                                     <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Gender</label>
-                                                    <select value={gender} onChange={(e) => setGender(e.target.value)} className="w-full px-4 py-3 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 select-arrow bg-no-repeat">
-                                                        <option value="Male">Male</option>
-                                                        <option value="Female">Female</option>
-                                                        <option value="Other">Other</option>
-                                                        <option value="Prefer Not to Say">Prefer Not to Say</option>
-                                                    </select>
+                                                    <CustomDropdown
+                                                        value={gender}
+                                                        onChange={setGender}
+                                                        className="w-full h-11"
+                                                        options={[
+                                                            { value: 'Male', label: 'Male' },
+                                                            { value: 'Female', label: 'Female' },
+                                                            { value: 'Other', label: 'Other' },
+                                                            { value: 'Prefer Not to Say', label: 'Prefer Not to Say' }
+                                                        ]}
+                                                    />
                                                 </div>
                                             </div>
                                         )}
 
                                         <div>
                                             <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Password</label>
-                                            <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-3 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400" placeholder="••••••••" />
+                                            <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 h-11 bg-[#eef2f6] border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-semibold text-slate-700 placeholder-slate-400" placeholder="••••••••" />
                                             <p className="mt-1 text-[10px] text-slate-400 leading-relaxed font-medium">
                                                 Must be at least 6 characters, containing 1 uppercase, 1 lowercase, 1 number, and 1 special character.
                                             </p>

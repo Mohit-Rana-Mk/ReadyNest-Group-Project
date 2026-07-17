@@ -1,9 +1,12 @@
+import { toast } from '../../../components/ui/Toast';
 import React, { useState, useEffect } from 'react';
 import { MapPin, Clock, ChevronRight, Building2, Star, Search, Filter, Navigation } from 'lucide-react';
 import { fetchClinics, fetchFamilyMembers, addFamilyMember, bookAppointment, submitClinicReview, fetchClinicWaitTime } from '../../../api/patientApi';
 import { createPaymentOrder, verifyPaymentSignature } from '../../../api/paymentApi';
 import { Modal } from '../../../components/ui/Modal';
 import { Button } from '../../../components/ui/Button';
+import { CustomDropdown } from '../../../components/ui/CustomDropdown';
+import Skeleton from '../../../components/ui/Skeleton';
 
 export default function ClinicDiscovery() {
     const [clinics, setClinics] = useState([]);
@@ -97,7 +100,7 @@ export default function ClinicDiscovery() {
                         lng: "77.2090",
                         radius: '10'
                     }));
-                    alert('Unable to retrieve real location due to browser restrictions. Using default mock location (New Delhi) for demonstration.');
+                    toast.error('Unable to retrieve real location due to browser restrictions. Using default mock location (New Delhi) for demonstration.');
                 }
             );
         }
@@ -164,7 +167,7 @@ export default function ClinicDiscovery() {
             });
 
             if (!orderData) {
-                alert('Failed to create payment order.');
+                toast.error('Failed to create payment order.');
                 return;
             }
 
@@ -190,12 +193,12 @@ export default function ClinicDiscovery() {
             });
 
             if (!rzpLoaded) {
-                alert('Failed to load payment gateway. Please check your internet connection.');
+                toast.error('Failed to load payment gateway. Please check your internet connection.');
                 return;
             }
 
             if (!orderData.orderId) {
-                alert('Failed to create payment order.');
+                toast.error('Failed to create payment order.');
                 return;
             }
 
@@ -222,11 +225,11 @@ export default function ClinicDiscovery() {
                                 setIsBookingModalOpen(false);
                             }, 2000);
                         } else {
-                            alert('Signature verification failed.');
+                            toast.error('Signature verification failed.');
                         }
                     } catch (err) {
                         console.error('Verify error:', err);
-                        alert('Verification error: ' + (err.response?.data?.message || err.message));
+                        toast.error('Verification error: ' + (err.response?.data?.message || err.message));
                     }
                 },
                 prefill: {
@@ -239,13 +242,13 @@ export default function ClinicDiscovery() {
 
             const rzp = new window.Razorpay(options);
             rzp.on('payment.failed', function (response) {
-                alert('Payment failed: ' + response.error.description);
+                toast.error('Payment failed: ' + response.error.description);
             });
             rzp.open();
 
         } catch (error) {
             console.error('Error booking:', error);
-            alert('Error creating booking/order: ' + (error.response?.data?.message || error.message));
+            toast.error('Error creating booking/order: ' + (error.response?.data?.message || error.message));
         }
     };
 
@@ -304,69 +307,80 @@ export default function ClinicDiscovery() {
                     </button>
                     {filters.lat && (
                         <div className="flex-1">
-                            <select 
-                                name="radius" 
+                            <CustomDropdown 
                                 value={filters.radius} 
-                                onChange={handleFilterChange}
-                                className="w-full text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-lg p-1.5 focus:outline-none"
-                            >
-                                <option value="5">Within 5 km</option>
-                                <option value="10">Within 10 km</option>
-                                <option value="20">Within 20 km</option>
-                                <option value="50">Within 50 km</option>
-                            </select>
+                                onChange={(val) => handleFilterChange({ target: { name: 'radius', value: val } })}
+                                className="w-full h-8 text-indigo-600 bg-indigo-50 border border-indigo-100"
+                                options={[
+                                    { value: "5", label: "Within 5 km" },
+                                    { value: "10", label: "Within 10 km" },
+                                    { value: "20", label: "Within 20 km" },
+                                    { value: "50", label: "Within 50 km" }
+                                ]}
+                            />
                         </div>
                     )}
                 </div>
                 <div className="flex-1 grid grid-cols-2 gap-2">
                     <div>
                         <label className="text-[10px] text-gray-500 font-medium">City</label>
-                        <select 
-                            name="city" 
+                        <CustomDropdown 
                             value={filters.city} 
-                            onChange={handleFilterChange}
-                            className="w-full text-xs bg-gray-50 border border-gray-200 rounded p-1.5 focus:outline-none"
-                            disabled={!!filters.lat}
-                        >
-                            <option value="">All Cities</option>
-                            {availableCities.map(c => (
-                                <option key={c.city} value={c.city}>{c.city}</option>
-                            ))}
-                        </select>
+                            onChange={(val) => handleFilterChange({ target: { name: 'city', value: val } })}
+                            className={`w-full h-8 bg-gray-50 border border-gray-200 ${!!filters.lat ? 'opacity-50 pointer-events-none' : ''}`}
+                            options={[
+                                { value: "", label: "All Cities" },
+                                ...availableCities.map(c => ({ value: c.city, label: c.city }))
+                            ]}
+                        />
                     </div>
                     <div>
                         <label className="text-[10px] text-gray-500 font-medium">Min Rating</label>
-                        <select 
-                            name="min_rating" 
+                        <CustomDropdown 
                             value={filters.min_rating} 
-                            onChange={handleFilterChange}
-                            className="w-full text-xs bg-gray-50 border border-gray-200 rounded p-1.5 focus:outline-none"
-                        >
-                            <option value="">Any Rating</option>
-                            <option value="4">4+ Stars</option>
-                            <option value="4.5">4.5+ Stars</option>
-                        </select>
+                            onChange={(val) => handleFilterChange({ target: { name: 'min_rating', value: val } })}
+                            className="w-full h-8 bg-gray-50 border border-gray-200"
+                            options={[
+                                { value: "", label: "Any Rating" },
+                                { value: "4", label: "4+ Stars" },
+                                { value: "4.5", label: "4.5+ Stars" }
+                            ]}
+                        />
                     </div>
                 </div>
                 <div className="flex-1">
                     <label className="text-[10px] text-gray-500 font-medium">Department</label>
-                    <select 
-                        name="service_id" 
+                    <CustomDropdown 
                         value={filters.service_id} 
-                        onChange={handleFilterChange}
-                        className="w-full text-xs bg-gray-50 border border-gray-200 rounded p-1.5 focus:outline-none"
-                    >
-                        <option value="">All Departments</option>
-                        {allServices.map(s => (
-                            <option key={s.id} value={s.id}>{s.name}</option>
-                        ))}
-                    </select>
+                        onChange={(val) => handleFilterChange({ target: { name: 'service_id', value: val } })}
+                        className="w-full h-8 bg-gray-50 border border-gray-200"
+                        options={[
+                            { value: "", label: "All Departments" },
+                            ...allServices.map(s => ({ value: s.id.toString(), label: s.name }))
+                        ]}
+                    />
                 </div>
             </div>
 
             {/* Clinic Cards */}
             {loading ? (
-                <div className="flex justify-center py-10"><Clock className="animate-spin text-indigo-500" /></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
+                    {[1, 2, 3, 4, 5, 6].map(i => (
+                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-4">
+                            <div className="flex items-start justify-between">
+                                <div className="flex-1 space-y-2">
+                                    <Skeleton className="w-3/4 h-5" />
+                                    <Skeleton className="w-1/2 h-3" />
+                                    <Skeleton className="w-2/3 h-3" />
+                                </div>
+                            </div>
+                            <div className="flex gap-2 pt-2">
+                                <Skeleton className="flex-1 h-8 rounded-xl" />
+                                <Skeleton className="w-16 h-8 rounded-xl" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
             ) : clinics.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-gray-400">
                     <Building2 size={40} strokeWidth={1.2} />
@@ -374,7 +388,14 @@ export default function ClinicDiscovery() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
-                    {clinics.map(clinic => (
+                    {clinics.map(clinic => {
+                        const hasCoords = clinic.latitude && clinic.longitude && Number(clinic.latitude) !== 0 && Number(clinic.longitude) !== 0;
+                        const fullAddress = `${clinic.address || ''}${clinic.city ? `, ${clinic.city}` : ''}`.trim();
+                        const mapUrl = hasCoords 
+                            ? `https://maps.google.com/?q=${clinic.latitude},${clinic.longitude}` 
+                            : `https://maps.google.com/?q=${encodeURIComponent(fullAddress)}`;
+                            
+                        return (
                         <div
                             key={clinic.id}
                             className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow duration-200 group"
@@ -389,9 +410,9 @@ export default function ClinicDiscovery() {
                                         </span>
                                     </div>
 
-                                    <div className="flex items-center gap-1.5 mt-1.5">
-                                        <MapPin size={12} className="text-gray-400 flex-shrink-0" />
-                                        <p className="text-xs text-gray-500 truncate">
+                                    <div className="flex items-start gap-1.5 mt-1.5">
+                                        <MapPin size={12} className="text-gray-400 mt-0.5 flex-shrink-0" />
+                                        <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
                                             {clinic.address}{clinic.city ? `, ${clinic.city}` : ''}
                                         </p>
                                     </div>
@@ -410,19 +431,29 @@ export default function ClinicDiscovery() {
                             <div className="mt-4 flex gap-2">
                                 <button 
                                     onClick={() => openBookingModal(clinic)}
-                                    className="flex-1 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors"
+                                    className="flex-1 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors shadow-sm truncate"
                                 >
                                     Book Appointment
                                 </button>
                                 <button 
                                     onClick={() => openReviewModal(clinic)}
-                                    className="px-3 py-2 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors"
+                                    className="flex-none px-4 py-2 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors"
                                 >
                                     Review
                                 </button>
+                                <a 
+                                    href={mapUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex-none px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl transition-colors flex items-center justify-center"
+                                    title="Open in Google Maps"
+                                >
+                                    <MapPin size={16} />
+                                </a>
                             </div>
                         </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
 
@@ -442,24 +473,22 @@ export default function ClinicDiscovery() {
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Select Patient</label>
-                            <select 
-                                required
+                            <CustomDropdown 
                                 value={isAddingNewPatient ? 'new' : bookingData.patient_id}
-                                onChange={(e) => {
-                                    if (e.target.value === 'new') {
+                                onChange={(val) => {
+                                    if (val === 'new') {
                                         setIsAddingNewPatient(true);
                                     } else {
                                         setIsAddingNewPatient(false);
-                                        setBookingData({...bookingData, patient_id: e.target.value});
+                                        setBookingData({...bookingData, patient_id: val});
                                     }
                                 }}
-                                className="w-full border border-gray-300 rounded-md py-2 px-3 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            >
-                                {familyMembers.map(member => (
-                                    <option key={member.id} value={member.id}>{member.name} ({member.gender})</option>
-                                ))}
-                                <option value="new">+ Add New Patient</option>
-                            </select>
+                                className="w-full h-10 border border-gray-300"
+                                options={[
+                                    ...familyMembers.map(p => ({ value: p.id.toString(), label: p.name })),
+                                    { value: 'new', label: '+ Add New Family Member' }
+                                ]}
+                            />
                             
                             {isAddingNewPatient && (
                                 <div className="mt-2 p-3 bg-indigo-50 border border-indigo-100 rounded-lg space-y-2">
@@ -472,49 +501,52 @@ export default function ClinicDiscovery() {
                                         onChange={(e) => setNewPatientData({...newPatientData, name: e.target.value})}
                                         className="w-full border border-gray-200 rounded p-1.5 text-xs" 
                                     />
-                                    <select 
+                                    <CustomDropdown 
                                         value={newPatientData.gender}
-                                        onChange={(e) => setNewPatientData({...newPatientData, gender: e.target.value})}
-                                        className="w-full border border-gray-200 rounded p-1.5 text-xs"
-                                    >
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                        <option value="Other">Other</option>
-                                    </select>
+                                        onChange={(val) => setNewPatientData({...newPatientData, gender: val})}
+                                        className="w-full h-8 border border-gray-200"
+                                        options={[
+                                            { value: "Male", label: "Male" },
+                                            { value: "Female", label: "Female" },
+                                            { value: "Other", label: "Other" }
+                                        ]}
+                                    />
                                 </div>
                             )}
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                            <select 
+                            <CustomDropdown 
                                 value={bookingData.department_id}
-                                onChange={(e) => setBookingData({...bookingData, department_id: e.target.value, doctor_id: ''})}
-                                className="w-full border border-gray-300 rounded-md py-2 px-3 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            >
-                                <option value="">Any Department</option>
-                                {Array.from(new Set(clinicDoctors.map(d => d.department_id)))
-                                    .filter(id => id)
-                                    .map(depId => {
-                                        const depName = clinicDoctors.find(d => d.department_id === depId)?.department;
-                                        return <option key={depId} value={depId}>{depName}</option>;
-                                    })}
-                            </select>
+                                onChange={(val) => setBookingData({...bookingData, department_id: val, doctor_id: ''})}
+                                className="w-full h-10 border border-gray-300"
+                                options={[
+                                    { value: "", label: "Any Department" },
+                                    ...Array.from(new Set(clinicDoctors.map(d => d.department_id)))
+                                        .filter(id => id)
+                                        .map(depId => {
+                                            const depName = clinicDoctors.find(d => d.department_id === depId)?.department;
+                                            return { value: depId.toString(), label: depName };
+                                        })
+                                ]}
+                            />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Doctor</label>
-                            <select 
-                                required
+                            <CustomDropdown 
                                 value={bookingData.doctor_id}
-                                onChange={(e) => setBookingData({...bookingData, doctor_id: e.target.value})}
-                                className="w-full border border-gray-300 rounded-md py-2 px-3 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            >
-                                <option value="">Select a Doctor</option>
-                                {clinicDoctors
-                                    .filter(d => !bookingData.department_id || d.department_id?.toString() === bookingData.department_id?.toString())
-                                    .map(doc => (
-                                        <option key={doc.id} value={doc.id}>Dr. {doc.name} {doc.department ? `(${doc.department})` : ''} - ₹{doc.consultation_fee || 500}</option>
-                                    ))}
-                            </select>
+                                onChange={(val) => setBookingData({...bookingData, doctor_id: val})}
+                                className="w-full h-10 border border-gray-300"
+                                options={[
+                                    { value: "", label: "Select a Doctor" },
+                                    ...clinicDoctors
+                                        .filter(d => !bookingData.department_id || d.department_id?.toString() === bookingData.department_id?.toString())
+                                        .map(doc => ({
+                                            value: doc.id.toString(), 
+                                            label: `Dr. ${doc.name} ${doc.department ? `(${doc.department})` : ''} - ₹${doc.consultation_fee || 500}`
+                                        }))
+                                ]}
+                            />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Appointment Time</label>
@@ -608,18 +640,18 @@ export default function ClinicDiscovery() {
                 <form onSubmit={handleSubmitReview} className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Rating (1-5)</label>
-                        <select 
-                            required
+                        <CustomDropdown 
                             value={reviewData.rating}
-                            onChange={(e) => setReviewData({...reviewData, rating: e.target.value})}
-                            className="w-full border border-gray-300 rounded-md py-2 px-3 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-                        >
-                            <option value="5">⭐⭐⭐⭐⭐ (5) Excellent</option>
-                            <option value="4">⭐⭐⭐⭐ (4) Good</option>
-                            <option value="3">⭐⭐⭐ (3) Average</option>
-                            <option value="2">⭐⭐ (2) Poor</option>
-                            <option value="1">⭐ (1) Terrible</option>
-                        </select>
+                            onChange={(val) => setReviewData({...reviewData, rating: val})}
+                            className="w-full h-10 border border-gray-300"
+                            options={[
+                                { value: "5", label: "⭐⭐⭐⭐⭐ (5) Excellent" },
+                                { value: "4", label: "⭐⭐⭐⭐ (4) Good" },
+                                { value: "3", label: "⭐⭐⭐ (3) Average" },
+                                { value: "2", label: "⭐⭐ (2) Poor" },
+                                { value: "1", label: "⭐ (1) Terrible" }
+                            ]}
+                        />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Review</label>

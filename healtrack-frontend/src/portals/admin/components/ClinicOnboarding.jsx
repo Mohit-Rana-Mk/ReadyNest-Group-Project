@@ -8,8 +8,6 @@ export function ClinicOnboarding({ pendingClinics, onVerify, onOnboardClinic }) 
         address: '',
         city: '',
         postal_code: '',
-        latitude: '',
-        longitude: '',
         admin_name: '',
         admin_email: '',
         admin_phone: '',
@@ -42,8 +40,6 @@ export function ClinicOnboarding({ pendingClinics, onVerify, onOnboardClinic }) 
                 address: '',
                 city: '',
                 postal_code: '',
-                latitude: '',
-                longitude: '',
                 admin_name: '',
                 admin_email: '',
                 admin_phone: '',
@@ -161,20 +157,19 @@ export function ClinicOnboarding({ pendingClinics, onVerify, onOnboardClinic }) 
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Street Address</label>
-                        <input 
-                            type="text" 
-                            required
-                            value={formData.address}
-                            onChange={e => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                            placeholder="Block C, Connaught Place"
-                            className="w-full bg-[#f8f9fa] border border-[#e9ecef] rounded-xl px-3.5 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition duration-150 placeholder-slate-400"
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                        <div>
+                    <div className="grid grid-cols-4 gap-3">
+                        <div className="col-span-2">
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Street Address</label>
+                            <input 
+                                type="text" 
+                                required
+                                value={formData.address}
+                                onChange={e => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                                placeholder="Block C, Connaught Place"
+                                className="w-full bg-[#f8f9fa] border border-[#e9ecef] rounded-xl px-3.5 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition duration-150 placeholder-slate-400"
+                            />
+                        </div>
+                        <div className="col-span-1">
                             <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">City</label>
                             <input 
                                 type="text" 
@@ -185,7 +180,7 @@ export function ClinicOnboarding({ pendingClinics, onVerify, onOnboardClinic }) 
                                 className="w-full bg-[#f8f9fa] border border-[#e9ecef] rounded-xl px-3.5 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition duration-150 placeholder-slate-400"
                             />
                         </div>
-                        <div>
+                        <div className="col-span-1">
                             <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Postal Code</label>
                             <input 
                                 type="text" 
@@ -194,26 +189,6 @@ export function ClinicOnboarding({ pendingClinics, onVerify, onOnboardClinic }) 
                                 onChange={e => setFormData(prev => ({ ...prev, postal_code: e.target.value }))}
                                 placeholder="110001"
                                 className="w-full bg-[#f8f9fa] border border-[#e9ecef] rounded-xl px-3.5 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition duration-150 placeholder-slate-400"
-                            />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Coordinates (Latitude & Longitude)</label>
-                        <div className="flex gap-2">
-                            <input 
-                                type="text" 
-                                placeholder="Lat (e.g. 28.6139)"
-                                value={formData.latitude}
-                                onChange={e => setFormData(prev => ({ ...prev, latitude: e.target.value }))}
-                                className="w-1/2 bg-[#f8f9fa] border border-[#e9ecef] rounded-xl px-3 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition duration-150 placeholder-slate-400"
-                            />
-                            <input 
-                                type="text" 
-                                placeholder="Lng (e.g. 77.2090)"
-                                value={formData.longitude}
-                                onChange={e => setFormData(prev => ({ ...prev, longitude: e.target.value }))}
-                                className="w-1/2 bg-[#f8f9fa] border border-[#e9ecef] rounded-xl px-3 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition duration-150 placeholder-slate-400"
                             />
                         </div>
                     </div>

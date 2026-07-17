@@ -1,11 +1,14 @@
+import { toast } from '../../../components/ui/Toast';
 import React, { useState, useEffect } from 'react';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
+import { ConfirmModal } from '../../../components/ui/ConfirmModal';
 import axiosClient from '../../../api/axiosClient';
 import { Modal } from '../../../components/ui/Modal'; // Assuming Modal exists, if not, we build a simple one inline
 
 export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [staffToDelete, setStaffToDelete] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [departments, setDepartments] = useState([]);
@@ -79,19 +82,24 @@ export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
     } catch (err) {
       console.error("Error saving staff:", err);
       const errMsg = err.response?.data?.message || "Error saving staff. Please try again.";
-      alert(errMsg);
+      toast.error(errMsg);
     }
   };
 
-  const handleDelete = async (member) => {
-    if (window.confirm(`Are you sure you want to permanently delete ${member.name} (${member.role})? This will also remove any related schedules and appointments.`)) {
-      try {
-        await axiosClient.delete(`/clinic-admin/${clinicId}/staff/${member.id}`);
-        if (refreshData) refreshData();
-      } catch (err) {
-        console.error("Error deleting staff:", err);
-        alert("Failed to delete staff member.");
-      }
+  const handleDelete = (member) => {
+    setStaffToDelete(member);
+  };
+
+  const confirmDelete = async () => {
+    if (!staffToDelete) return;
+    try {
+      await axiosClient.delete(`/clinic-admin/${clinicId}/staff/${staffToDelete.id}`);
+      if (refreshData) refreshData();
+    } catch (err) {
+      console.error("Error deleting staff:", err);
+      toast.error("Failed to delete staff member.");
+    } finally {
+      setStaffToDelete(null);
     }
   };
 
@@ -276,6 +284,17 @@ export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
           </div>
         </div>
       )}
+
+      {/* Confirm Modal for Staff Deletion */}
+      <ConfirmModal
+        isOpen={!!staffToDelete}
+        onClose={() => setStaffToDelete(null)}
+        onConfirm={confirmDelete}
+        title="Delete Staff Member?"
+        message={`Are you sure you want to permanently delete ${staffToDelete?.name} (${staffToDelete?.role})? This will also remove any related schedules and appointments.`}
+        confirmText="Yes, Delete Staff"
+        isDestructive={true}
+      />
     </div>
   );
 }

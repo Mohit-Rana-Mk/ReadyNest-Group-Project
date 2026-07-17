@@ -1,26 +1,28 @@
 import React from 'react';
 import { User, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { CustomDropdown } from '../../../components/ui/CustomDropdown';
 
 export function PatientQueue({ appointments, selectedAppointment, handleSelectAppointment, dateFilter, setDateFilter }) {
     return (
-        <div className="flex flex-col h-full bg-white border-r border-[#e9ecef] w-72 shrink-0">
+        <div className="flex flex-col h-full bg-white border-r border-[#e9ecef] w-80 shrink-0">
             <div className="p-4 border-b border-[#e9ecef] bg-slate-50">
-                <div className="flex justify-between items-center mb-1">
-                    <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                <div className="flex justify-between items-center mb-1 gap-3">
+                    <h3 className="font-bold text-slate-800 flex items-center gap-2 whitespace-nowrap">
                         <User className="w-4 h-4 text-emerald-600" />
                         Patient Queue
                     </h3>
                     {setDateFilter && (
-                        <select 
-                            value={dateFilter || 'today'} 
-                            onChange={(e) => setDateFilter(e.target.value)}
-                            className="text-xs border border-slate-200 rounded p-1 bg-white text-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                        >
-                            <option value="today">Today</option>
-                            <option value="past_week">Past 7 Days</option>
-                            <option value="past_month">Past 30 Days</option>
-                            <option value="all">All Time</option>
-                        </select>
+                        <CustomDropdown
+                            value={dateFilter || 'today'}
+                            onChange={setDateFilter}
+                            className="w-[120px] h-8 shrink-0"
+                            options={[
+                                { value: "today", label: "Today" },
+                                { value: "past_week", label: "Past 7 Days" },
+                                { value: "past_month", label: "Past 30 Days" },
+                                { value: "all", label: "All Time" }
+                            ]}
+                        />
                     )}
                 </div>
                 <p className="text-xs text-slate-500 mt-1">{appointments?.length || 0} Patients</p>
