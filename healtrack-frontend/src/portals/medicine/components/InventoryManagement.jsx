@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Search, Plus, Edit, Trash, AlertTriangle, AlertCircle, Calendar, Package, DollarSign, X } from 'lucide-react';
 import axiosClient from '../../../api/axiosClient';
+import { toast } from '../../../components/ui/Toast';
+import { ConfirmModal } from '../../../components/ui/ConfirmModal';
 
 export function InventoryManagement({ inventory, refreshData }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -9,6 +11,7 @@ export function InventoryManagement({ inventory, refreshData }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedMed, setSelectedMed] = useState(null);
+  const [medToDelete, setMedToDelete] = useState(null);
   
   // Form fields
   const [formData, setFormData] = useState({
@@ -71,16 +74,21 @@ export function InventoryManagement({ inventory, refreshData }) {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (med) => {
-    if (window.confirm(`Are you sure you want to permanently delete ${med.medicine_name} from inventory?`)) {
-      try {
-        await axiosClient.delete(`/medicine/stock/${med.id}`);
-        alert("Medicine removed successfully.");
-        if (refreshData) refreshData();
-      } catch (err) {
-        console.error(err);
-        alert("Failed to delete medicine.");
-      }
+  const handleDelete = (med) => {
+    setMedToDelete(med);
+  };
+
+  const confirmDelete = async () => {
+    if (!medToDelete) return;
+    try {
+      await axiosClient.delete(`/medicine/stock/${medToDelete.id}`);
+      toast.success("Medicine removed successfully.");
+      if (refreshData) refreshData();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to delete medicine.");
+    } finally {
+      setMedToDelete(null);
     }
   };
 
@@ -89,16 +97,16 @@ export function InventoryManagement({ inventory, refreshData }) {
     try {
       if (editMode) {
         await axiosClient.put(`/medicine/stock/${selectedMed.id}`, formData);
-        alert("Medicine updated successfully.");
+        toast.success("Medicine updated successfully.");
       } else {
         await axiosClient.post('/medicine/stock', formData);
-        alert("Medicine added to inventory successfully.");
+        toast.success("Medicine added to inventory successfully.");
       }
       setIsModalOpen(false);
       if (refreshData) refreshData();
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.message || "Failed to save medicine.");
+      toast.error(err.response?.data?.message || "Failed to save medicine.");
     }
   };
 
@@ -417,6 +425,17 @@ export function InventoryManagement({ inventory, refreshData }) {
           </div>
         </div>
       )}
+
+      {/* Confirm Modal for Medicine Deletion */}
+      <ConfirmModal
+        isOpen={!!medToDelete}
+        onClose={() => setMedToDelete(null)}
+        onConfirm={confirmDelete}
+        title="Delete Medicine?"
+        message={`Are you sure you want to permanently delete ${medToDelete?.medicine_name} from inventory?`}
+        confirmText="Yes, Delete"
+        isDestructive={true}
+      />
     </div>
   );
 }

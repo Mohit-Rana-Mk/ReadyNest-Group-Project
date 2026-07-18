@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axiosClient from '../../../api/axiosClient';
+import { ConfirmModal } from '../../../components/ui/ConfirmModal';
 import {
   FlaskConical, Plus, Trash2, RefreshCw, ShieldCheck, ShieldOff,
   Eye, EyeOff, X, Loader2, CheckCircle2, AlertCircle, User, Mail, Phone, Lock
@@ -12,6 +13,7 @@ export default function PharmacyAccounts() {
   const [resetTarget, setResetTarget] = useState(null);
   const [toast, setToast] = useState(null);
   const [showPass, setShowPass] = useState(false);
+  const [accountToDelete, setAccountToDelete] = useState(null);
 
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '' });
   const [newPass, setNewPass] = useState('');
@@ -63,14 +65,20 @@ export default function PharmacyAccounts() {
     }
   };
 
-  const handleDelete = async (acc) => {
-    if (!window.confirm(`Delete pharmacy account "${acc.name}"? This cannot be undone.`)) return;
+  const handleDelete = (acc) => {
+    setAccountToDelete(acc);
+  };
+
+  const confirmDelete = async () => {
+    if (!accountToDelete) return;
     try {
-      await axiosClient.delete(`/admin/pharmacy-accounts/${acc.id}`);
+      await axiosClient.delete(`/admin/pharmacy-accounts/${accountToDelete.id}`);
       showToast('Account deleted.');
       fetchAccounts();
     } catch {
       showToast('Failed to delete account', 'error');
+    } finally {
+      setAccountToDelete(null);
     }
   };
 
@@ -288,6 +296,17 @@ export default function PharmacyAccounts() {
           </table>
         )}
       </div>
+
+      {/* Confirm Modal for Pharmacy Account Deletion */}
+      <ConfirmModal
+        isOpen={!!accountToDelete}
+        onClose={() => setAccountToDelete(null)}
+        onConfirm={confirmDelete}
+        title="Delete Pharmacy Account?"
+        message={`Are you sure you want to permanently delete pharmacy account "${accountToDelete?.name}"? This action cannot be undone.`}
+        confirmText="Yes, Delete Account"
+        isDestructive={true}
+      />
     </div>
   );
 }

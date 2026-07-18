@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, FileText, User, ShoppingBag, Eye, Calendar, Sparkles } from 'lucide-react';
 import axiosClient from '../../../api/axiosClient';
+import { toast } from '../../../components/ui/Toast';
 
 export function PrescriptionQueue({ prescriptions, onSelectPrescription, loading }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -22,7 +23,7 @@ export function PrescriptionQueue({ prescriptions, onSelectPrescription, loading
       setSelectedItems(res.data);
     } catch (err) {
       console.error(err);
-      alert("Failed to load prescription items");
+      toast.error("Failed to load prescription items");
     } finally {
       setItemsLoading(false);
     }

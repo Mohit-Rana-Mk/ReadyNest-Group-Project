@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Eye, Printer, FileText, X, Check, DollarSign, Calendar } from 'lucide-react';
 import axiosClient from '../../../api/axiosClient';
+import { toast } from '../../../components/ui/Toast';
 
 export function BillHistory({ bills }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -18,7 +19,7 @@ export function BillHistory({ bills }) {
       setSelectedBillData(res.data);
     } catch (err) {
       console.error(err);
-      alert("Failed to load bill receipt details");
+      toast.error("Failed to load bill receipt details");
       setIsModalOpen(false);
     } finally {
       setLoadingDetails(false);

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Search, ShoppingBag, Plus, Trash, DollarSign, User, Activity, AlertCircle, CheckCircle, ArrowLeft, Percent } from 'lucide-react';
 import axiosClient from '../../../api/axiosClient';
+import { toast } from '../../../components/ui/Toast';
+import { CustomDropdown } from '../../../components/ui/CustomDropdown';
 
 export function WalkinBilling({ selectedPrescription, clearPrescription, inventory, refreshData }) {
   // Patient details
@@ -131,12 +133,12 @@ export function WalkinBilling({ selectedPrescription, clearPrescription, invento
     // Check if already in billing items
     const exists = billingItems.find(item => item.medicine_id === med.id);
     if (exists) {
-      alert("Medicine already added. Adjust quantity in the list.");
+      toast.error("Medicine already added. Adjust quantity in the list.");
       return;
     }
 
     if (med.available_quantity <= 0) {
-      alert("Medicine is out of stock.");
+      toast.error("Medicine is out of stock.");
       return;
     }
 
@@ -160,7 +162,7 @@ export function WalkinBilling({ selectedPrescription, clearPrescription, invento
     setBillingItems(billingItems.map(item => {
       if (item.medicine_id === medId) {
         if (newQty > item.available_quantity) {
-          alert(`Cannot exceed available stock of ${item.available_quantity} units.`);
+          toast.error(`Cannot exceed available stock of ${item.available_quantity} units.`);
           return item;
         }
         return { ...item, quantity: Math.max(1, newQty) };
@@ -181,15 +183,15 @@ export function WalkinBilling({ selectedPrescription, clearPrescription, invento
   const handleDispense = async (e) => {
     e.preventDefault();
     if (!patientId) {
-      alert("Please select a patient.");
+      toast.error("Please select a patient.");
       return;
     }
     if (!doctorId) {
-      alert("Please select a prescribing doctor.");
+      toast.error("Please select a prescribing doctor.");
       return;
     }
     if (billingItems.length === 0) {
-      alert("Please add at least one medicine item.");
+      toast.error("Please add at least one medicine item.");
       return;
     }
 
@@ -229,7 +231,7 @@ export function WalkinBilling({ selectedPrescription, clearPrescription, invento
           document.body.appendChild(script);
         });
         if (!rzpLoaded) {
-          alert('Failed to load Razorpay payment gateway.');
+          toast.error('Failed to load Razorpay payment gateway.');
           setIsSubmitting(false);
           return;
         }
@@ -276,7 +278,7 @@ export function WalkinBilling({ selectedPrescription, clearPrescription, invento
               if (refreshData) refreshData();
             } catch (err) {
               console.error(err);
-              alert("Online payment verification failed. Please contact the administrator.");
+              toast.error("Online payment verification failed. Please contact the administrator.");
             }
           },
           modal: {
@@ -299,7 +301,7 @@ export function WalkinBilling({ selectedPrescription, clearPrescription, invento
       }
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.message || "Failed to process bill.");
+      toast.error(err.response?.data?.message || "Failed to process bill.");
     } finally {
       setIsSubmitting(false);
     }
@@ -447,20 +449,20 @@ export function WalkinBilling({ selectedPrescription, clearPrescription, invento
                     Dr. {doctorName}
                   </div>
                 ) : (
-                  <select
+                  <CustomDropdown
                     value={doctorId}
-                    onChange={(e) => {
-                      const doc = doctorsList.find(d => d.id === parseInt(e.target.value));
+                    onChange={(val) => {
+                      const doc = doctorsList.find(d => d.id === parseInt(val));
                       setDoctorId(doc?.id || '');
                       setDoctorName(doc?.name || '');
                     }}
-                    className="w-full bg-[#f8f9fa] border-0 rounded-xl px-4 py-3.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500/20"
-                  >
-                    <option value="">Select doctor...</option>
-                    {doctorsList.map(d => (
-                      <option key={d.id} value={d.id}>Dr. {d.name} ({d.department || 'General'})</option>
-                    ))}
-                  </select>
+                    placeholder="Select doctor..."
+                    options={doctorsList.map(d => ({
+                      value: d.id,
+                      label: `Dr. ${d.name} (${d.department || 'General'})`
+                    }))}
+                    className="w-full h-11"
+                  />
                 )}
               </div>
 
