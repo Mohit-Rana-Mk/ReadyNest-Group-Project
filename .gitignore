@@ -32,6 +32,7 @@ pnpm-debug.log*
 # Depending on future tech stack, common directories:
 node_modules/
 dist/
+dev-dist/
 build/
 __pycache__/
 *.pyc

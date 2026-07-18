@@ -2,6 +2,8 @@ import React from 'react';
 import { Calendar, Clock, User, Building2, FileText, Video, AlertTriangle, X, Loader2, ShieldAlert, CreditCard, MapPin } from 'lucide-react';
 import { CustomDropdown } from '../../../components/ui/CustomDropdown';
 import axiosClient from '../../../api/axiosClient';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const statusColors = {
     'Scheduled':       'bg-indigo-50 text-indigo-700 border-indigo-200',
@@ -11,6 +13,136 @@ const statusColors = {
     'Completed':       'bg-emerald-50 text-emerald-700 border-emerald-200',
     'Cancelled':       'bg-red-50 text-red-700 border-red-200',
     'Canceled':        'bg-red-50 text-red-700 border-red-200',
+};
+
+const downloadPrescriptionPDF = (appt) => {
+    try {
+        const doc = new jsPDF();
+        
+        // Header bar
+        doc.setFillColor(99, 102, 241); 
+        doc.rect(0, 0, 210, 15, 'F');
+        
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.setTextColor(31, 41, 55); 
+        doc.text(appt.clinic_name || "HealTrack Clinic", 14, 30);
+        
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(107, 114, 128); 
+        if (appt.clinic_address) {
+            doc.text(`${appt.clinic_address}, ${appt.clinic_city || ""}`, 14, 35);
+        }
+        
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.setTextColor(99, 102, 241);
+        doc.text("MEDICAL PRESCRIPTION", 14, 48);
+        
+        doc.setDrawColor(229, 231, 235);
+        doc.line(14, 52, 196, 52);
+        
+        // Demographics
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(75, 85, 99);
+        doc.text("Patient Name:", 14, 60);
+        doc.setFont("helvetica", "normal");
+        doc.text(appt.patient_name || "N/A", 42, 60);
+        
+        doc.setFont("helvetica", "bold");
+        doc.text("Doctor Name:", 14, 66);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Dr. ${appt.doctor_name || "N/A"}`, 42, 66);
+        
+        doc.setFont("helvetica", "bold");
+        doc.text("Date:", 120, 60);
+        doc.setFont("helvetica", "normal");
+        const dateStr = new Date(appt.appointment_date).toLocaleDateString('en-IN', { 
+            day: 'numeric', month: 'short', year: 'numeric' 
+        });
+        doc.text(dateStr, 135, 60);
+        
+        // Vitals
+        const vitals = [];
+        if (appt.weight_kg) vitals.push(`Weight: ${appt.weight_kg} kg`);
+        if (appt.systolic_bp && appt.diastolic_bp) vitals.push(`BP: ${appt.systolic_bp}/${appt.diastolic_bp}`);
+        if (appt.pulse_rate) vitals.push(`Pulse: ${appt.pulse_rate} bpm`);
+        
+        if (vitals.length > 0) {
+            doc.setFont("helvetica", "bold");
+            doc.text("Vitals:", 120, 66);
+            doc.setFont("helvetica", "normal");
+            doc.text(vitals.join(" | "), 135, 66);
+        }
+        
+        doc.line(14, 72, 196, 72);
+        
+        let yPos = 80;
+        
+        // Clinical Notes
+        if (appt.post_remarks) {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(31, 41, 55);
+            doc.text("Doctor's Notes / Remarks:", 14, yPos);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            doc.setTextColor(75, 85, 99);
+            
+            const splitRemarks = doc.splitTextToSize(appt.post_remarks, 180);
+            doc.text(splitRemarks, 14, yPos + 6);
+            yPos += 12 + (splitRemarks.length * 5);
+        }
+        
+        // Prescriptions
+        let rxs = [];
+        try {
+            rxs = typeof appt.prescriptions === 'string' ? JSON.parse(appt.prescriptions) : appt.prescriptions;
+        } catch (e) {}
+        
+        if (Array.isArray(rxs) && rxs.length > 0) {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(31, 41, 55);
+            doc.text("Prescribed Medications:", 14, yPos);
+            
+            const columns = [
+                { header: 'Medicine Name', dataKey: 'medicine_name' },
+                { header: 'Dosage', dataKey: 'dosage' },
+                { header: 'Frequency', dataKey: 'frequency' },
+                { header: 'Duration', dataKey: 'duration' },
+                { header: 'Instructions', dataKey: 'instructions' }
+            ];
+            
+            const rows = rxs.map(rx => ({
+                medicine_name: rx.medicine_name || "",
+                dosage: rx.dosage || "",
+                frequency: rx.frequency || "",
+                duration: rx.duration || "",
+                instructions: rx.instructions || ""
+            }));
+            
+            autoTable(doc, {
+                columns: columns,
+                body: rows,
+                startY: yPos + 4,
+                theme: 'striped',
+                headStyles: { fillColor: [99, 102, 241] },
+                margin: { left: 14, right: 14 }
+            });
+        } else {
+            doc.setFont("helvetica", "italic");
+            doc.setFontSize(10);
+            doc.setTextColor(107, 114, 128);
+            doc.text("No medications prescribed.", 14, yPos + 6);
+        }
+        
+        doc.save(`Prescription_${appt.patient_name || "Patient"}_${dateStr.replace(/ /g, "_")}.pdf`);
+    } catch (error) {
+        console.error("Failed to generate PDF", error);
+    }
 };
 
 export default function AppointmentHistory({ appointments, onRefresh }) {
@@ -226,7 +358,16 @@ export default function AppointmentHistory({ appointments, onRefresh }) {
                                     {/* Prescriptions */}
                                     {appt.prescriptions && (
                                         <div className="bg-emerald-50 p-2 rounded-lg border border-emerald-100">
-                                            <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-1.5">Prescriptions</p>
+                                            <div className="flex justify-between items-center mb-1.5">
+                                                <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Prescriptions</p>
+                                                <button 
+                                                    onClick={() => downloadPrescriptionPDF(appt)}
+                                                    className="text-[9px] font-extrabold uppercase bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-0.5 rounded transition flex items-center gap-1 cursor-pointer"
+                                                >
+                                                    <FileText size={10} />
+                                                    Download PDF
+                                                </button>
+                                            </div>
                                             <div className="space-y-1.5">
                                                 {(() => {
                                                     let rxs = [];
@@ -341,8 +482,8 @@ export default function AppointmentHistory({ appointments, onRefresh }) {
                                     </div>
                                 )}
 
-                                {/* Refund Action for Paid but not refunded appointments (Only if appointment is cancelled or confirmed/scheduled) */}
-                                {appt.payment_status === 'Paid' && !appt.refund_status && (
+                                {/* Refund Action for Paid but not refunded appointments (Only if appointment is not completed yet) */}
+                                {appt.payment_status === 'Paid' && !appt.refund_status && appt.status !== 'Completed' && (
                                     <div className="pt-2 border-t border-gray-100 flex">
                                         <button 
                                             onClick={() => handleInitiateRefund(appt)}
