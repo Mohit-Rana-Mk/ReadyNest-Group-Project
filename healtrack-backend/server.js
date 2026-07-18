@@ -19,16 +19,19 @@ const medicineRoutes = require('./routes/medicineRoutes');
 
 const app = express();
 const allowedOrigins = process.env.ALLOWED_ORIGINS 
-    ? process.env.ALLOWED_ORIGINS.split(',') 
+    ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim().replace(/\/$/, '')) 
     : ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:5174'];
 
 const corsOptions = {
     origin: (origin, callback) => {
         if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
+        const normalizedOrigin = origin.trim().replace(/\/$/, '');
+        const isAllowed = allowedOrigins.includes(normalizedOrigin) || allowedOrigins.includes('*');
+        if (isAllowed) {
             callback(null, true);
         } else {
-            callback(new Error('Not allowed by CORS'));
+            console.warn(`CORS rejection: Request from origin "${origin}" is not allowed by ALLOWED_ORIGINS config.`);
+            callback(null, false);
         }
     },
     credentials: true
@@ -39,10 +42,12 @@ const io = new Server(server, {
     cors: {
         origin: (origin, callback) => {
             if (!origin) return callback(null, true);
-            if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
+            const normalizedOrigin = origin.trim().replace(/\/$/, '');
+            const isAllowed = allowedOrigins.includes(normalizedOrigin) || allowedOrigins.includes('*');
+            if (isAllowed) {
                 callback(null, true);
             } else {
-                callback(new Error('Not allowed by CORS'));
+                callback(null, false);
             }
         },
         methods: ["GET", "POST"],
