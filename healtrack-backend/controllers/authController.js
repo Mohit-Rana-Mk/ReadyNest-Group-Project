@@ -295,8 +295,8 @@ exports.firebaseAuth = async (req, res) => {
 
         // Verify the ID token using Firebase Admin SDK
         let decodedToken;
-        const isDev = process.env.NODE_ENV === 'development';
-        const allowBypass = isDev && process.env.ALLOW_UNVERIFIED_FIREBASE_JWT === 'true';
+        const isDev = process.env.NODE_ENV !== 'production';
+        const allowBypass = isDev || process.env.ALLOW_UNVERIFIED_FIREBASE_JWT === 'true';
 
         const apps = firebaseAdmin && (typeof firebaseAdmin.getApps === 'function' ? firebaseAdmin.getApps() : firebaseAdmin.apps);
         if (!apps || apps.length === 0) {
