@@ -269,7 +269,7 @@ export default function PatientPayments() {
                                                     <FileText size={12} />
                                                     Invoice
                                                 </button>
-                                                {payment.status === 'Paid' && !payment.refund_status && (
+                                                {payment.status === 'Paid' && !payment.refund_status && payment.appointment_status !== 'Completed' && (
                                                     <button
                                                         onClick={() => openRefundModal(payment.id)}
                                                         className="flex items-center gap-1 bg-rose-50 border border-rose-100 text-rose-600 hover:bg-rose-100 font-bold text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-lg transition-colors cursor-pointer"

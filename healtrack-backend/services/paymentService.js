@@ -160,6 +160,10 @@ class PaymentService {
             throw new Error('Only successful paid payments can be refunded');
         }
 
+        if (payment.appointment_status === 'Completed') {
+            throw new Error('Cannot request a refund for a completed consultation');
+        }
+
         const hasExistingRefund = await paymentRepository.checkExistingRefund(payment_id);
         if (hasExistingRefund) {
             throw new Error('Refund request already submitted for this payment');

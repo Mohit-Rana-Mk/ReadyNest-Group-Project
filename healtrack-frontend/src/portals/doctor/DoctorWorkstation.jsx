@@ -16,6 +16,15 @@ import { ReportUpload } from './components/ReportUpload';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 
+const getInitials = (name) => {
+    if (!name) return 'DR';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length > 1) {
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return parts[0].substring(0, 2).toUpperCase();
+};
+
 export default function DoctorWorkstation() {
     const { logout, user } = useAuth();
     const [appointments, setAppointments] = useState([]);
@@ -246,7 +255,7 @@ export default function DoctorWorkstation() {
                     <div className="h-6 w-px bg-[#e9ecef] hidden md:block"></div>
                     <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600 text-[11px] uppercase">
-                            {user?.name ? user.name.substring(0, 2) : 'DR'}
+                            {getInitials(user?.name)}
                         </div>
                         <span className="text-xs font-semibold text-slate-800 hidden lg:block">{user?.name ? `Dr. ${user.name}` : 'Doctor Portal'}</span>
                         <Button variant="outline" onClick={logout} className="ml-1 md:ml-2 p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition border-none bg-transparent" title="Logout">

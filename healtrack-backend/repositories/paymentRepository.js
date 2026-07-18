@@ -113,7 +113,7 @@ class PaymentRepository {
         const [payments] = await db.query(
             `SELECT p.id, p.amount, p.status, p.receipt_id, p.invoice_id, p.created_at, p.razorpay_payment_id,
                     c.name AS clinic_name, du.name AS doctor_name, a.appointment_date,
-                    a.id AS appointment_id,
+                    a.id AS appointment_id, a.status AS appointment_status,
                     rr.status AS refund_status
              FROM payments p
              JOIN clinics c ON p.clinic_id = c.id
@@ -147,7 +147,10 @@ class PaymentRepository {
 
     async getPaymentByIdAndPatient(paymentId, patientId) {
         const [paymentRows] = await db.query(
-            `SELECT id, amount, status FROM payments WHERE id = ? AND patient_id = ?`,
+            `SELECT p.id, p.amount, p.status, a.status AS appointment_status 
+             FROM payments p 
+             JOIN appointments a ON p.appointment_id = a.id
+             WHERE p.id = ? AND p.patient_id = ?`,
             [paymentId, patientId]
         );
         return paymentRows.length > 0 ? paymentRows[0] : null;

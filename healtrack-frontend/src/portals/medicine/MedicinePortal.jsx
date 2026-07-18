@@ -13,6 +13,15 @@ import { InventoryManagement } from './components/InventoryManagement';
 import { BillHistory } from './components/BillHistory';
 import { AuditLogs } from './components/AuditLogs';
 
+const getInitials = (name) => {
+  if (!name) return 'PH';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length > 1) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return parts[0].substring(0, 2).toUpperCase();
+};
+
 export default function MedicinePortal() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -196,7 +205,7 @@ export default function MedicinePortal() {
         <div className="p-6 border-t border-slate-800/60 space-y-4">
           <div className="flex items-center gap-3.5">
             <div className="w-10 h-10 rounded-2xl bg-slate-800 flex items-center justify-center font-bold text-white uppercase text-sm border border-slate-700/50">
-              {user?.name?.substring(0, 2) || 'PH'}
+              {getInitials(user?.name)}
             </div>
             <div>
               <h4 className="text-xs font-black text-slate-200 truncate max-w-[130px]">{user?.name || 'Pharmacist'}</h4>

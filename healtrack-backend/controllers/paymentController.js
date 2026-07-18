@@ -197,7 +197,7 @@ exports.requestRefund = async (req, res) => {
         const result = await paymentService.requestRefund(req.user.id, req.body);
         res.status(201).json(result);
     } catch (error) {
-        if (['Payment ID and reason are required', 'Only successful paid payments can be refunded', 'Refund request already submitted for this payment'].includes(error.message)) {
+        if (['Payment ID and reason are required', 'Only successful paid payments can be refunded', 'Refund request already submitted for this payment', 'Cannot request a refund for a completed consultation'].includes(error.message)) {
             return res.status(400).json({ message: error.message });
         }
         if (['Patient not found', 'Payment not found or unauthorized'].includes(error.message)) {
