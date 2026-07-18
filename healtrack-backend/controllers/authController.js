@@ -284,6 +284,7 @@ exports.updateLanguage = async (req, res) => {
 
 const firebaseAdmin = require('../config/firebase');
 const { getAuth } = require('firebase-admin/auth');
+const { getApps } = require('firebase-admin/app');
 
 exports.firebaseAuth = async (req, res) => {
     try {
@@ -298,8 +299,8 @@ exports.firebaseAuth = async (req, res) => {
         const isDev = process.env.NODE_ENV !== 'production';
         const allowBypass = isDev || process.env.ALLOW_UNVERIFIED_FIREBASE_JWT === 'true';
 
-        const apps = firebaseAdmin && (typeof firebaseAdmin.getApps === 'function' ? firebaseAdmin.getApps() : firebaseAdmin.apps);
-        if (!apps || apps.length === 0) {
+        const apps = getApps();
+        if (apps.length === 0) {
             if (allowBypass) {
                 console.warn("Firebase Admin SDK is not initialized. Using manual decode fallback (DEVELOPMENT ONLY).");
                 try {
