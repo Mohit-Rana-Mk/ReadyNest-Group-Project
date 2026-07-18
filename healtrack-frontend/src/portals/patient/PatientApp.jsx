@@ -227,9 +227,7 @@ export default function PatientApp() {
                 {/* Logo and Portal Title */}
                 <div className="p-6 flex items-center justify-between border-b border-slate-800/60">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-md">
-                            <Heart className="w-4.5 h-4.5 fill-white/20" />
-                        </div>
+                        <img src="/logo.png" alt="HealTrack Logo" className="w-8 h-8 object-contain rounded-lg shadow-md" />
                         <div>
                             <h1 className="text-base font-bold text-white tracking-tight leading-tight">
                                 HealTrack
@@ -298,9 +296,7 @@ export default function PatientApp() {
                 <header className="md:hidden sticky top-0 z-40 bg-[#0B132B] pt-4 pb-3 px-4 border-b border-slate-800/60 shadow-md">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-md">
-                                <Heart className="w-4.5 h-4.5 fill-white/20" />
-                            </div>
+                            <img src="/logo.png" alt="HealTrack Logo" className="w-8 h-8 object-contain rounded-lg shadow-md" />
                             <div>
                                 <h1 className="text-base font-bold text-white tracking-tight leading-tight">
                                     HealTrack

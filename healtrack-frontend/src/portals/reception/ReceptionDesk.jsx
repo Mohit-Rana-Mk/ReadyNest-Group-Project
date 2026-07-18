@@ -351,9 +351,7 @@ export default function ReceptionDesk() {
       {/* Header */}
       <header className="bg-[#0B132B] sticky top-0 z-50 px-6 md:px-10 py-4 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
-            <Activity className="w-4 h-4 text-white" />
-          </div>
+          <img src="/logo.png" alt="HealTrack Logo" className="w-8 h-8 object-contain rounded-lg shadow-md" />
           <div>
             <h1 className="text-sm font-extrabold text-white tracking-tight">Reception Desk</h1>
             <p className="text-[9px] text-[#22d3ee] font-bold uppercase tracking-widest">

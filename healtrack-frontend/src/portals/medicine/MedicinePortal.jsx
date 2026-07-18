@@ -111,9 +111,7 @@ export default function MedicinePortal() {
         <div className="flex flex-col">
           {/* Logo Header */}
           <div className="h-20 px-8 flex items-center gap-3 border-b border-slate-800/60">
-            <div className="w-10 h-10 rounded-xl bg-indigo-650 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30">
-              <Activity className="w-6 h-6 stroke-[2.5]" />
-            </div>
+            <img src="/logo.png" alt="HealTrack Logo" className="w-10 h-10 object-contain rounded-xl shadow-lg shadow-indigo-600/30" />
             <div>
               <h2 className="text-sm font-black text-white tracking-wider uppercase">HealTrack</h2>
               <span className="text-[9px] font-extrabold text-indigo-400 tracking-widest uppercase">Pharmacy Suite</span>

@@ -283,6 +283,7 @@ exports.updateLanguage = async (req, res) => {
 };
 
 const firebaseAdmin = require('../config/firebase');
+const { getAuth } = require('firebase-admin/auth');
 
 exports.firebaseAuth = async (req, res) => {
     try {
@@ -297,7 +298,8 @@ exports.firebaseAuth = async (req, res) => {
         const isDev = process.env.NODE_ENV === 'development';
         const allowBypass = isDev && process.env.ALLOW_UNVERIFIED_FIREBASE_JWT === 'true';
 
-        if (!firebaseAdmin || !firebaseAdmin.apps || firebaseAdmin.apps.length === 0) {
+        const apps = firebaseAdmin && (typeof firebaseAdmin.getApps === 'function' ? firebaseAdmin.getApps() : firebaseAdmin.apps);
+        if (!apps || apps.length === 0) {
             if (allowBypass) {
                 console.warn("Firebase Admin SDK is not initialized. Using manual decode fallback (DEVELOPMENT ONLY).");
                 try {
@@ -315,7 +317,7 @@ exports.firebaseAuth = async (req, res) => {
             }
         } else {
             try {
-                decodedToken = await firebaseAdmin.auth().verifyIdToken(idToken);
+                decodedToken = await getAuth().verifyIdToken(idToken);
             } catch (authError) {
                 console.error("Firebase token verification failed via Admin SDK:", authError.message);
                 if (allowBypass) {

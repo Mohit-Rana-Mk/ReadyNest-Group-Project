@@ -227,9 +227,7 @@ export default function Signup() {
                     <div className="hidden lg:flex lg:col-span-6 flex-col space-y-7 text-left">
                         {/* Logo header */}
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md">
-                                <Heart className="w-5.5 h-5.5 fill-white/20" />
-                            </div>
+                            <img src="/logo.png" alt="HealTrack Logo" className="w-10 h-10 object-contain rounded-xl shadow-md" />
                             <div>
                                 <h1 className="text-xl font-bold text-slate-800 tracking-tight leading-tight">
                                     HealTrack AI
