@@ -1,7 +1,8 @@
 import React from 'react';
-import { Calendar, Clock, User, Building2, FileText, Video, AlertTriangle, X, Loader2, ShieldAlert, CreditCard, MapPin } from 'lucide-react';
+import { Calendar, Clock, User, Building2, FileText, Video, AlertTriangle, X, Loader2, ShieldAlert, CreditCard, MapPin, Download } from 'lucide-react';
 import { CustomDropdown } from '../../../components/ui/CustomDropdown';
 import axiosClient from '../../../api/axiosClient';
+import { generatePrescriptionPDF } from '../../../utils/generatePrescriptionPDF';
 
 const statusColors = {
     'Scheduled':       'bg-indigo-50 text-indigo-700 border-indigo-200',
@@ -226,7 +227,19 @@ export default function AppointmentHistory({ appointments, onRefresh }) {
                                     {/* Prescriptions */}
                                     {appt.prescriptions && (
                                         <div className="bg-emerald-50 p-2 rounded-lg border border-emerald-100">
-                                            <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-1.5">Prescriptions</p>
+                                            <div className="flex justify-between items-center mb-1.5">
+                                                <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Prescriptions</p>
+                                                <button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        generatePrescriptionPDF(appt, appt.patient_name);
+                                                    }}
+                                                    className="flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-100/50 hover:bg-emerald-200/50 px-2 py-0.5 rounded transition"
+                                                >
+                                                    <Download className="w-3 h-3" />
+                                                    Download PDF
+                                                </button>
+                                            </div>
                                             <div className="space-y-1.5">
                                                 {(() => {
                                                     let rxs = [];
@@ -342,7 +355,7 @@ export default function AppointmentHistory({ appointments, onRefresh }) {
                                 )}
 
                                 {/* Refund Action for Paid but not refunded appointments (Only if appointment is cancelled or confirmed/scheduled) */}
-                                {appt.payment_status === 'Paid' && !appt.refund_status && (
+                                {appt.payment_status === 'Paid' && !appt.refund_status && appt.status !== 'Completed' && (
                                     <div className="pt-2 border-t border-gray-100 flex">
                                         <button 
                                             onClick={() => handleInitiateRefund(appt)}
