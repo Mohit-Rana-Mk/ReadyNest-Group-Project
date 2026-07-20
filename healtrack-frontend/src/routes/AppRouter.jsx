@@ -9,7 +9,6 @@ import ReceptionDesk from '../portals/reception/ReceptionDesk';
 import AdminDashboard from '../portals/admin/AdminDashboard';
 import MedicinePortal from '../portals/medicine/MedicinePortal';
 import ProtectedRoute from './ProtectedRoute';
-import Landing from '../pages/Landing';
 import Login from '../pages/Login';
 import Signup from '../pages/Signup';
 import PharmacyLogin from '../pages/PharmacyLogin';
@@ -19,8 +18,8 @@ export default function AppRouter() {
     return (
         <BrowserRouter>
             <Routes>
-                {/* Public Landing Route */}
-                <Route path="/" element={<Landing />} />
+                {/* Public / Landing Route (Placeholder) */}
+                <Route path="/" element={<Navigate to="/login" replace />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/medicine/login" element={<PharmacyLogin />} />
