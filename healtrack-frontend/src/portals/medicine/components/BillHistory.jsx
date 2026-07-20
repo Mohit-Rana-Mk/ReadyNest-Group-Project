@@ -177,7 +177,10 @@ export function BillHistory({ bills }) {
                   
                   {/* Receipt Header */}
                   <div className="receipt-header text-center pb-6 border-b-2 border-slate-100 mb-6">
-                    <h1 className="receipt-title text-xl font-black text-slate-900 tracking-tight">HealTrack AI Pharmacy</h1>
+                    <div className="flex items-center justify-center gap-2">
+                        <img src="/logo.png" alt="HealTrack Logo" className="w-6 h-6 object-contain rounded-md" />
+                        <h1 className="receipt-title text-xl font-black text-slate-900 tracking-tight">HealTrack AI Pharmacy</h1>
+                    </div>
                     <p className="receipt-subtitle text-[9px] text-indigo-600 font-extrabold uppercase tracking-widest mt-1">Dispensation Invoice Receipt</p>
                     <p className="text-[10px] text-slate-400 mt-0.5">Automated Electronic Health Record (EHR) Ledger</p>
                   </div>
