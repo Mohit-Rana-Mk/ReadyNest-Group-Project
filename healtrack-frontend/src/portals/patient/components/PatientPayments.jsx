@@ -120,9 +120,7 @@ export default function PatientPayments() {
                 <div className="flex flex-col md:flex-row justify-between gap-6">
                     <div>
                         <div className="flex items-center gap-2 mb-2">
-                            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-base">
-                                H
-                            </div>
+                            <img src="/logo.png" alt="HealTrack Logo" className="w-8 h-8 object-contain rounded-lg" />
                             <span className="text-lg font-black text-slate-800 tracking-tight">HealTrack Systems</span>
                         </div>
                         <p className="text-xs text-slate-500">Secure Healthcare Settlements</p>

@@ -131,7 +131,7 @@ export default function ClinicManagementPortal() {
     <>
       <div className="p-4 md:p-6">
         <div className="flex items-center gap-3 mb-1">
-          <img src="/logo.png" alt="HealTrack Logo" className="w-8 h-8 object-contain" />
+          <img src="/logo.png" alt="HealTrack Logo" className="w-8 h-8 object-contain rounded-xl shadow-sm" />
           <h1 className="text-xl md:text-2xl font-bold text-white tracking-wide">HealTrack AI</h1>
           <Button variant="outline" onClick={() => setSidebarOpen(false)} className="md:hidden ml-auto p-1 text-indigo-300 hover:text-white border-none bg-transparent">
             <X className="w-5 h-5" />

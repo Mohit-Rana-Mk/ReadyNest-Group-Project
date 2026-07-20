@@ -172,7 +172,7 @@ export default function AdminDashboard() {
     const sidebarContent = (
         <>
             <div className="p-4 lg:p-6 border-b flex items-center gap-3 border-[#f1f3f5]">
-                <img src="/logo.png" alt="HealTrack Logo" className="w-8 h-8 object-contain" />
+                <img src="/logo.png" alt="HealTrack Logo" className="w-8 h-8 object-contain rounded-xl shadow-sm" />
                 <div>
                     <h2 className="font-bold text-base leading-none text-slate-800">HealTrack</h2>
                     <span className="text-[10px] text-indigo-700 font-bold uppercase tracking-wider">Super Admin</span>

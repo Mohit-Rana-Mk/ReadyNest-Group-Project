@@ -163,9 +163,12 @@ export function PatientAnalytics() {
     <div className="space-y-6 bg-gray-50 p-6 rounded-2xl border border-gray-200/80 shadow-sm w-full h-full overflow-y-auto">
       {/* Title */}
       <div className="border-b border-gray-200 pb-4 flex justify-between items-center">
-        <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">
-          HealTrack AI - Patient Analytics
-        </h1>
+        <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="HealTrack Logo" className="w-10 h-10 object-contain rounded-xl shadow-sm" />
+            <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">
+              HealTrack AI - Patient Analytics
+            </h1>
+        </div>
       </div>
 
       {/* FILTER & KPI ROW */}

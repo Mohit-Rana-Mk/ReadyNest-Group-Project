@@ -114,7 +114,8 @@ export function AnalyticsDashboard({ clinicId = 1 }) {
   return (
     <div className="space-y-6 bg-gray-50 p-6 rounded-2xl border border-gray-200/80 shadow-sm min-h-screen">
       {/* Title */}
-      <div className="border-b border-gray-200 pb-4">
+      <div className="border-b border-gray-200 pb-4 flex items-center justify-center gap-3">
+        <img src="/logo.png" alt="HealTrack Logo" className="w-10 h-10 object-contain rounded-xl shadow-sm" />
         <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight text-center">
           HealTrack AI - Operational Dashboard
         </h1>

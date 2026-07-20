@@ -225,7 +225,7 @@ export default function DoctorWorkstation() {
                         <Users className="w-5 h-5" />
                     </Button>
                     <div className="flex items-center gap-2">
-                        <img src="/logo.png" alt="HealTrack Logo" className="w-7 h-7 md:w-8 md:h-8 object-contain" />
+                        <img src="/logo.png" alt="HealTrack Logo" className="w-7 h-7 md:w-8 md:h-8 object-contain rounded-xl shadow-sm" />
                         <h2 className="font-bold text-slate-800 text-sm md:text-base leading-none">HealTrack <span className="text-indigo-700">Doctor</span></h2>
                     </div>
                     {user?.clinic_name && (

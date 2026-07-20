@@ -175,7 +175,10 @@ export default function VideoConsultation() {
         <div className="fixed inset-0 w-screen h-screen bg-slate-900 flex flex-col overflow-hidden">
             {/* Header */}
             <div className="absolute top-0 inset-x-0 p-6 flex justify-between items-center z-10 bg-gradient-to-b from-black/50 to-transparent">
-                <h1 className="text-white text-xl font-bold tracking-wide">HealTrack Video Consultation</h1>
+                <div className="flex items-center gap-3">
+                    <img src="/logo.png" alt="HealTrack Logo" className="w-8 h-8 object-contain rounded-lg" />
+                    <h1 className="text-white text-xl font-bold tracking-wide">HealTrack Video Consultation</h1>
+                </div>
                 <div className="flex items-center gap-2">
                     {isConnected ? (
                         <div className="flex items-center gap-2 bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full border border-emerald-500/30">
