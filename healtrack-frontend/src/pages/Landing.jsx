@@ -125,7 +125,7 @@ export default function Landing() {
                             Trusted by Clinics
                         </motion.div>
                         <motion.variants variants={fadeUpVariants}>
-                            <h1 className="text-5xl md:text-7xl font-extrabold text-[#0F172A] leading-tight tracking-tight">
+                            <h1 className="text-4xl md:text-7xl font-extrabold text-[#0F172A] leading-tight tracking-tight">
                                 Smarter Healthcare. <br/>
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">
                                     Better Patient Care.
@@ -214,7 +214,7 @@ export default function Landing() {
             {/* TRUSTED STATS */}
             <section className="py-10 bg-white border-y border-slate-100">
                 <div className="max-w-7xl mx-auto px-6">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-slate-100">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-y-10 gap-x-4 md:gap-8 md:divide-x divide-slate-100">
                         {[ 
                             { label: 'Lines of Code', value: 15000, suffix: '+' },
                             { label: 'Core Features', value: 25, suffix: '+' },
@@ -222,11 +222,11 @@ export default function Landing() {
                             { label: 'Uptime', value: 99, suffix: '%' }
                         ].map((stat, i) => (
                             <div key={i} className="text-center">
-                                <h3 className="text-4xl font-extrabold text-[#2563EB]">
+                                <h3 className="text-3xl md:text-4xl font-extrabold text-[#2563EB]">
                                     <CountUp end={stat.value} decimals={stat.decimals || 0} duration={2.5} enableScrollSpy scrollSpyOnce />
                                     {stat.suffix}
                                 </h3>
-                                <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mt-2">{stat.label}</p>
+                                <p className="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-widest mt-2">{stat.label}</p>
                             </div>
                         ))}
                     </div>
