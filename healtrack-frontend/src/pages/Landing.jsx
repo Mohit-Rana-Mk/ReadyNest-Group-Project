@@ -157,11 +157,11 @@ export default function Landing() {
                         className="relative lg:h-[600px] flex items-center justify-center"
                     >
                         {/* Abstract Hero Visual */}
-                        <div className="relative w-full max-w-md aspect-square rounded-full bg-gradient-to-tr from-blue-100 to-cyan-50 shadow-inner overflow-visible">
+                        <div className="relative w-full max-w-[280px] sm:max-w-[320px] md:max-w-md mx-auto aspect-square rounded-full bg-gradient-to-tr from-blue-100 to-cyan-50 shadow-inner overflow-visible">
                             {/* Floating Appointment Card */}
                             <motion.div 
                                 style={{ y: y1 }}
-                                className="absolute top-10 -left-10 bg-white/90 backdrop-blur-xl p-4 rounded-2xl shadow-2xl border border-white/50 z-20 flex items-center gap-4"
+                                className="absolute top-4 md:top-10 -left-4 md:-left-10 bg-white/90 backdrop-blur-xl p-3 md:p-4 rounded-2xl shadow-2xl border border-white/50 z-20 flex items-center gap-3 md:gap-4 scale-90 md:scale-100 origin-top-left"
                             >
                                 <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
                                     <Calendar className="w-6 h-6" />
@@ -176,7 +176,7 @@ export default function Landing() {
                             {/* Floating AI Card */}
                             <motion.div 
                                 style={{ y: y2 }}
-                                className="absolute bottom-20 -right-10 bg-[#0F172A]/90 backdrop-blur-xl p-4 rounded-2xl shadow-2xl border border-white/10 z-20 flex items-center gap-4"
+                                className="absolute bottom-10 md:bottom-20 -right-4 md:-right-10 bg-[#0F172A]/90 backdrop-blur-xl p-3 md:p-4 rounded-2xl shadow-2xl border border-white/10 z-20 flex items-center gap-3 md:gap-4 scale-90 md:scale-100 origin-bottom-right"
                             >
                                 <div className="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center text-cyan-400">
                                     <Brain className="w-6 h-6" />
@@ -191,7 +191,7 @@ export default function Landing() {
                             <motion.div 
                                 animate={{ y: [0, -15, 0] }}
                                 transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
-                                className="absolute -bottom-6 left-1/4 bg-white/90 backdrop-blur-xl p-4 rounded-2xl shadow-2xl border border-white/50 z-20 flex items-center gap-4"
+                                className="absolute -bottom-4 md:-bottom-6 left-1/2 -translate-x-1/2 md:translate-x-0 md:left-1/4 bg-white/90 backdrop-blur-xl p-3 md:p-4 rounded-2xl shadow-2xl border border-white/50 z-20 flex items-center gap-3 md:gap-4 scale-90 md:scale-100 origin-bottom"
                             >
                                 <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
                                     <UserSquare2 className="w-5 h-5" />
