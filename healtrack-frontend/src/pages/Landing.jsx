@@ -219,7 +219,7 @@ export default function Landing() {
                             { label: 'Appointments', value: 1000, suffix: '+' },
                             { label: 'Doctors', value: 250, suffix: '+' },
                             { label: 'Clinics', value: 50, suffix: '+' },
-                            { label: 'Uptime', value: 99.9, suffix: '%', decimals: 1 }
+                            { label: 'Uptime', value: 99, suffix: '%' }
                         ].map((stat, i) => (
                             <div key={i} className="text-center">
                                 <h3 className="text-4xl font-extrabold text-[#2563EB]">
