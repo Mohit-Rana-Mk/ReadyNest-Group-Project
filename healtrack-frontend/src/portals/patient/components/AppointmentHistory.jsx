@@ -1,5 +1,6 @@
 import React from 'react';
 import { Calendar, Clock, User, Building2, FileText, Video, AlertTriangle, X, Loader2, ShieldAlert, CreditCard, MapPin } from 'lucide-react';
+import EmptyState from '../../../components/ui/EmptyState';
 import { CustomDropdown } from '../../../components/ui/CustomDropdown';
 import axiosClient from '../../../api/axiosClient';
 import { jsPDF } from 'jspdf';
@@ -244,9 +245,12 @@ export default function AppointmentHistory({ appointments, onRefresh }) {
 
     if (!appointments || appointments.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-                <FileText size={40} strokeWidth={1.2} />
-                <p className="mt-3 text-sm">No records found yet.</p>
+            <div className="py-6">
+                <EmptyState 
+                    icon={FileText} 
+                    title="No Records Found" 
+                    description="You haven't had any appointments or checkups yet." 
+                />
             </div>
         );
     }
@@ -279,9 +283,11 @@ export default function AppointmentHistory({ appointments, onRefresh }) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {filteredAppointments.length === 0 ? (
-                    <div className="col-span-full flex flex-col items-center justify-center py-16 text-gray-400">
-                        <p className="text-sm">No records found for this family member.</p>
-                    </div>
+                    <EmptyState 
+                        icon={User} 
+                        title="No Records Found" 
+                        description="No medical history found for this family member." 
+                    />
                 ) : filteredAppointments.map(appt => {
                     const date = new Date(appt.appointment_date);
                     const statusClass = statusColors[appt.status] || 'bg-gray-50 text-gray-700 border-gray-200';

@@ -94,9 +94,9 @@ export function BillHistory({ bills }) {
             No transaction records found matching your search.
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-100">
-              <thead>
+          <div className="overflow-x-auto overflow-y-auto max-h-[500px]">
+            <table className="min-w-full divide-y divide-slate-100 relative">
+              <thead className="sticky top-0 bg-white/90 backdrop-blur-md z-10 shadow-sm">
                 <tr className="text-left text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">
                   <th className="pb-3">Bill Number</th>
                   <th className="pb-3 text-center">Receipt</th>
@@ -111,7 +111,7 @@ export function BillHistory({ bills }) {
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs font-semibold text-slate-700">
                 {filteredBills.map((b) => (
-                  <tr key={b.id} className="hover:bg-slate-50/50 transition">
+                  <tr key={b.id} className="hover:bg-indigo-50/60 hover:shadow-sm transition-all duration-200 cursor-pointer relative z-0 hover:z-10">
                     <td className="py-4 text-slate-800 font-bold">{b.bill_number}</td>
                     <td className="py-4 text-center text-slate-500 font-mono">{b.receipt_number || '-'}</td>
                     <td className="py-4 text-slate-800">{b.patient_name}</td>
@@ -152,7 +152,7 @@ export function BillHistory({ bills }) {
       {/* Bill Receipt Details Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center">
-          <div className="fixed inset-0 bg-black bg-opacity-40 transition-opacity" onClick={() => setIsModalOpen(false)}></div>
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setIsModalOpen(false)}></div>
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-xl relative z-10 mx-4 overflow-hidden border border-slate-100">
             
             {/* Modal Header */}

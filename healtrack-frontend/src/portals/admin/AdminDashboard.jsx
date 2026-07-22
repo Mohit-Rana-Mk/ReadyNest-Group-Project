@@ -18,6 +18,7 @@ import {
     FlaskConical
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import CountUp from 'react-countup';
 
 // Import Child Components
 import { ClinicOnboarding } from './components/ClinicOnboarding';
@@ -32,9 +33,18 @@ import { Button } from '../../components/ui/Button';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
 import Skeleton from '../../components/ui/Skeleton';
 
+import { useLocation } from 'react-router-dom';
+
 export default function AdminDashboard() {
+    const location = useLocation();
     const { logout } = useAuth();
-    const [activeTab, setActiveTab] = useState('onboarding');
+    const [activeTab, setActiveTab] = useState(location.state?.tab || 'onboarding');
+
+    useEffect(() => {
+        if (location.state?.tab) {
+            setActiveTab(location.state.tab);
+        }
+    }, [location.state]);
     const [loading, setLoading] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     
@@ -213,7 +223,7 @@ export default function AdminDashboard() {
             {/* MOBILE SIDEBAR OVERLAY */}
             {sidebarOpen && (
                 <div className="fixed inset-0 z-40 lg:hidden">
-                    <div className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
                     <aside className="fixed inset-y-0 left-0 w-72 bg-white flex flex-col z-50 shadow-xl">
                         {sidebarContent}
                     </aside>
@@ -314,7 +324,7 @@ export default function AdminDashboard() {
                                         <div>
                                             <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Triage Triggers</span>
                                             <span className="text-2xl font-extrabold text-slate-800 mt-1 block">
-                                                {aiHealthStats?.triageCount ?? 0}
+                                                <CountUp end={aiHealthStats?.triageCount ?? 0} duration={2} />
                                             </span>
                                         </div>
                                         <div className="text-indigo-600 bg-indigo-50 p-2.5 rounded-xl">
@@ -325,7 +335,7 @@ export default function AdminDashboard() {
                                         <div>
                                             <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Pending Approvals</span>
                                             <span className="text-2xl font-extrabold text-slate-800 mt-1 block">
-                                                {pendingClinics?.length || 0}
+                                                <CountUp end={pendingClinics?.length || 0} duration={2} />
                                             </span>
                                         </div>
                                         <div className="text-yellow-600 bg-yellow-50 p-2.5 rounded-xl">
@@ -348,7 +358,7 @@ export default function AdminDashboard() {
                                         <div>
                                             <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">System Availability</span>
                                             <span className="text-2xl font-extrabold text-slate-800 mt-1 block">
-                                                99.98%
+                                                <CountUp end={99.98} duration={2} decimals={2} suffix="%" />
                                             </span>
                                         </div>
                                         <div className="text-indigo-600 bg-indigo-50 p-2.5 rounded-xl">

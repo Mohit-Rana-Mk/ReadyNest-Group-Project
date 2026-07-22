@@ -2,7 +2,8 @@ import { toast } from '../../../components/ui/Toast';
 import React, { useState } from 'react';
 import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
-import { Search } from 'lucide-react';
+import { Search, CalendarX2 } from 'lucide-react';
+import EmptyState from '../../../components/ui/EmptyState';
 
 export function OpdQueueTable({ queue, onStatusChange, onCollectPayment }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -33,9 +34,12 @@ export function OpdQueueTable({ queue, onStatusChange, onCollectPayment }) {
       {/* Mobile Card View */}
       <div className="md:hidden divide-y divide-gray-200 border-t border-gray-200">
         {appointments.length === 0 ? (
-           <div className="p-6 text-center text-gray-500 text-sm">
-             {isCompletedTable ? "No completed appointments." : "No appointments currently in the active queue."}
-           </div>
+          <EmptyState 
+            icon={CalendarX2} 
+            title={isCompletedTable ? "None Completed" : "Queue Empty"} 
+            description={isCompletedTable ? "No patients have finished their appointments yet today." : "There are currently no patients waiting in the active queue."}
+            className="border-none bg-transparent py-8"
+          />
         ) : appointments.map((appointment) => (
           <div key={appointment.id} className="p-4 space-y-3 bg-white">
             <div className="flex justify-between items-start">
@@ -113,10 +117,10 @@ export function OpdQueueTable({ queue, onStatusChange, onCollectPayment }) {
         ))}
       </div>
 
-      {/* Desktop Table View */}
-      <div className="hidden md:block overflow-x-auto border-t border-gray-200">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className={isCompletedTable ? "bg-green-50" : "bg-gray-50"}>
+      {/* DESKTOP TABLE VIEW */}
+      <div className="hidden md:block overflow-x-auto overflow-y-auto max-h-[500px]">
+        <table className="min-w-full divide-y divide-gray-200 relative">
+          <thead className="bg-white/90 backdrop-blur-md sticky top-0 z-10 shadow-sm">
             <tr>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient Name</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor Assigned</th>
@@ -128,7 +132,7 @@ export function OpdQueueTable({ queue, onStatusChange, onCollectPayment }) {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {appointments.map((appointment) => (
-              <tr key={appointment.id} className="hover:bg-gray-50 transition-colors">
+              <tr key={appointment.id} className="hover:bg-indigo-50/60 hover:shadow-sm transition-all duration-200 cursor-pointer relative z-0 hover:z-10">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">{appointment.patientName}</div>
                   {appointment.patientMrn && (
@@ -194,8 +198,13 @@ export function OpdQueueTable({ queue, onStatusChange, onCollectPayment }) {
             ))}
             {appointments.length === 0 && (
               <tr>
-                <td colSpan={isCompletedTable ? "5" : "6"} className="px-6 py-8 text-center text-gray-500">
-                  {isCompletedTable ? "No completed appointments." : "No appointments currently in the active queue."}
+                <td colSpan={isCompletedTable ? "5" : "6"} className="p-0">
+                  <EmptyState 
+                    icon={CalendarX2} 
+                    title={isCompletedTable ? "None Completed" : "Queue Empty"} 
+                    description={isCompletedTable ? "No patients have finished their appointments yet today." : "There are currently no patients waiting in the active queue."}
+                    className="border-none bg-transparent rounded-none"
+                  />
                 </td>
               </tr>
             )}

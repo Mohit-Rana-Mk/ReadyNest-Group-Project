@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import axiosClient from '../../../api/axiosClient';
 import { ConfirmModal } from '../../../components/ui/ConfirmModal';
+import CountUp from 'react-countup';
 
 export function EcosystemAnalytics({ ecosystemStats, onVerify, onDeleteClinic }) {
     const [selectedClinicId, setSelectedClinicId] = useState(null);
@@ -183,8 +184,8 @@ export function EcosystemAnalytics({ ecosystemStats, onVerify, onDeleteClinic })
                 <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
                     <div>
                         <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Patients</span>
-                        <span className="text-2xl font-extrabold text-slate-800 mt-1 block">
-                            {ecosystemStats.kpis?.totalPatients || 0}
+                        <span className="text-3xl font-extrabold text-slate-800 mt-1 block">
+                            <CountUp end={ecosystemStats.kpis?.totalPatients || 0} duration={2} />
                         </span>
                     </div>
                     <div className="text-indigo-700">
@@ -194,8 +195,8 @@ export function EcosystemAnalytics({ ecosystemStats, onVerify, onDeleteClinic })
                 <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
                     <div>
                         <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Approved Clinics</span>
-                        <span className="text-2xl font-extrabold text-slate-800 mt-1 block">
-                            {ecosystemStats.kpis?.totalClinics || 0}
+                        <span className="text-3xl font-extrabold text-slate-800 mt-1 block">
+                            <CountUp end={ecosystemStats.kpis?.totalClinics || 0} duration={2} />
                         </span>
                     </div>
                     <div className="text-indigo-700">
@@ -205,8 +206,8 @@ export function EcosystemAnalytics({ ecosystemStats, onVerify, onDeleteClinic })
                 <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
                     <div>
                         <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Appointments Booked</span>
-                        <span className="text-2xl font-extrabold text-slate-800 mt-1 block">
-                            {ecosystemStats.kpis?.totalAppointments || 0}
+                        <span className="text-3xl font-extrabold text-slate-800 mt-1 block">
+                            <CountUp end={ecosystemStats.kpis?.totalAppointments || 0} duration={2} />
                         </span>
                     </div>
                     <div className="text-indigo-700">

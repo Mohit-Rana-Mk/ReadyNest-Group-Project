@@ -22,10 +22,19 @@ const getInitials = (name) => {
   return parts[0].substring(0, 2).toUpperCase();
 };
 
+import { useLocation } from 'react-router-dom';
+
 export default function MedicinePortal() {
+  const location = useLocation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState(location.state?.tab || 'dashboard');
+
+  useEffect(() => {
+      if (location.state?.tab) {
+          setActiveTab(location.state.tab);
+      }
+  }, [location.state]);
   
   // Selected Prescription for Billing
   const [selectedPrescription, setSelectedPrescription] = useState(null);

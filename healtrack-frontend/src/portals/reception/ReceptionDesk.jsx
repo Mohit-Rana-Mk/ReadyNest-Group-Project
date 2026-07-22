@@ -3,15 +3,19 @@ import React, { useState, useEffect } from 'react';
 import { KpiBanner } from './components/KpiBanner';
 import { OpdQueueTable } from './components/OpdQueueTable';
 import { WalkInModal } from './components/WalkInModal';
-import { UserPlus, Bell, LogOut, Activity, Clock, Users, CheckCircle, Search, Loader2, Banknote, CreditCard, X } from 'lucide-react';
+import { UserPlus, Bell, LogOut, Activity, Clock, Users, CheckCircle, Search, Loader2, Banknote, CreditCard, X, CalendarX2 } from 'lucide-react';
 import axiosClient, { SOCKET_URL } from '../../api/axiosClient';
+import EmptyState from '../../components/ui/EmptyState';
 import { io } from 'socket.io-client';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { CustomDropdown } from '../../components/ui/CustomDropdown';
 
+import { useLocation } from 'react-router-dom';
+
 export default function ReceptionDesk() {
+  const location = useLocation();
   const { user, logout } = useAuth();
   const [queue, setQueue] = useState([]);
   const [doctors, setDoctors] = useState([]);
@@ -40,7 +44,13 @@ export default function ReceptionDesk() {
   const [paymentDone, setPaymentDone] = useState(null); // { method, receipt_id, fee }
 
   // Sub Tab Navigation and Ledger History state
-  const [activeTab, setActiveTab] = useState('queue'); // 'queue', 'payments'
+  const [activeTab, setActiveTab] = useState(location.state?.tab || 'queue'); // 'queue', 'payments'
+
+  useEffect(() => {
+      if (location.state?.tab) {
+          setActiveTab(location.state.tab);
+      }
+  }, [location.state]);
   const [payments, setPayments] = useState([]);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
   const [paymentSearchTerm, setPaymentSearchTerm] = useState('');
@@ -587,12 +597,12 @@ export default function ReceptionDesk() {
                 {loading ? (
                   <div className="p-10 text-center text-slate-400 text-xs font-bold uppercase tracking-wider animate-pulse">Loading Queue...</div>
                 ) : activeQueue.length === 0 ? (
-                  <div className="p-10 text-center">
-                    <div className="w-14 h-14 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 border border-slate-100">
-                      <Users className="w-7 h-7 text-slate-300" />
-                    </div>
-                    <p className="text-sm text-slate-500 font-medium">No active patients in queue</p>
-                  </div>
+                  <EmptyState 
+                      icon={Users} 
+                      title="Queue Empty" 
+                      description="There are currently no patients waiting in the active queue."
+                      className="border-none bg-transparent py-8"
+                  />
                 ) : (
                   <div className="divide-y divide-slate-50">
                     {activeQueue.map((apt) => (
@@ -668,9 +678,12 @@ export default function ReceptionDesk() {
                 </div>
 
                 {completedQueue.length === 0 ? (
-                  <div className="p-8 text-center text-sm text-slate-500 font-medium">
-                    No completed appointments yet.
-                  </div>
+                  <EmptyState 
+                      icon={CalendarX2} 
+                      title="None Completed" 
+                      description="No patients have finished their appointments yet today."
+                      className="border-none bg-transparent py-8"
+                  />
                 ) : (
                   <div className="divide-y divide-slate-50">
                     {completedQueue.map((apt) => (
@@ -731,12 +744,12 @@ export default function ReceptionDesk() {
               {paymentsLoading ? (
                 <div className="p-10 text-center text-slate-400 text-xs font-bold uppercase tracking-wider animate-pulse">Loading Payments...</div>
               ) : filteredPayments.length === 0 ? (
-                <div className="p-10 text-center">
-                  <div className="w-14 h-14 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 border border-slate-100">
-                    <CreditCard className="w-7 h-7 text-slate-300" />
-                  </div>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">No transaction logs found</p>
-                </div>
+                <EmptyState 
+                    icon={CreditCard} 
+                    title="No transaction logs found" 
+                    description="There are no payment records matching your search or filters."
+                    className="border-none bg-transparent"
+                />
               ) : (
                 <>
                   {/* MOBILE VIEW CARD LIST (Hidden on Desktop) */}

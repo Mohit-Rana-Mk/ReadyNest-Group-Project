@@ -13,10 +13,12 @@ import Login from '../pages/Login';
 import Signup from '../pages/Signup';
 import PharmacyLogin from '../pages/PharmacyLogin';
 import VideoConsultation from '../pages/VideoConsultation';
+import CommandPalette from '../components/ui/CommandPalette';
 
 export default function AppRouter() {
     return (
         <BrowserRouter>
+            <CommandPalette />
             <Routes>
                 {/* Public / Landing Route (Placeholder) */}
                 <Route path="/" element={<Navigate to="/login" replace />} />

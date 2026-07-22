@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Heart, Loader2, LogOut, Home, Search, Activity, FileText, BookOpen, CreditCard, User, AlertCircle, Calendar, Phone, MapPin } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import BottomNav from './components/BottomNav';
@@ -19,10 +20,17 @@ import { SOCKET_URL } from '../../api/axiosClient';
 import { Button } from '../../components/ui/Button';
 
 export default function PatientApp() {
+    const location = useLocation();
     const { t } = useTranslation();
-    const [activeTab, setActiveTab] = useState('home');
+    const [activeTab, setActiveTab] = useState(location.state?.tab || 'home');
     const [recommendations, setRecommendations] = useState([]);
     const [appointments, setAppointments] = useState([]);
+
+    useEffect(() => {
+        if (location.state?.tab) {
+            setActiveTab(location.state.tab);
+        }
+    }, [location.state]);
     const [loading, setLoading] = useState(true);
     const { logout, user } = useAuth();
 

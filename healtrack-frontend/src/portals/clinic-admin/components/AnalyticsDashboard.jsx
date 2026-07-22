@@ -5,6 +5,7 @@ import {
   CartesianGrid, Tooltip, ResponsiveContainer, Legend 
 } from 'recharts';
 import axiosClient from '../../../api/axiosClient';
+import CountUp from 'react-countup';
 import { Calendar, Filter, UserCheck, CreditCard, Users, ShieldAlert } from 'lucide-react';
 
 const DEPARTMENTS = [
@@ -134,7 +135,9 @@ export function AnalyticsDashboard({ clinicId = 1 }) {
               <ShieldAlert className="w-5 h-5 text-rose-500" />
             </div>
             <div>
-              <h2 className="text-3xl font-bold text-slate-800">{kpis.noShowRate}%</h2>
+              <h2 className="text-3xl font-bold text-slate-800">
+                <CountUp end={kpis.noShowRate || 0} duration={2} decimals={1} suffix="%" />
+              </h2>
               <p className="text-[10px] text-slate-400 mt-1">Cancelled Appts Ratio</p>
             </div>
           </Card>
@@ -146,7 +149,9 @@ export function AnalyticsDashboard({ clinicId = 1 }) {
               <UserCheck className="w-5 h-5 text-blue-500" />
             </div>
             <div>
-              <h2 className="text-3xl font-bold text-slate-800">{kpis.totalAppointments}</h2>
+              <h2 className="text-3xl font-bold text-slate-800">
+                <CountUp end={kpis.totalAppointments || 0} duration={2} />
+              </h2>
               <p className="text-[10px] text-slate-400 mt-1">Total Scheduled Visits</p>
             </div>
           </Card>
@@ -158,7 +163,9 @@ export function AnalyticsDashboard({ clinicId = 1 }) {
               <CreditCard className="w-5 h-5 text-emerald-500" />
             </div>
             <div>
-              <h2 className="text-3xl font-bold text-slate-800">{formatRevenue(kpis.totalRevenue)}</h2>
+              <h2 className="text-3xl font-bold text-slate-800">
+                <CountUp end={kpis.totalRevenue || 0} duration={2} prefix="₹" separator="," />
+              </h2>
               <p className="text-[10px] text-slate-400 mt-1">Consultation Earnings</p>
             </div>
           </Card>
@@ -170,7 +177,9 @@ export function AnalyticsDashboard({ clinicId = 1 }) {
               <Users className="w-5 h-5 text-indigo-500" />
             </div>
             <div>
-              <h2 className="text-3xl font-bold text-slate-800">{kpis.totalDoctors}</h2>
+              <h2 className="text-3xl font-bold text-slate-800">
+                <CountUp end={kpis.totalDoctors || 0} duration={2} />
+              </h2>
               <p className="text-[10px] text-slate-400 mt-1">Active Physicians</p>
             </div>
           </Card>
