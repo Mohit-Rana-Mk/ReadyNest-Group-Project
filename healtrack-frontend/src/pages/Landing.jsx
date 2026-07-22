@@ -122,7 +122,7 @@ export default function Landing() {
                     >
                         <motion.div variants={fadeUpVariants} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 text-blue-700 font-bold text-xs tracking-wide uppercase border border-blue-100">
                             <Activity className="w-4 h-4" />
-                            Trusted by Clinics Worldwide
+                            Trusted by Clinics
                         </motion.div>
                         <motion.variants variants={fadeUpVariants}>
                             <h1 className="text-5xl md:text-7xl font-extrabold text-[#0F172A] leading-tight tracking-tight">
