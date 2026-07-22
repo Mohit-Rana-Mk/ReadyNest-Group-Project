@@ -73,7 +73,6 @@ export default function Landing() {
                         <a href="#features" className="hover:text-blue-600 transition">Features</a>
                         <a href="#how-it-works" className="hover:text-blue-600 transition">How It Works</a>
                         <a href="#ai" className="hover:text-blue-600 transition">AI Engine</a>
-                        <a href="#testimonials" className="hover:text-blue-600 transition">Testimonials</a>
                     </div>
                     <div className="hidden md:flex items-center gap-4">
                         <Link to="/login" className="text-slate-600 font-semibold hover:text-blue-600 transition">Log in</Link>
@@ -122,10 +121,10 @@ export default function Landing() {
                     >
                         <motion.div variants={fadeUpVariants} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 text-blue-700 font-bold text-xs tracking-wide uppercase border border-blue-100">
                             <Activity className="w-4 h-4" />
-                            Trusted by Clinics Worldwide
+                            Trusted by Clinics
                         </motion.div>
                         <motion.variants variants={fadeUpVariants}>
-                            <h1 className="text-5xl md:text-7xl font-extrabold text-[#0F172A] leading-tight tracking-tight">
+                            <h1 className="text-4xl md:text-7xl font-extrabold text-[#0F172A] leading-tight tracking-tight">
                                 Smarter Healthcare. <br/>
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">
                                     Better Patient Care.
@@ -157,11 +156,11 @@ export default function Landing() {
                         className="relative lg:h-[600px] flex items-center justify-center"
                     >
                         {/* Abstract Hero Visual */}
-                        <div className="relative w-full max-w-md aspect-square rounded-full bg-gradient-to-tr from-blue-100 to-cyan-50 shadow-inner overflow-visible">
+                        <div className="relative w-full max-w-[280px] sm:max-w-[320px] md:max-w-md mx-auto aspect-square rounded-full bg-gradient-to-tr from-blue-100 to-cyan-50 shadow-inner overflow-visible">
                             {/* Floating Appointment Card */}
                             <motion.div 
                                 style={{ y: y1 }}
-                                className="absolute top-10 -left-10 bg-white/90 backdrop-blur-xl p-4 rounded-2xl shadow-2xl border border-white/50 z-20 flex items-center gap-4"
+                                className="absolute top-4 md:top-10 -left-4 md:-left-10 bg-white/90 backdrop-blur-xl p-3 md:p-4 rounded-2xl shadow-2xl border border-white/50 z-20 flex items-center gap-3 md:gap-4 scale-90 md:scale-100 origin-top-left"
                             >
                                 <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
                                     <Calendar className="w-6 h-6" />
@@ -176,7 +175,7 @@ export default function Landing() {
                             {/* Floating AI Card */}
                             <motion.div 
                                 style={{ y: y2 }}
-                                className="absolute bottom-20 -right-10 bg-[#0F172A]/90 backdrop-blur-xl p-4 rounded-2xl shadow-2xl border border-white/10 z-20 flex items-center gap-4"
+                                className="absolute bottom-10 md:bottom-20 -right-4 md:-right-10 bg-[#0F172A]/90 backdrop-blur-xl p-3 md:p-4 rounded-2xl shadow-2xl border border-white/10 z-20 flex items-center gap-3 md:gap-4 scale-90 md:scale-100 origin-bottom-right"
                             >
                                 <div className="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center text-cyan-400">
                                     <Brain className="w-6 h-6" />
@@ -191,7 +190,7 @@ export default function Landing() {
                             <motion.div 
                                 animate={{ y: [0, -15, 0] }}
                                 transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
-                                className="absolute -bottom-6 left-1/4 bg-white/90 backdrop-blur-xl p-4 rounded-2xl shadow-2xl border border-white/50 z-20 flex items-center gap-4"
+                                className="absolute -bottom-4 md:-bottom-6 left-1/2 -translate-x-1/2 md:translate-x-0 md:left-1/4 bg-white/90 backdrop-blur-xl p-3 md:p-4 rounded-2xl shadow-2xl border border-white/50 z-20 flex items-center gap-3 md:gap-4 scale-90 md:scale-100 origin-bottom"
                             >
                                 <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
                                     <UserSquare2 className="w-5 h-5" />
@@ -214,19 +213,19 @@ export default function Landing() {
             {/* TRUSTED STATS */}
             <section className="py-10 bg-white border-y border-slate-100">
                 <div className="max-w-7xl mx-auto px-6">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-slate-100">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-y-10 gap-x-4 md:gap-8 md:divide-x divide-slate-100">
                         {[ 
-                            { label: 'Appointments', value: 1000, suffix: '+' },
-                            { label: 'Doctors', value: 250, suffix: '+' },
-                            { label: 'Clinics', value: 50, suffix: '+' },
-                            { label: 'Uptime', value: 99.9, suffix: '%', decimals: 1 }
+                            { label: 'Lines of Code', value: 15000, suffix: '+' },
+                            { label: 'Core Features', value: 25, suffix: '+' },
+                            { label: 'Beta Testers', value: 10, suffix: '+' },
+                            { label: 'Uptime', value: 99, suffix: '%' }
                         ].map((stat, i) => (
                             <div key={i} className="text-center">
-                                <h3 className="text-4xl font-extrabold text-[#2563EB]">
+                                <h3 className="text-3xl md:text-4xl font-extrabold text-[#2563EB]">
                                     <CountUp end={stat.value} decimals={stat.decimals || 0} duration={2.5} enableScrollSpy scrollSpyOnce />
                                     {stat.suffix}
                                 </h3>
-                                <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mt-2">{stat.label}</p>
+                                <p className="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-widest mt-2">{stat.label}</p>
                             </div>
                         ))}
                     </div>
@@ -441,41 +440,12 @@ export default function Landing() {
                 </div>
             </section>
 
-            {/* TESTIMONIALS */}
-            <section id="testimonials" className="py-24 px-6 bg-white border-y border-slate-100">
-                <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">Trusted by Professionals</h2>
-                    </div>
-                    <div className="grid md:grid-cols-3 gap-8">
-                        {[ 
-                            { name: 'Dr. Sharma', role: 'Clinic Owner', text: '"HealTrack reduced our waiting room congestion by 40%. The AI triage system is a game changer for prioritizing urgent cases."' },
-                            { name: 'Dr. Anita Desai', role: 'Chief Physician', text: '"The seamless transition from online video consultation to digital prescription generation has saved me hours every week."' },
-                            { name: 'Rahul Verma', role: 'Patient', text: '"Booking an appointment and paying online is incredibly easy. I love having all my medical records in one app."' }
-                        ].map((test, idx) => (
-                            <div key={idx} className="bg-slate-50 p-8 rounded-3xl border border-slate-100 relative">
-                                <div className="text-yellow-400 text-xl tracking-widest mb-4">★★★★★</div>
-                                <p className="text-slate-700 italic font-medium mb-6 leading-relaxed">{test.text}</p>
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-slate-300 flex items-center justify-center font-bold text-white">
-                                        {test.name.charAt(0)}
-                                    </div>
-                                    <div>
-                                        <p className="font-bold text-slate-900 leading-none">{test.name}</p>
-                                        <p className="text-xs text-slate-500 mt-1">{test.role}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
 
             {/* CTA SECTION */}
             <section className="py-24 px-6 relative overflow-hidden">
-                <div className="absolute inset-0 bg-blue-600 -z-20"></div>
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-800 -z-10"></div>
-                <div className="max-w-4xl mx-auto text-center text-white">
+                <div className="absolute inset-0 bg-blue-600 z-0"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-800 z-0"></div>
+                <div className="max-w-4xl mx-auto text-center text-white relative z-10">
                     <h2 className="text-4xl md:text-5xl font-extrabold mb-6">Ready to modernize your healthcare?</h2>
                     <p className="text-blue-100 text-xl mb-10 max-w-2xl mx-auto">
                         Join hundreds of clinics already using HealTrack to streamline their operations and deliver better patient experiences.
