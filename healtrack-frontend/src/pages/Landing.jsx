@@ -473,9 +473,9 @@ export default function Landing() {
 
             {/* CTA SECTION */}
             <section className="py-24 px-6 relative overflow-hidden">
-                <div className="absolute inset-0 bg-blue-600 -z-20"></div>
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-800 -z-10"></div>
-                <div className="max-w-4xl mx-auto text-center text-white">
+                <div className="absolute inset-0 bg-blue-600 z-0"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-800 z-0"></div>
+                <div className="max-w-4xl mx-auto text-center text-white relative z-10">
                     <h2 className="text-4xl md:text-5xl font-extrabold mb-6">Ready to modernize your healthcare?</h2>
                     <p className="text-blue-100 text-xl mb-10 max-w-2xl mx-auto">
                         Join hundreds of clinics already using HealTrack to streamline their operations and deliver better patient experiences.
