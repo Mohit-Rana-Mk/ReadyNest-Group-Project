@@ -216,9 +216,9 @@ export default function Landing() {
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-slate-100">
                         {[ 
-                            { label: 'Appointments', value: 1000, suffix: '+' },
-                            { label: 'Doctors', value: 250, suffix: '+' },
-                            { label: 'Clinics', value: 50, suffix: '+' },
+                            { label: 'Lines of Code', value: 15000, suffix: '+' },
+                            { label: 'Core Features', value: 25, suffix: '+' },
+                            { label: 'Beta Testers', value: 10, suffix: '+' },
                             { label: 'Uptime', value: 99, suffix: '%' }
                         ].map((stat, i) => (
                             <div key={i} className="text-center">
