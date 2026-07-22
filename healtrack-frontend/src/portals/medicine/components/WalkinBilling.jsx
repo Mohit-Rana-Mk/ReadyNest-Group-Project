@@ -517,9 +517,9 @@ export function WalkinBilling({ selectedPrescription, clearPrescription, invento
                 No items added to the dispensation cart. Add items above.
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-100">
-                  <thead>
+              <div className="overflow-x-auto overflow-y-auto max-h-[500px]">
+                <table className="min-w-full divide-y divide-slate-100 relative">
+                  <thead className="sticky top-0 bg-white/90 backdrop-blur-md z-10 shadow-sm">
                     <tr className="text-left text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">
                       <th className="pb-3">Medicine</th>
                       <th className="pb-3 text-center">Unit Price</th>
@@ -535,7 +535,7 @@ export function WalkinBilling({ selectedPrescription, clearPrescription, invento
                       const itemGst = itemTotal * (item.gst_percent / 100);
 
                       return (
-                        <tr key={item.medicine_id} className="group">
+                        <tr key={item.medicine_id} className="hover:bg-indigo-50/60 hover:shadow-sm transition-all duration-200 cursor-pointer relative z-0 hover:z-10">
                           <td className="py-3">
                             <div>{item.medicine_name}</div>
                             <div className="text-[9px] text-slate-400 font-bold uppercase">{item.brand} • Stock: {item.available_quantity}</div>

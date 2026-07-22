@@ -25,7 +25,10 @@ const getInitials = (name) => {
     return parts[0].substring(0, 2).toUpperCase();
 };
 
+import { useLocation } from 'react-router-dom';
+
 export default function DoctorWorkstation() {
+    const location = useLocation();
     const { logout, user } = useAuth();
     const [appointments, setAppointments] = useState([]);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
@@ -37,7 +40,13 @@ export default function DoctorWorkstation() {
     const [loadingHistory, setLoadingHistory] = useState(false);
     const [dateFilter, setDateFilter] = useState('today');
     const [searchQuery, setSearchQuery] = useState('');
-    const [showQueue, setShowQueue] = useState(false);
+    const [showQueue, setShowQueue] = useState(location.state?.showQueue || false);
+
+    useEffect(() => {
+        if (location.state?.showQueue !== undefined) {
+            setShowQueue(location.state.showQueue);
+        }
+    }, [location.state]);
 
     // Form fields
     const [diagnosis, setDiagnosis] = useState('');

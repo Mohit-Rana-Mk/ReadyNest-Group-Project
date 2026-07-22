@@ -242,7 +242,7 @@ export function InventoryManagement({ inventory, refreshData }) {
       {/* Add/Edit Medicine Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center">
-          <div className="fixed inset-0 bg-black bg-opacity-40 transition-opacity" onClick={() => setIsModalOpen(false)}></div>
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setIsModalOpen(false)}></div>
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg relative z-10 mx-4 overflow-hidden border border-slate-100">
             {/* Modal Header */}
             <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">

@@ -123,7 +123,7 @@ export function DepartmentManager({ departments, refreshData, clinicId = 1 }) {
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center">
-          <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => setIsModalOpen(false)}></div>
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setIsModalOpen(false)}></div>
           <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative z-10 mx-4">
             <h3 className="text-lg font-bold text-gray-900 mb-4">{editMode ? 'Edit Department Fee' : 'Add Department'}</h3>
             <form onSubmit={handleSubmit} className="space-y-4">

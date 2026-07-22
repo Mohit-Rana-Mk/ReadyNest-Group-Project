@@ -400,9 +400,9 @@ export function PatientAnalytics() {
               Loading patient directory...
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
+            <div className="overflow-x-auto overflow-y-auto max-h-[500px]">
+              <table className="w-full text-left text-xs border-collapse relative">
+                <thead className="sticky top-0 bg-white/90 backdrop-blur-md z-10 shadow-sm">
                   <tr className="border-b border-[#e9ecef] text-slate-400 uppercase tracking-wider font-extrabold text-[10px]">
                     <th className="py-3 px-4">Patient Profile</th>
                     <th className="py-3 px-4">Contact Info</th>
@@ -428,7 +428,7 @@ export function PatientAnalytics() {
                         );
                       })
                       .map(p => (
-                        <tr key={p.patient_id} className="hover:bg-slate-50/70 transition">
+                        <tr key={p.patient_id} className="hover:bg-indigo-50/60 hover:shadow-sm transition-all duration-200 cursor-pointer relative z-0 hover:z-10">
                           <td className="py-4 px-4">
                             <div className="font-bold text-slate-800">{p.name}</div>
                             <div className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase mt-0.5">{p.mrn || 'N/A'}</div>

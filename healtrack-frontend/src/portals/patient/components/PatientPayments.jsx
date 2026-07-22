@@ -231,9 +231,9 @@ export default function PatientPayments() {
                 </div>
             ) : (
                 <div className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-sm">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left text-xs border-collapse">
-                            <thead>
+                    <div className="overflow-x-auto overflow-y-auto max-h-[500px]">
+                        <table className="w-full text-left text-xs border-collapse relative">
+                            <thead className="sticky top-0 bg-white/90 backdrop-blur-md z-10 shadow-sm">
                                 <tr className="bg-slate-50 border-b border-slate-100 font-bold text-slate-500 uppercase tracking-wider text-[9px]">
                                     <th className="p-4">Receipt ID</th>
                                     <th className="p-4">Clinic / Doctor</th>
@@ -245,7 +245,7 @@ export default function PatientPayments() {
                             </thead>
                             <tbody className="divide-y divide-slate-100">
                                 {payments.map((payment) => (
-                                    <tr key={payment.id} className="hover:bg-slate-50/50 transition-colors font-medium text-slate-700">
+                                    <tr key={payment.id} className="hover:bg-indigo-50/60 hover:shadow-sm transition-all duration-200 cursor-pointer font-medium text-slate-700 relative z-0 hover:z-10">
                                         <td className="p-4 font-mono font-bold text-slate-900">{payment.receipt_id}</td>
                                         <td className="p-4">
                                             <p className="font-semibold text-slate-900">{payment.clinic_name}</p>

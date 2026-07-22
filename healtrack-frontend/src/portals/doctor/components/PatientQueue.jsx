@@ -1,6 +1,7 @@
 import React from 'react';
-import { User, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { User, Clock, CheckCircle, AlertCircle, CalendarX2 } from 'lucide-react';
 import { CustomDropdown } from '../../../components/ui/CustomDropdown';
+import EmptyState from '../../../components/ui/EmptyState';
 
 export function PatientQueue({ appointments, selectedAppointment, handleSelectAppointment, dateFilter, setDateFilter }) {
     return (
@@ -30,9 +31,12 @@ export function PatientQueue({ appointments, selectedAppointment, handleSelectAp
             
             <div className="flex-1 overflow-y-auto p-2 space-y-2">
                 {(!appointments || appointments.length === 0) ? (
-                    <div className="p-4 text-center text-slate-500 text-sm mt-4">
-                        No appointments found.
-                    </div>
+                    <EmptyState 
+                        icon={CalendarX2} 
+                        title="No Appointments" 
+                        description="There are no patients in the queue for this period." 
+                        className="mt-8 border-none bg-transparent"
+                    />
                 ) : (
                     appointments.map((appt) => {
                     const isSelected = selectedAppointment?.appointment_id === appt.appointment_id;

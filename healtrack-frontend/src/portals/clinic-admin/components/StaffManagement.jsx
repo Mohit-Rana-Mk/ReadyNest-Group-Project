@@ -111,9 +111,9 @@ export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
       </div>
       
       <Card>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto overflow-y-auto max-h-[500px]">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50/90 backdrop-blur-md sticky top-0 z-10 shadow-sm">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
@@ -124,7 +124,7 @@ export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {staff.map((member) => (
-                <tr key={member.id} className="hover:bg-gray-50">
+                <tr key={member.id} className="hover:bg-indigo-50/60 hover:shadow-sm transition-all duration-200 cursor-pointer relative z-0 hover:z-10">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{member.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <span className={`px-2 py-1 rounded text-xs font-medium ${
@@ -156,7 +156,7 @@ export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center">
-          <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => setIsModalOpen(false)}></div>
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setIsModalOpen(false)}></div>
           <div className="bg-white rounded-lg shadow-xl w-full max-w-md relative z-10 mx-4">
             {!createdCredentials && (
             <form onSubmit={handleSubmit} className="p-6">

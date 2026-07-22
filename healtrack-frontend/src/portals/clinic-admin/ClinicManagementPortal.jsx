@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { LayoutDashboard, Users, Grid, Activity, FileText, Settings, LogOut, Menu, X, ShieldAlert, Banknote } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import axiosClient, { SOCKET_URL } from '../../api/axiosClient';
@@ -16,8 +17,9 @@ import { Button } from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
 
 export default function ClinicManagementPortal() {
+  const location = useLocation();
   const { user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState(location.state?.tab || 'dashboard');
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [portalData, setPortalData] = useState({
@@ -26,6 +28,12 @@ export default function ClinicManagementPortal() {
     departments: [],
     operations: []
   });
+
+  useEffect(() => {
+    if (location.state?.tab) {
+      setActiveTab(location.state.tab);
+    }
+  }, [location.state]);
 
   const clinicId = user?.clinic_id || 1;
 
@@ -177,7 +185,7 @@ export default function ClinicManagementPortal() {
       {/* MOBILE SIDEBAR OVERLAY */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
           <aside className="fixed inset-y-0 left-0 w-72 bg-indigo-900 text-white flex flex-col z-50 shadow-xl">
             {sidebarContent}
           </aside>

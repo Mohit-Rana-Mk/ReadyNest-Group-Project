@@ -64,7 +64,7 @@ export default defineConfig({
 
       // Enable developer mode to test the service worker locally
       devOptions: {
-        enabled: true
+        enabled: false
       }
     })
   ]

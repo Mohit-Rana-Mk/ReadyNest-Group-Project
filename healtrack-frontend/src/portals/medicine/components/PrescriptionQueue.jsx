@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Search, FileText, User, ShoppingBag, Eye, Calendar, Sparkles } from 'lucide-react';
+import { Search, FileText, User, ShoppingBag, Eye, Calendar, Sparkles, FolderSearch } from 'lucide-react';
 import axiosClient from '../../../api/axiosClient';
 import { toast } from '../../../components/ui/Toast';
+import EmptyState from '../../../components/ui/EmptyState';
 
 export function PrescriptionQueue({ prescriptions, onSelectPrescription, loading }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -61,15 +62,12 @@ export function PrescriptionQueue({ prescriptions, onSelectPrescription, loading
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-indigo-600"></div>
         </div>
       ) : filteredQueue.length === 0 ? (
-        <div className="bg-white border border-slate-100 rounded-3xl py-16 px-6 text-center shadow-[0_4px_20px_rgba(0,0,0,0.01)] flex flex-col items-center">
-          <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center mb-4 text-indigo-500">
-            <FileText className="w-8 h-8" />
-          </div>
-          <h4 className="text-sm font-black text-slate-800 tracking-tight">Prescription Queue Empty</h4>
-          <p className="text-xs text-slate-400 font-medium mt-1 max-w-sm">
-            There are currently no active patient prescriptions sent to the pharmacy for dispensing.
-          </p>
-        </div>
+        <EmptyState 
+            icon={FolderSearch} 
+            title="Prescription Queue Empty" 
+            description="There are currently no active patient prescriptions sent to the pharmacy for dispensing."
+            className="bg-white border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.01)]"
+        />
       ) : (
         <div className="grid grid-cols-1 gap-4">
           {filteredQueue.map((item) => {
