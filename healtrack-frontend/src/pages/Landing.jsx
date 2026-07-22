@@ -73,7 +73,6 @@ export default function Landing() {
                         <a href="#features" className="hover:text-blue-600 transition">Features</a>
                         <a href="#how-it-works" className="hover:text-blue-600 transition">How It Works</a>
                         <a href="#ai" className="hover:text-blue-600 transition">AI Engine</a>
-                        <a href="#testimonials" className="hover:text-blue-600 transition">Testimonials</a>
                     </div>
                     <div className="hidden md:flex items-center gap-4">
                         <Link to="/login" className="text-slate-600 font-semibold hover:text-blue-600 transition">Log in</Link>
@@ -441,35 +440,6 @@ export default function Landing() {
                 </div>
             </section>
 
-            {/* TESTIMONIALS */}
-            <section id="testimonials" className="py-24 px-6 bg-white border-y border-slate-100">
-                <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">Trusted by Professionals</h2>
-                    </div>
-                    <div className="grid md:grid-cols-3 gap-8">
-                        {[ 
-                            { name: 'Dr. Sharma', role: 'Clinic Owner', text: '"HealTrack reduced our waiting room congestion by 40%. The AI triage system is a game changer for prioritizing urgent cases."' },
-                            { name: 'Dr. Anita Desai', role: 'Chief Physician', text: '"The seamless transition from online video consultation to digital prescription generation has saved me hours every week."' },
-                            { name: 'Rahul Verma', role: 'Patient', text: '"Booking an appointment and paying online is incredibly easy. I love having all my medical records in one app."' }
-                        ].map((test, idx) => (
-                            <div key={idx} className="bg-slate-50 p-8 rounded-3xl border border-slate-100 relative">
-                                <div className="text-yellow-400 text-xl tracking-widest mb-4">★★★★★</div>
-                                <p className="text-slate-700 italic font-medium mb-6 leading-relaxed">{test.text}</p>
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-slate-300 flex items-center justify-center font-bold text-white">
-                                        {test.name.charAt(0)}
-                                    </div>
-                                    <div>
-                                        <p className="font-bold text-slate-900 leading-none">{test.name}</p>
-                                        <p className="text-xs text-slate-500 mt-1">{test.role}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
 
             {/* CTA SECTION */}
             <section className="py-24 px-6 relative overflow-hidden">
