@@ -7,6 +7,7 @@ import { Autoplay, Pagination, EffectCoverflow } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/effect-coverflow';
+import { Footer } from '../components/ui/Footer';
 import {
     Activity,
     Calendar,
@@ -468,50 +469,9 @@ export default function Landing() {
             </section>
 
             {/* FOOTER */}
-            <footer className="bg-slate-900 text-slate-400 py-12 px-6">
-                <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-                    <div className="col-span-2 md:col-span-1">
-                        <div className="flex items-center gap-2 mb-4">
-                            <img src="/logo.png" alt="HealTrack" className="w-8 h-8 object-contain rounded-lg opacity-80" />
-                            <span className="text-xl font-extrabold text-white tracking-tight">HealTrack</span>
-                        </div>
-                        <p className="text-sm">Smarter healthcare for a modern world.</p>
-                    </div>
-                    <div>
-                        <h4 className="font-bold text-white mb-4 uppercase tracking-wider text-xs">Product</h4>
-                        <ul className="space-y-2 text-sm">
-                            <li><a href="#features" className="hover:text-white">Features</a></li>
-                            <li><a href="#" className="hover:text-white">Pricing</a></li>
-                            <li><a href="#ai" className="hover:text-white">AI Engine</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 className="font-bold text-white mb-4 uppercase tracking-wider text-xs">Company</h4>
-                        <ul className="space-y-2 text-sm">
-                            <li><a href="#" className="hover:text-white">About Us</a></li>
-                            <li><a href="#" className="hover:text-white">Contact</a></li>
-                            <li><a href="#" className="hover:text-white">Careers</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 className="font-bold text-white mb-4 uppercase tracking-wider text-xs">Legal</h4>
-                        <ul className="space-y-2 text-sm">
-                            <li><a href="#" className="hover:text-white">Privacy Policy</a></li>
-                            <li><a href="#" className="hover:text-white">Terms of Service</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div className="max-w-7xl mx-auto border-t border-slate-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
-                    <p>© 2026 HealTrack. All rights reserved.</p>
-                    <div className="flex gap-4">
-                        <a href="#" className="hover:text-white flex items-center gap-1.5"><MessageSquare className="w-4 h-4" /> Feedback</a>
-                        <a href="#" className="hover:text-white flex items-center gap-1.5"><GithubIcon className="w-4 h-4" /> GitHub</a>
-                    </div>
-                    <div className="text-slate-400 font-medium">
-                        Designed with <span className="text-red-500">♥</span> by team <span className="font-bold text-white">Code Titans</span>
-                    </div>
-                </div>
-            </footer>
+            <div className="bg-[#090D16] border-t border-slate-800/80 text-slate-400">
+                <Footer />
+            </div>
         </div>
     );
 }
