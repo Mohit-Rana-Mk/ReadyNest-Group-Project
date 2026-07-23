@@ -4,7 +4,7 @@ import axiosClient, { SOCKET_URL } from '../../api/axiosClient';
 import { ENDPOINTS } from '../../api/endpoints';
 
 // Import Icons from Lucide
-import { Search, Monitor, CheckCircle2, LogOut, Users, Video } from 'lucide-react';
+import { Search, Monitor, CheckCircle2, LogOut, Users, Video, HelpCircle } from 'lucide-react';
 import { Footer } from '../../components/ui/Footer';
 import { useAuth } from '../../context/AuthContext';
 import { io } from 'socket.io-client';
@@ -230,25 +230,22 @@ export default function DoctorWorkstation() {
     return (
         <div className="h-screen bg-[#F8FAFC] text-slate-700 flex flex-col font-sans antialiased overflow-hidden">
             {/* TOP BAR */}
-            <header className="h-14 bg-white border-b border-[#e9ecef] px-3 md:px-6 flex justify-between items-center shrink-0">
+            <header className="h-12 md:h-14 bg-gradient-to-r from-slate-700 to-slate-600 border border-slate-500 px-3 md:px-6 flex justify-between items-center shrink-0 rounded-2xl mx-2 md:mx-4 mt-2 shadow-sm">
                 <div className="flex items-center gap-2 md:gap-4">
-                    <Button variant="outline" onClick={() => setShowQueue(!showQueue)} className="lg:hidden p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg border-none bg-transparent">
+                    <Button variant="outline" onClick={() => setShowQueue(!showQueue)} className="lg:hidden p-1.5 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg border-none bg-transparent">
                         <Users className="w-5 h-5" />
                     </Button>
                     <div className="flex items-center gap-2">
                         <img src="/logo.png" alt="HealTrack Logo" className="w-7 h-7 md:w-8 md:h-8 object-contain rounded-xl shadow-sm" />
-                        <h2 className="font-bold text-slate-800 text-sm md:text-base leading-none">HealTrack <span className="text-indigo-700">Doctor</span></h2>
+                        <h2 className="font-bold text-white text-sm md:text-base leading-none">HealTrack <span className="text-cyan-400">Doctor</span></h2>
                     </div>
                     {user?.clinic_name && (
-                        <div className="hidden lg:flex items-center px-3 py-1 bg-indigo-50 border border-indigo-100 rounded-full">
-                            <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wide mr-2">Clinic:</span>
-                            <span className="text-xs font-bold text-indigo-800">{user.clinic_name}</span>
+                        <div className="hidden lg:flex items-center px-3 py-1 bg-slate-700 border border-slate-600 rounded-full">
+                            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wide mr-2">Clinic:</span>
+                            <span className="text-xs font-bold text-slate-100">{user.clinic_name}</span>
                         </div>
                     )}
                 </div>
-
-
-
 
                 <div className="flex items-center gap-2 md:gap-4">
                     <div className="w-48 lg:w-64 relative hidden md:block">
@@ -260,16 +257,16 @@ export default function DoctorWorkstation() {
                                 placeholder="Search patient..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-[#f1f3f5] rounded-full pl-9 pr-4 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-700 transition"
+                                className="w-full bg-slate-800/50 border-none text-white rounded-full pl-9 pr-4 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-cyan-500 transition placeholder-slate-300"
                             />
                     </div>
-                    <div className="h-6 w-px bg-[#e9ecef] hidden md:block"></div>
+                    <div className="h-6 w-px bg-slate-700 hidden md:block"></div>
                     <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600 text-[11px] uppercase">
+                        <div className="w-7 h-7 rounded-full bg-slate-600 flex items-center justify-center font-bold text-white text-[11px] uppercase">
                             {getInitials(user?.name)}
                         </div>
-                        <span className="text-xs font-semibold text-slate-800 hidden lg:block">{user?.name ? `Dr. ${user.name}` : 'Doctor Portal'}</span>
-                        <Button variant="outline" onClick={logout} className="ml-1 md:ml-2 p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition border-none bg-transparent" title="Logout">
+                        <span className="text-xs font-semibold text-slate-200 hidden lg:block">{user?.name ? `Dr. ${user.name}` : 'Doctor Portal'}</span>
+                        <Button variant="outline" onClick={logout} className="ml-1 md:ml-2 p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-900/30 rounded-lg transition border-none bg-transparent" title="Logout">
                             <LogOut className="w-4 h-4" />
                         </Button>
                     </div>
@@ -309,10 +306,10 @@ export default function DoctorWorkstation() {
                             <div className="flex-1 flex flex-col relative overflow-hidden">
                                 
                                 {/* Session Header */}
-                                <div className="bg-white border-b border-[#e9ecef] p-3 md:p-4 flex justify-between items-center shrink-0">
+                                <div className="bg-white rounded-2xl mx-2 md:mx-4 mt-2 shadow-sm border border-slate-200 p-3 md:p-4 flex justify-between items-center shrink-0">
                                     <div>
                                         <h2 className="text-base md:text-lg font-bold text-slate-800">{selectedAppointment.patient_name}</h2>
-                                        <p className="text-xs text-slate-500">
+                                        <p className="text-xs font-medium text-slate-500">
                                             {selectedAppointment.gender} • {new Date().getFullYear() - new Date(selectedAppointment.date_of_birth).getFullYear()} yrs • Blood: {selectedAppointment.blood_group}
                                         </p>
                                     </div>
@@ -343,15 +340,9 @@ export default function DoctorWorkstation() {
                                     </div>
                                     
                                     {/* Right Pane: Vitals & Prescriptions */}
-                                    <div className="w-full lg:w-[400px] lg:shrink-0 flex flex-col gap-4 lg:gap-6 lg:overflow-y-auto lg:pr-2 pb-24">
+                                    <div className="w-full lg:w-[470px] lg:shrink-0 flex flex-col gap-4 lg:gap-6 lg:overflow-y-auto lg:pr-2 pb-24">
                                         <VitalsCard vitals={vitals} handleVitalsChange={handleVitalsChange} />
                                         
-                                        <ReportUpload 
-                                            patientId={selectedAppointment.patient_id}
-                                            appointmentId={selectedAppointment.appointment_id}
-                                            doctorId={selectedAppointment.doctor_id}
-                                        />
-
                                         <PrescriptionBuilder 
                                             prescriptionItems={prescriptionItems}
                                             handlePrescriptionChange={handlePrescriptionChange}
@@ -364,38 +355,52 @@ export default function DoctorWorkstation() {
                                             postRemarks={postRemarks}
                                             setPostRemarks={setPostRemarks}
                                         />
+
+                                        <ReportUpload 
+                                            patientId={selectedAppointment.patient_id}
+                                            appointmentId={selectedAppointment.appointment_id}
+                                            doctorId={selectedAppointment.doctor_id}
+                                        />
                                     </div>
                                 </div>
 
                                 {/* ATOMIC SIGN-OFF BAR */}
-                                <div className="border-t border-slate-200 p-4 lg:p-6 bg-white flex flex-col sm:flex-row justify-between items-center gap-4">
-                                    <div className="text-sm font-semibold text-slate-500">
+                                <div className="bg-white rounded-2xl mx-2 md:mx-4 mb-2 shadow-sm border border-slate-200 p-2 lg:p-3 flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0">
+                                    <div className="flex items-center gap-3">
+                                        <Button 
+                                            variant="outline"
+                                            onClick={() => alert("Need assistance? Please contact your clinic administrator or support.")}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition"
+                                        >
+                                            <HelpCircle className="w-4 h-4 text-slate-500" />
+                                            Need help?
+                                        </Button>
                                         {submitStatus.message && (
-                                            <span className={submitStatus.type === 'error' ? 'text-red-500' : 'text-indigo-600'}>
+                                            <span className={`text-xs font-semibold ${submitStatus.type === 'error' ? 'text-red-500' : 'text-indigo-600'}`}>
                                                 {submitStatus.message}
                                             </span>
                                         )}
                                     </div>
-                                    <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                                         {selectedAppointment.consultation_type === 'Teleconsultation' && selectedAppointment.meeting_link && !['Completed', 'Canceled', 'Cancelled'].includes(selectedAppointment.status) && (
                                             <Button 
                                                 onClick={() => window.open(selectedAppointment.meeting_link, '_blank')}
-                                                className="w-full sm:w-auto px-4 md:px-6 py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm bg-blue-600 hover:bg-blue-700 text-white shadow-md border-none"
+                                                className="w-full sm:w-auto px-4 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-2 text-xs bg-blue-600 hover:bg-blue-700 text-white shadow-sm border-none"
                                             >
-                                                <Video className="w-5 h-5" />
+                                                <Video className="w-4 h-4" />
                                                 Join Video Call
                                             </Button>
                                         )}
                                         <Button 
                                             onClick={handleSubmitConsultation}
                                             disabled={['Completed', 'Canceled', 'Cancelled'].includes(selectedAppointment.status)}
-                                            className={`w-full sm:w-auto px-4 md:px-6 py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm border-none ${
+                                            className={`w-full sm:w-auto px-4 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-2 text-xs border-none ${
                                                 ['Completed', 'Canceled', 'Cancelled'].includes(selectedAppointment.status)
                                                     ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                                    : 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-md'
+                                                    : 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm'
                                             }`}
                                         >
-                                            <CheckCircle2 className="w-5 h-5" />
+                                            <CheckCircle2 className="w-4 h-4" />
                                             {selectedAppointment.status === 'Completed' ? 'Completed' : 
                                              ['Canceled', 'Cancelled'].includes(selectedAppointment.status) ? 'Cancelled' : 
                                              'Sign & Complete'}

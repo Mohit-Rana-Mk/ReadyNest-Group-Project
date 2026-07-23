@@ -1620,7 +1620,7 @@ export function AuraCareDashboard() {
             </div>
 
             {/* bottom Panel: AI Insights & Recommendation Terminal Simulator */}
-            <div className="glass-panel ai-insights-panel full-width">
+            <div className="glass-panel ai-insights-panel full-width mb-12">
                 <div className="terminal-header">
                     <div className="flex items-center gap-4">
                         <div className="terminal-dots">

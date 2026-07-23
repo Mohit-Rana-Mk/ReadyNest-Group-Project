@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { 
-  LayoutDashboard, FileText, ShoppingBag, Package, FileClock, ShieldAlert, LogOut, Activity
+  LayoutDashboard, FileText, ShoppingBag, Package, FileClock, ShieldAlert, LogOut, Activity, LifeBuoy
 } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
 import { Footer } from '../../components/ui/Footer';
+import { Button } from '../../components/ui/Button';
 
 import { MedicineDashboard } from './components/MedicineDashboard';
 import { PrescriptionQueue } from './components/PrescriptionQueue';
@@ -113,157 +114,140 @@ export default function MedicinePortal() {
     }
   };
 
-  return (
-    <div className="flex h-screen bg-[#F6F8FC] overflow-hidden font-sans">
-      
-      {/* Sidebar Navigation */}
-      <aside className="w-72 bg-slate-900 text-slate-400 flex flex-col justify-between shrink-0 border-r border-slate-800 shadow-xl">
-        <div className="flex flex-col">
-          {/* Logo Header */}
-          <div className="h-20 px-8 flex items-center gap-3 border-b border-slate-800/60">
-            <img src="/logo.png" alt="HealTrack Logo" className="w-10 h-10 object-contain rounded-xl shadow-lg shadow-indigo-600/30" />
-            <div>
-              <h2 className="text-sm font-black text-white tracking-wider uppercase">HealTrack</h2>
-              <span className="text-[9px] font-extrabold text-indigo-400 tracking-widest uppercase">Pharmacy Suite</span>
-            </div>
+  const sidebarContent = (
+    <div className="flex flex-col h-full text-slate-200 justify-between">
+      <div>
+        {/* Logo Header */}
+        <div className="p-5 border-b border-white/10 flex items-center gap-3">
+          <img src="/logo.png" alt="HealTrack Logo" className="w-8 h-8 object-contain rounded-xl shadow-sm" />
+          <div>
+            <h2 className="font-bold text-base leading-none text-white">Heal<span className="text-cyan-400">Track Pharmacy</span></h2>
           </div>
-
-          {/* Navigation Links */}
-          <nav className="p-6 space-y-2">
-            <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`w-full flex items-center gap-3.5 px-4.5 py-3.5 rounded-2xl text-xs font-bold transition ${
-                activeTab === 'dashboard'
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-650/15'
-                  : 'hover:bg-slate-800/50 hover:text-slate-200'
-              }`}
-            >
-              <LayoutDashboard className="w-4.5 h-4.5" />
-              Portal Dashboard
-            </button>
-
-            <button
-              onClick={() => setActiveTab('prescriptions')}
-              className={`w-full flex items-center gap-3.5 px-4.5 py-3.5 rounded-2xl text-xs font-bold transition relative ${
-                activeTab === 'prescriptions'
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-650/15'
-                  : 'hover:bg-slate-800/50 hover:text-slate-200'
-              }`}
-            >
-              <FileText className="w-4.5 h-4.5" />
-              Prescription Queue
-              {prescriptions.length > 0 && (
-                <span className="absolute right-4.5 top-1/2 -translate-y-1/2 w-5 h-5 bg-rose-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">
-                  {prescriptions.length}
-                </span>
-              )}
-            </button>
-
-            <button
-              onClick={() => setActiveTab('billing')}
-              className={`w-full flex items-center gap-3.5 px-4.5 py-3.5 rounded-2xl text-xs font-bold transition ${
-                activeTab === 'billing'
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-650/15'
-                  : 'hover:bg-slate-800/50 hover:text-slate-200'
-              }`}
-            >
-              <ShoppingBag className="w-4.5 h-4.5" />
-              Checkout & Billing
-            </button>
-
-            <button
-              onClick={() => setActiveTab('inventory')}
-              className={`w-full flex items-center gap-3.5 px-4.5 py-3.5 rounded-2xl text-xs font-bold transition ${
-                activeTab === 'inventory'
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-650/15'
-                  : 'hover:bg-slate-800/50 hover:text-slate-200'
-              }`}
-            >
-              <Package className="w-4.5 h-4.5" />
-              Inventory Stock
-            </button>
-
-            <button
-              onClick={() => setActiveTab('bills')}
-              className={`w-full flex items-center gap-3.5 px-4.5 py-3.5 rounded-2xl text-xs font-bold transition ${
-                activeTab === 'bills'
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-650/15'
-                  : 'hover:bg-slate-800/50 hover:text-slate-200'
-              }`}
-            >
-              <FileClock className="w-4.5 h-4.5" />
-              Sales History
-            </button>
-
-            <button
-              onClick={() => setActiveTab('logs')}
-              className={`w-full flex items-center gap-3.5 px-4.5 py-3.5 rounded-2xl text-xs font-bold transition ${
-                activeTab === 'logs'
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-650/15'
-                  : 'hover:bg-slate-800/50 hover:text-slate-200'
-              }`}
-            >
-              <ShieldAlert className="w-4.5 h-4.5" />
-              Audit Journals
-            </button>
-          </nav>
         </div>
 
-        {/* User Footer Profile */}
-        <div className="p-6 border-t border-slate-800/60 space-y-4">
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-2xl bg-slate-800 flex items-center justify-center font-bold text-white uppercase text-sm border border-slate-700/50">
-              {getInitials(user?.name)}
-            </div>
-            <div>
-              <h4 className="text-xs font-black text-slate-200 truncate max-w-[130px]">{user?.name || 'Pharmacist'}</h4>
-              <span className="text-[9px] font-extrabold text-slate-500 uppercase tracking-wide">Pharmacy Staff</span>
-            </div>
+        {/* Navigation Links */}
+        <nav className="p-3 space-y-2 mt-2 overflow-y-auto">
+          {[
+            { id: 'dashboard', label: 'Portal Dashboard', icon: LayoutDashboard },
+            { id: 'prescriptions', label: 'Prescription Queue', icon: FileText, badge: prescriptions.length },
+            { id: 'billing', label: 'Checkout & Billing', icon: ShoppingBag },
+            { id: 'inventory', label: 'Inventory Stock', icon: Package },
+            { id: 'bills', label: 'Sales History', icon: FileClock },
+            { id: 'logs', label: 'Audit Journals', icon: ShieldAlert },
+          ].map(item => {
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`w-full flex items-center space-x-3.5 px-4 py-3 rounded-[18px] transition-all transform hover:-translate-y-0.5 active:scale-95 border-none outline-none cursor-pointer group relative ${
+                  isActive
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
+                    : 'text-slate-400 hover:bg-slate-800/60 hover:text-cyan-400'
+                }`}
+              >
+                <item.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-cyan-400'}`} />
+                <span className={`font-semibold text-xs tracking-wide ${isActive ? 'text-white' : ''}`}>{item.label}</span>
+                {item.badge > 0 && (
+                  <span className="ml-auto w-5 h-5 bg-rose-500 text-white text-[9px] font-extrabold rounded-full flex items-center justify-center shadow-sm">
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+      </div>
+
+      {/* Need Help Support Box (Same as Clinic Admin) */}
+      <div className="p-4 mt-auto">
+        <div className="bg-slate-800/50 rounded-[20px] p-4 border border-slate-700/50 flex flex-col items-center text-center">
+          <div className="w-9 h-9 rounded-full bg-slate-900 shadow-sm flex items-center justify-center mb-2">
+            <LifeBuoy className="w-4 h-4 text-indigo-400" />
           </div>
-          
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-slate-800/50 hover:bg-rose-500/10 hover:text-rose-500 text-slate-400 rounded-2xl text-xs font-bold transition"
+          <p className="text-xs font-bold text-white">Need help?</p>
+          <p className="text-[10px] text-slate-400 font-medium mt-0.5 mb-2.5">Check our docs or contact support</p>
+          <Button 
+            onClick={() => alert("Redirecting to Support Center...")}
+            className="w-full bg-slate-700 hover:bg-slate-600 text-white border-none rounded-[12px] shadow-sm text-xs py-1.5 cursor-pointer"
           >
-            <LogOut className="w-4 h-4" />
-            Logout Session
-          </button>
+            Support Center
+          </Button>
         </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="h-screen overflow-hidden flex font-sans antialiased bg-[#f8f9fa] text-slate-700">
+      
+      {/* DESKTOP FLOATING SIDEBAR (CLOSE TO CORNERS) */}
+      <aside className="fixed top-3 left-3 bottom-20 w-64 rounded-2xl bg-gradient-to-b from-[#0B132B] via-[#1C2541] to-[#0B132B] border border-white/10 shadow-xl hidden lg:flex flex-col z-50 overflow-hidden">
+        {sidebarContent}
       </aside>
 
       {/* Main Panel Area */}
-      <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Navbar Header */}
-        <header className="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-10 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="px-3.5 py-1.5 bg-indigo-50 text-indigo-600 rounded-2xl text-[10px] font-black tracking-wider uppercase">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* FLOATING TOPBAR (CLOSE TO CORNERS) */}
+        <header className="hidden lg:flex ml-[276px] mr-3 mt-3 h-14 rounded-2xl bg-gradient-to-r from-[#0B132B] via-[#1C2541] to-[#0B132B] border border-white/10 shadow-lg items-center justify-between px-6 z-40 sticky top-3 shrink-0">
+          <div className="flex items-center gap-2.5">
+            <span className="px-3 py-1 bg-slate-800/80 border border-slate-700 text-cyan-400 rounded-full text-[10px] font-extrabold tracking-wider uppercase">
               Isolated Clinic Environment
-            </div>
+            </span>
             <span className="text-xs text-slate-400 font-bold">•</span>
-            <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">{new Date().toDateString()}</span>
+            <span className="text-xs text-slate-300 font-semibold uppercase tracking-wider">{new Date().toDateString()}</span>
           </div>
           
           <div className="flex items-center gap-4">
             <button 
               onClick={fetchData} 
-              className="text-xs font-bold text-slate-400 hover:text-indigo-600 transition flex items-center gap-1.5"
+              className="text-xs font-bold text-slate-300 hover:text-cyan-400 transition flex items-center gap-1.5 bg-transparent border-none cursor-pointer"
             >
-              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
+              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-ping"></span>
               Live Sync Active
+            </button>
+            <div className="h-5 w-px bg-slate-800"></div>
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-white text-xs shadow-sm">
+                {getInitials(user?.name)}
+              </div>
+              <div className="hidden md:flex flex-col justify-center leading-tight">
+                <span className="text-xs font-bold text-white">{user?.name || 'Pharmacist'}</span>
+                <span className="text-[10px] font-medium text-cyan-400">Pharmacy Staff</span>
+              </div>
+            </div>
+            <button 
+              onClick={handleLogout} 
+              className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition border-none bg-transparent cursor-pointer" 
+              title="Logout"
+            >
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
         </header>
 
+        {/* MOBILE TOPBAR */}
+        <header className="lg:hidden h-14 bg-gradient-to-r from-[#0B132B] via-[#1C2541] to-[#0B132B] border-b border-white/10 px-4 flex justify-between items-center sticky top-0 z-40">
+          <div className="flex items-center gap-3">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-white">
+              Pharmacy Suite
+            </h2>
+          </div>
+          <button onClick={handleLogout} className="p-1.5 text-slate-400 hover:text-rose-400 border-none bg-transparent">
+            <LogOut className="w-4 h-4" />
+          </button>
+        </header>
+
         {/* Active Route Wrapper */}
-        <div className="flex-1 overflow-y-auto p-10 bg-[#f8f9fa] flex flex-col">
+        <div className="flex-1 overflow-y-auto p-4 lg:px-6 lg:pt-2 pb-36 lg:pb-36 lg:ml-[264px] bg-[#f8f9fa] flex flex-col">
           <div className="flex-1 min-h-[calc(100vh-4rem)] flex flex-col">
             {renderActiveComponent()}
           </div>
-          <div className="w-full mt-auto pt-10">
+          <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-t border-slate-200">
             <Footer />
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

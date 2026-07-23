@@ -181,51 +181,46 @@ export default function AdminDashboard() {
     };
 
     const sidebarContent = (
-        <>
-            <div className="p-4 lg:p-6 border-b flex items-center gap-3 border-[#f1f3f5]">
+        <div className="flex flex-col h-full text-slate-200">
+            <div className="p-5 border-b border-white/10 flex items-center gap-3">
                 <img src="/logo.png" alt="HealTrack Logo" className="w-8 h-8 object-contain rounded-xl shadow-sm" />
                 <div>
-                    <h2 className="font-bold text-base leading-none text-slate-800">HealTrack</h2>
-                    <span className="text-[10px] text-indigo-700 font-bold uppercase tracking-wider">Super Admin</span>
+                    <h2 className="font-bold text-base leading-none text-white">Heal<span className="text-cyan-400">Track</span></h2>
                 </div>
-                <Button variant="outline" onClick={() => setSidebarOpen(false)} className="lg:hidden ml-auto p-1 text-slate-400 hover:text-slate-600 border-none bg-transparent">
+                <Button variant="outline" onClick={() => setSidebarOpen(false)} className="lg:hidden ml-auto p-1 text-slate-400 hover:text-white border-none bg-transparent">
                     <X className="w-5 h-5" />
                 </Button>
             </div>
 
-            <nav className="flex-1 p-3 space-y-1 mt-4 overflow-y-auto">
+            <nav className="flex-1 px-3 space-y-2 mt-3 overflow-y-auto">
                 {navigation.map(item => {
                     const isActive = activeTab === item.id;
-                    const activeClass = item.id === 'auracare'
-                        ? 'bg-cyan-50 text-cyan-700 border-r-4 border-cyan-500'
-                        : 'bg-indigo-50 text-indigo-800 border-r-4 border-indigo-700';
                     return (
-                        <Button
-                            variant="outline"
+                        <button
                             key={item.id}
                             onClick={() => handleTabChange(item.id)}
-                            className={`w-full flex !justify-start items-center gap-3 pl-5 pr-4 py-2.5 rounded-xl transition text-sm font-semibold border-none bg-transparent ${
+                            className={`w-full flex !justify-start items-center space-x-3.5 px-4 py-3 rounded-[18px] transition-all transform hover:-translate-y-0.5 active:scale-95 border-none outline-none focus:outline-none focus:ring-0 bg-transparent group cursor-pointer ${
                                 isActive 
-                                    ? activeClass 
-                                    : 'text-slate-500 hover:bg-[#f1f3f5] hover:text-slate-800 border-r-4 border-transparent'
+                                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md' 
+                                    : 'text-slate-400 hover:bg-slate-800/50 hover:text-indigo-400'
                             }`}
                         >
-                            <item.icon className="w-4 h-4" />
-                            {item.name}
-                        </Button>
+                            <item.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-indigo-400'}`} />
+                            <span className={`font-semibold text-xs tracking-wide ${isActive ? 'text-white' : ''}`}>{item.name}</span>
+                        </button>
                     );
                 })}
             </nav>
-        </>
+        </div>
     );
 
     return (
-        <div className="h-screen overflow-hidden flex font-sans antialiased selection:bg-indigo-100 selection:text-indigo-900 bg-[#f8f9fa] text-slate-700">
+        <div className="h-screen overflow-hidden flex font-sans antialiased bg-[#f8f9fa] text-slate-700">
             {/* MOBILE SIDEBAR OVERLAY */}
             {sidebarOpen && (
-                <div className="fixed inset-0 z-40 lg:hidden">
+                <div className="fixed inset-0 z-50 lg:hidden">
                     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-                    <aside className="fixed inset-y-0 left-0 w-72 bg-white flex flex-col z-50 shadow-xl">
+                    <aside className="fixed inset-y-0 left-0 w-72 bg-gradient-to-b from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a] border-r border-white/10 flex flex-col z-50 shadow-2xl">
                         {sidebarContent}
                     </aside>
                 </div>
@@ -242,46 +237,69 @@ export default function AdminDashboard() {
                 isDestructive={true}
             />
 
-            {/* DESKTOP SIDEBAR */}
-            <aside className="w-64 border-r hidden lg:flex flex-col shrink-0 bg-white border-[#e9ecef]">
+            {/* DESKTOP FLOATING SIDEBAR (CLOSE TO CORNERS) */}
+            <aside className="fixed top-3 left-3 bottom-20 w-64 rounded-2xl bg-gradient-to-b from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a] border border-white/10 shadow-xl hidden lg:flex flex-col z-50 overflow-hidden">
                 {sidebarContent}
             </aside>
 
             {/* MAIN WORKSPACE */}
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                {/* HEADER */}
-                <header className="h-14 lg:h-16 border-b px-4 lg:px-8 flex justify-between items-center shrink-0 bg-white border-[#e9ecef]">
+                {/* FLOATING TOPBAR (CLOSE TO CORNERS) */}
+                <header className="hidden lg:flex ml-[276px] mr-3 mt-3 h-14 rounded-2xl bg-gradient-to-r from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a] border border-white/10 shadow-lg items-center justify-between px-6 z-40 sticky top-3 shrink-0">
                     <div className="flex items-center gap-3">
-                        <Button variant="outline" onClick={() => setSidebarOpen(true)} className="lg:hidden p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg border-none bg-transparent">
-                            <Menu className="w-5 h-5" />
-                        </Button>
-                        <h2 className={`text-xs lg:text-sm font-bold uppercase tracking-wider flex items-center gap-2 ${activeTab === 'auracare' ? 'text-cyan-600' : 'text-slate-800'}`}>
-                            {activeTab.replace('-', ' ')} Workstation
+                        <h2 className="text-xs lg:text-sm font-extrabold uppercase tracking-wider text-white flex items-center gap-2">
+                            {activeTab.replace('-', ' ')} <span className="text-cyan-400">Workstation</span>
                         </h2>
                     </div>
-                    <div className="flex items-center gap-2 lg:gap-4">
+                    <div className="flex items-center gap-3">
                         {activeTab !== 'auracare' && activeTab !== 'payments' && (
                             <Button 
                                 variant="outline"
                                 onClick={loadDashboardData}
-                                className="p-2 hover:bg-slate-100 text-slate-500 rounded-full transition border-none bg-transparent"
+                                className="p-2 hover:bg-slate-800 text-slate-300 hover:text-white rounded-full transition border-none bg-transparent"
                                 title="Refresh dashboard stats"
                             >
                                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                             </Button>
                         )}
-                        <div className="w-7 h-7 rounded-full bg-indigo-700 flex items-center justify-center font-bold text-white text-[11px]">
-                            SA
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-white text-xs shadow-sm">
+                                SA
+                            </div>
+                            <div className="hidden md:flex flex-col justify-center leading-tight">
+                                <span className="text-xs font-bold text-white">Super Admin</span>
+                                <span className="text-[10px] font-medium text-cyan-400">Platform Owner</span>
+                            </div>
                         </div>
-                        <span className="text-xs font-semibold text-slate-800 hidden md:block">Platform Owner</span>
-                        <Button variant="outline" onClick={logout} className="ml-1 lg:ml-2 p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition border-none bg-transparent" title="Logout">
+                        <div className="h-5 w-px bg-slate-800 hidden md:block"></div>
+                        <Button 
+                            variant="outline" 
+                            onClick={logout} 
+                            className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition border-none bg-transparent cursor-pointer" 
+                            title="Logout"
+                        >
                             <LogOut className="w-4 h-4" />
                         </Button>
                     </div>
                 </header>
 
+                {/* MOBILE TOPBAR */}
+                <header className="lg:hidden h-14 bg-gradient-to-r from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a] border-b border-white/10 px-4 flex justify-between items-center sticky top-0 z-40">
+                    <div className="flex items-center gap-3">
+                        <Button variant="outline" onClick={() => setSidebarOpen(true)} className="p-1.5 text-slate-300 hover:bg-slate-800 rounded-lg border-none bg-transparent">
+                            <Menu className="w-5 h-5" />
+                        </Button>
+                        <h2 className="text-xs font-bold uppercase tracking-wider text-white">
+                            {activeTab.replace('-', ' ')}
+                        </h2>
+                    </div>
+                    <Button variant="outline" onClick={logout} className="p-1.5 text-slate-400 hover:text-rose-400 border-none bg-transparent">
+                        <LogOut className="w-4 h-4" />
+                    </Button>
+                </header>
+
                 {/* WORKSPACE CONTENT */}
-                <main className="flex-1 overflow-y-auto p-4 lg:p-8 bg-[#f8f9fa] flex flex-col">
+                <main className="flex-1 overflow-y-auto p-4 lg:p-6 lg:ml-[264px] bg-[#f8f9fa] flex flex-col pb-36 lg:pb-40">
                     <div className="flex-1 flex flex-col min-h-[calc(100vh-4rem)]">
                     {actionMessage && activeTab !== 'auracare' && (
                         <div className="mb-4 lg:mb-6 p-3 lg:p-4 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-2">
@@ -373,7 +391,7 @@ export default function AdminDashboard() {
                         </>
                     )}
                     </div>
-                    <div className="w-full pt-8 mt-auto">
+                    <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-t border-slate-200">
                         <Footer />
                     </div>
                 </main>
