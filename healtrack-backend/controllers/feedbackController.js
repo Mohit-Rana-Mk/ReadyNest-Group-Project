@@ -25,6 +25,7 @@ initFeedbackTable();
 
 exports.submitFeedback = async (req, res) => {
     try {
+        await initFeedbackTable();
         const { rating, category, message, name, email } = req.body;
 
         if (!message || !message.trim()) {
@@ -51,25 +52,33 @@ exports.submitFeedback = async (req, res) => {
         });
     } catch (err) {
         console.error("Error submitting feedback:", err);
-        res.status(500).json({ success: false, message: 'Failed to submit feedback. Please try again.' });
+        res.status(500).json({ success: false, message: 'Failed to submit feedback. Please try again.', error: err.message });
     }
 };
 
 exports.getFeedbackList = async (req, res) => {
     try {
+        await initFeedbackTable();
         const [feedbackList] = await db.query(`SELECT * FROM platform_feedback ORDER BY created_at DESC LIMIT 50`);
         const [stats] = await db.query(`SELECT COUNT(*) as total, AVG(rating) as avgRating FROM platform_feedback`);
         
+        const total = stats[0]?.total || 0;
+        const rawAvg = stats[0]?.avgRating;
+        let avgRating = 5.0;
+        if (total > 0 && rawAvg !== null && rawAvg !== undefined) {
+            avgRating = parseFloat(Number(rawAvg).toFixed(1));
+        }
+
         res.json({
             success: true,
             data: feedbackList,
             metrics: {
-                total: stats[0]?.total || 0,
-                avgRating: parseFloat((stats[0]?.avgRating || 5.0).toFixed(1))
+                total,
+                avgRating
             }
         });
     } catch (err) {
         console.error("Error fetching feedback list:", err);
-        res.status(500).json({ success: false, message: 'Failed to load feedback list.' });
+        res.status(500).json({ success: false, message: 'Failed to load feedback list.', error: err.message });
     }
 };
