@@ -267,15 +267,20 @@ export default function DoctorWorkstation() {
                         <div className="w-7 h-7 rounded-full bg-slate-600 flex items-center justify-center font-bold text-white text-[11px] uppercase">
                             {getInitials(user?.name)}
                         </div>
+                        <span className="text-xs font-semibold text-slate-200 hidden lg:block">
+                            {user?.name ? `Dr. ${user.name}` : 'Doctor Portal'}
+                        </span>
+                        
                         <Button 
                             variant="outline" 
                             onClick={() => setIsTicketModalOpen(true)} 
-                            className="p-1.5 text-slate-300 hover:text-cyan-400 hover:bg-slate-700/60 rounded-lg border-none bg-transparent flex items-center gap-1.5 text-xs font-bold cursor-pointer"
+                            className="px-3 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-600 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-sm ml-1"
                             title="Raise Support Ticket"
                         >
-                            <LifeBuoy className="w-4 h-4 text-cyan-400" />
-                            <span className="hidden xl:inline">Support</span>
+                            <HelpCircle className="w-4 h-4 text-slate-300" />
+                            <span>Need help?</span>
                         </Button>
+
                         <Button variant="outline" onClick={logout} className="ml-1 md:ml-2 p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-900/30 rounded-lg transition border-none bg-transparent" title="Logout">
                             <LogOut className="w-4 h-4" />
                         </Button>
