@@ -20,7 +20,12 @@ export function Footer() {
             <MessageSquare className="w-4 h-4" />
             Feedback
           </a>
-          <a href="#" className="text-sm text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1.5 font-medium">
+          <a 
+            href="https://github.com/Mohit-Rana-Mk/ReadyNest-Group-Project" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="text-sm text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1.5 font-medium"
+          >
             <GithubIcon className="w-4 h-4" />
             GitHub
           </a>
