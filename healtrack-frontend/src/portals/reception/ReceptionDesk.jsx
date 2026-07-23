@@ -1087,6 +1087,7 @@ export default function ReceptionDesk() {
             </form>
           </div>
         </div>
+      )}
       {/* Support Ticket Modal */}
       <RaiseTicketModal
         isOpen={isTicketModalOpen}
