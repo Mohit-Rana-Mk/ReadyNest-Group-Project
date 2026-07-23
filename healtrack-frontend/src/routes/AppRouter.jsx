@@ -14,6 +14,7 @@ import Login from '../pages/Login';
 import Signup from '../pages/Signup';
 import PharmacyLogin from '../pages/PharmacyLogin';
 import VideoConsultation from '../pages/VideoConsultation';
+import Feedback from '../pages/Feedback';
 import CommandPalette from '../components/ui/CommandPalette';
 
 export default function AppRouter() {
@@ -26,6 +27,7 @@ export default function AppRouter() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/medicine/login" element={<PharmacyLogin />} />
+                <Route path="/feedback" element={<Feedback />} />
 
                 {/* Super Admin Workstation Routes */}
                 <Route path="/admin" element={<ProtectedRoute allowedRoles={['SuperAdmin']} />}>
