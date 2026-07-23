@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { KpiBanner } from './components/KpiBanner';
 import { OpdQueueTable } from './components/OpdQueueTable';
 import { WalkInModal } from './components/WalkInModal';
-import { UserPlus, Bell, LogOut, Activity, Clock, Users, CheckCircle, Search, Loader2, Banknote, CreditCard, X, CalendarX2 } from 'lucide-react';
+import { UserPlus, Bell, LogOut, Activity, Clock, Users, CheckCircle, Search, Loader2, Banknote, CreditCard, X, CalendarX2, HelpCircle } from 'lucide-react';
 import axiosClient, { SOCKET_URL } from '../../api/axiosClient';
 import EmptyState from '../../components/ui/EmptyState';
 import { io } from 'socket.io-client';
@@ -359,32 +359,40 @@ export default function ReceptionDesk() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="h-screen bg-[#F8FAFC] flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="bg-[#0B132B] sticky top-0 z-50 px-6 md:px-10 py-4 flex items-center justify-between shadow-md">
-        <div className="flex items-center gap-3">
-          <img src="/logo.png" alt="HealTrack Logo" className="w-8 h-8 object-contain rounded-lg shadow-md" />
-          <div>
-            <h1 className="text-sm font-extrabold text-white tracking-tight">Reception Desk</h1>
-            <p className="text-[9px] text-[#22d3ee] font-bold uppercase tracking-widest">
-              {user?.clinic_name || 'Digital Check-in & Queue Control'}
-            </p>
+      <header className="h-12 md:h-14 bg-gradient-to-r from-slate-700 to-slate-600 border border-slate-500 px-3 md:px-6 flex justify-between items-center shrink-0 rounded-2xl mx-2 md:mx-4 mt-2 shadow-sm sticky top-2 z-50">
+        <div className="flex items-center gap-2 md:gap-4">
+          <div className="flex items-center gap-2">
+            <img src="/logo.png" alt="HealTrack Logo" className="w-7 h-7 md:w-8 md:h-8 object-contain rounded-xl shadow-sm" />
+            <h2 className="font-bold text-white text-sm md:text-base leading-none">Reception <span className="text-cyan-400">Desk</span></h2>
           </div>
+          {user?.clinic_name && (
+            <div className="hidden lg:flex items-center px-3 py-1 bg-slate-700 border border-slate-600 rounded-full">
+              <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wide mr-2">Clinic:</span>
+              <span className="text-xs font-bold text-slate-100">{user.clinic_name}</span>
+            </div>
+          )}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-4">
           {/* Live queue counter badge */}
-          <div className="hidden md:flex items-center gap-1.5 bg-white/10 text-white border border-white/10 rounded-xl px-3 py-1.5 text-xs font-bold">
+          <div className="hidden md:flex items-center gap-1.5 bg-slate-800/60 text-slate-200 border border-slate-600 rounded-full px-3 py-1 text-xs font-bold">
             <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
             {activeQueue.length} Active in Queue
           </div>
-          <Button
-            variant="outline"
-            onClick={logout}
-            className="p-2 text-slate-300 hover:text-white bg-slate-800/30 hover:bg-slate-800/60 rounded-xl transition border-slate-800/40 cursor-pointer"
-          >
-            <LogOut className="w-4 h-4" />
-          </Button>
+          <div className="h-6 w-px bg-slate-600 hidden md:block"></div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-slate-200 hidden lg:block">{user?.name ? user.name : 'Reception Desk'}</span>
+            <Button
+              variant="outline"
+              onClick={logout}
+              className="ml-1 md:ml-2 p-1.5 text-slate-300 hover:text-red-400 hover:bg-red-900/30 rounded-lg transition border-none bg-transparent cursor-pointer"
+              title="Logout"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -400,36 +408,66 @@ export default function ReceptionDesk() {
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="flex-1 flex flex-col"
+        className="flex-1 flex flex-col overflow-y-auto pb-36"
       >
-      <div className="flex-1 min-h-[calc(100vh-4rem)] flex flex-col">
+      <div className="flex flex-col">
       {/* KPI Metrics Bar */}
-      <div className="px-6 md:px-10 pt-6 pb-2 flex-1 flex flex-col">
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="px-4 md:px-8 pt-3.5 pb-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {[
-            { label: 'Total Walk-ins Today', value: stats.totalWalkIns, icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-            { label: 'Avg Wait Time', value: stats.avgWaitTime, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-            { label: 'Active Doctors', value: stats.activeDoctors, icon: Activity, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+            { 
+              label: 'Total Walk-ins Today', 
+              value: stats.totalWalkIns, 
+              icon: Users, 
+              gradient: 'from-indigo-500 to-indigo-600', 
+              glow: 'shadow-indigo-500/25',
+              tag: 'OPD Queue'
+            },
+            { 
+              label: 'Avg Wait Time', 
+              value: stats.avgWaitTime, 
+              icon: Clock, 
+              gradient: 'from-amber-500 to-orange-500', 
+              glow: 'shadow-amber-500/25',
+              tag: 'Live Status'
+            },
+            { 
+              label: 'Active Doctors', 
+              value: stats.activeDoctors, 
+              icon: Activity, 
+              gradient: 'from-emerald-500 to-teal-600', 
+              glow: 'shadow-emerald-500/25',
+              tag: 'On Duty'
+            },
           ].map((stat) => (
-            <div key={stat.label} className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm flex items-center gap-4">
-              <div className={`w-11 h-11 rounded-xl ${stat.bg} flex items-center justify-center shrink-0`}>
-                <stat.icon className={`w-5 h-5 ${stat.color}`} />
+            <div 
+              key={stat.label} 
+              className="bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-3xl p-4 md:p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between relative overflow-hidden group"
+            >
+              <div className="flex items-center gap-3.5 z-10">
+                <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${stat.gradient} text-white flex items-center justify-center shrink-0 shadow-lg ${stat.glow}`}>
+                  <stat.icon className="w-5 h-5 stroke-[2.2]" />
+                </div>
+                <div>
+                  <p className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight leading-none">{stat.value}</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1.5">{stat.label}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-2xl font-black text-slate-800 tracking-tight leading-none">{stat.value}</p>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">{stat.label}</p>
-              </div>
+              <span className="hidden xl:inline-block px-2.5 py-1 rounded-full text-[9px] font-extrabold bg-slate-100 text-slate-500 uppercase tracking-wider z-10">
+                {stat.tag}
+              </span>
+              <div className={`absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-gradient-to-br ${stat.gradient} opacity-[0.05] group-hover:opacity-[0.1] transition-opacity duration-300`}></div>
             </div>
           ))}
         </div>
       </div>
 
       {/* Main Content — Split Column */}
-      <div className="px-6 md:px-10 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="px-4 md:px-8 py-3 grid grid-cols-1 lg:grid-cols-12 gap-5">
         
         {/* LEFT PANEL: Check-in Form (4 columns) */}
         <div className="lg:col-span-4">
-          <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm sticky top-[73px]">
+          <div className="bg-slate-300/60 backdrop-blur-md border border-slate-400/60 rounded-3xl p-6 shadow-sm sticky top-[73px]">
             <div className="mb-6">
               <h2 className="text-sm font-black text-slate-800 uppercase tracking-wider">Digital Check-in</h2>
               <p className="text-[10px] text-slate-400 font-medium mt-1">Register a new walk-in patient to the OPD queue.</p>
@@ -447,7 +485,7 @@ export default function ReceptionDesk() {
               </div>
             )}
 
-            <form onSubmit={handleWalkInSubmit} className="space-y-6">
+            <form onSubmit={handleWalkInSubmit} className="space-y-5">
               {/* Phone lookup */}
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">Phone (Patient Lookup)</label>
@@ -525,7 +563,10 @@ export default function ReceptionDesk() {
                   className="w-full"
                   options={[
                     { value: "", label: "— Select Doctor —" },
-                    ...doctors.map(d => ({ value: d.id.toString(), label: `Dr. ${d.name} (₹${d.consultation_fee || 500})` }))
+                    ...doctors.map(d => ({ 
+                      value: d.id.toString(), 
+                      label: `${d.name?.toLowerCase().startsWith('dr') ? d.name : 'Dr. ' + d.name} (₹${d.consultation_fee || 500})` 
+                    }))
                   ]}
                 />
               </div>
@@ -545,7 +586,7 @@ export default function ReceptionDesk() {
               <Button
                 type="submit"
                 disabled={walkInLoading}
-                className="w-full flex justify-center items-center gap-2 py-3.5 bg-[#6366f1] hover:bg-[#5558e6] disabled:bg-slate-300 text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all cursor-pointer border-none"
+                className="w-full flex justify-center items-center gap-2 py-3.5 bg-[#6366f1] hover:bg-[#5558e6] disabled:bg-slate-300 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer border-none shadow-sm"
               >
                 {walkInLoading
                   ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> Registering...</>
@@ -553,6 +594,25 @@ export default function ReceptionDesk() {
                 }
               </Button>
             </form>
+          </div>
+
+          {/* Need Help Support Box */}
+          <div className="mt-4 bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-sm flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-7 h-7 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center shrink-0 border border-slate-200/60">
+                <HelpCircle className="w-3.5 h-3.5 text-slate-500" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="font-extrabold text-xs text-slate-800 leading-none">Need help?</h4>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => alert("Redirecting to Support Center...")}
+              className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-[11px] font-bold transition-all shrink-0 border border-slate-200/80 cursor-pointer"
+            >
+              Support Center
+            </Button>
           </div>
         </div>
 
@@ -869,7 +929,7 @@ export default function ReceptionDesk() {
         </div>
       </div>
       </div>
-      <div className="w-full px-6 md:px-10 mt-auto bg-white/50 backdrop-blur-md">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-t border-slate-200">
           <Footer />
       </div>
       </motion.div>

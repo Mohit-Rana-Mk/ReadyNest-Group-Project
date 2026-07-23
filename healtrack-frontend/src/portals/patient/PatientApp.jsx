@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Heart, Loader2, LogOut, Home, Search, Activity, FileText, BookOpen, CreditCard, User, AlertCircle, Calendar, Phone, MapPin } from 'lucide-react';
+import { Heart, Loader2, LogOut, Home, Search, Activity, FileText, BookOpen, CreditCard, User, AlertCircle, Calendar, Phone, MapPin, LifeBuoy } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import BottomNav from './components/BottomNav';
 import PreventiveAlertBanner from './components/PreventiveAlertBanner';
@@ -187,9 +187,9 @@ export default function PatientApp() {
         { id: 'find-care', name: t('nav.findCare'), icon: Search },
         { id: 'triage', name: t('nav.aiTriage'), icon: Activity },
         { id: 'awareness', name: t('nav.generalAwareness'), icon: BookOpen },
+        /* profile item removed from sidebar nav as per request */
         { id: 'records', name: t('nav.records'), icon: FileText },
         { id: 'payments', name: 'Payments', icon: CreditCard },
-        { id: 'profile', name: 'My Profile', icon: User },
     ];
 
     if (loading) {
@@ -230,9 +230,9 @@ export default function PatientApp() {
     }
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC] flex flex-col md:flex-row">
-            {/* Desktop Sidebar (matches Image 2 style) */}
-            <aside className="hidden md:flex w-64 flex-col bg-[#0B132B] sticky top-0 h-screen overflow-y-auto shrink-0 z-50">
+        <div className="h-screen overflow-hidden flex font-sans antialiased bg-[#F8FAFC]">
+            {/* Desktop Floating Sidebar (Close to corners) */}
+            <aside className="fixed top-3 left-3 bottom-20 w-64 rounded-2xl bg-gradient-to-b from-[#0B132B] via-[#1C2541] to-[#0B132B] border border-white/10 shadow-xl hidden md:flex flex-col justify-between z-50 overflow-hidden text-slate-200">
                 {/* Logo and Portal Title */}
                 <div className="p-6 flex items-center justify-between border-b border-slate-800/60">
                     <div className="flex items-center gap-3">
@@ -255,52 +255,73 @@ export default function PatientApp() {
                 </div>
 
                 {/* Sidebar Navigation */}
-                <nav className="flex-1 px-4 py-6 space-y-2">
+                <nav className="flex-1 px-3 py-4 space-y-2 overflow-y-auto">
                     {desktopNavItems.map(item => {
                         const isActive = activeTab === item.id;
                         return (
                             <button
                                 key={item.id}
                                 onClick={() => setActiveTab(item.id)}
-                                className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-150 cursor-pointer ${
+                                className={`w-full flex items-center space-x-3.5 px-4 py-3 rounded-[18px] transition-all transform hover:-translate-y-0.5 active:scale-95 border-none outline-none focus:outline-none focus:ring-0 bg-transparent group cursor-pointer ${
                                     isActive 
-                                        ? 'bg-[#7F3DEC] text-white shadow-md shadow-[#7F3DEC]/10' 
-                                        : 'text-slate-300 hover:text-white hover:bg-slate-800/30'
+                                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md' 
+                                        : 'text-slate-400 hover:bg-slate-800/60 hover:text-cyan-400'
                                 }`}
                             >
-                                <item.icon className="w-4.5 h-4.5" />
-                                {item.name}
+                                <item.icon className={`w-4.5 h-4.5 transition-colors ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-cyan-400'}`} />
+                                <span className={`font-semibold text-xs tracking-wide ${isActive ? 'text-white' : ''}`}>{item.name}</span>
                             </button>
                         );
                     })}
                 </nav>
 
-                {/* Bottom section of sidebar */}
-                <div className="p-4 border-t border-slate-800/60">
-                    <div className="bg-[#131B31] rounded-2xl p-4 mb-4 border border-slate-800/40 shadow-sm flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-[#1e293b] text-[#38bdf8] flex items-center justify-center border border-slate-700/50">
-                            <Heart size={16} className="fill-[#38bdf8]/10" />
+                {/* Need Help Support Box & User Profile Footer */}
+                <div className="p-4 mt-auto space-y-3">
+                    <div className="bg-slate-800/50 rounded-[20px] p-4 border border-slate-700/50 flex flex-col items-center text-center">
+                        <div className="w-9 h-9 rounded-full bg-slate-900 shadow-sm flex items-center justify-center mb-2">
+                            <LifeBuoy className="w-4 h-4 text-indigo-400" />
                         </div>
-                        <div>
-                            <p className="text-xs font-bold text-white">My Health</p>
-                            <p className="text-[10px] text-slate-400 font-medium mt-0.5">
-                                {recommendations.length} Care Alerts
-                            </p>
-                        </div>
+                        <p className="text-xs font-bold text-white">Need help?</p>
+                        <p className="text-[10px] text-slate-400 font-medium mt-0.5 mb-2.5">Check our docs or contact support</p>
+                        <Button 
+                            onClick={() => alert("Redirecting to Support Center...")}
+                            className="w-full bg-slate-700 hover:bg-slate-600 text-white border-none rounded-[12px] shadow-sm text-xs py-1.5 cursor-pointer"
+                        >
+                            Support Center
+                        </Button>
                     </div>
-                    <Button 
-                        variant="outline"
-                        onClick={logout} 
-                        className="w-full flex items-center justify-center gap-2 p-3 text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-white bg-slate-800/20 hover:bg-slate-800/40 rounded-xl transition-colors border-slate-800/40"
-                    >
-                        <LogOut size={14} />
-                        Sign Out
-                    </Button>
+
+                    {/* User Profile Footer Row (Icon, First Name, Sign Out) */}
+                    <div className="pt-2 border-t border-slate-800/60 flex items-center justify-between gap-2">
+                        <button
+                            onClick={() => setActiveTab('profile')}
+                            className="flex items-center gap-2.5 min-w-0 bg-transparent border-none text-left cursor-pointer group"
+                            title="View Profile"
+                        >
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-white text-xs shadow-sm shrink-0">
+                                {user?.name ? user.name.substring(0, 2).toUpperCase() : 'PT'}
+                            </div>
+                            <div className="min-w-0">
+                                <h4 className="text-xs font-bold text-slate-200 truncate group-hover:text-cyan-400 transition-colors">
+                                    {user?.name ? user.name.trim().split(' ')[0] : 'Patient'}
+                                </h4>
+                                <span className="text-[9px] font-medium text-slate-400 block -mt-0.5">My Account</span>
+                            </div>
+                        </button>
+
+                        <button
+                            onClick={logout}
+                            className="p-2 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition border-none bg-transparent cursor-pointer shrink-0"
+                            title="Sign Out"
+                        >
+                            <LogOut size={16} />
+                        </button>
+                    </div>
                 </div>
             </aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 flex flex-col min-h-screen relative max-w-full overflow-hidden bg-[#F8FAFC]">
+            <main className="flex-1 flex flex-col h-screen overflow-hidden relative max-w-full bg-[#F8FAFC]">
                 {/* Mobile Header (Matches Image 1 style - Dark background) */}
                 <header className="md:hidden sticky top-0 z-40 bg-[#0B132B] pt-4 pb-3 px-4 border-b border-slate-800/60 shadow-md">
                     <div className="flex items-center justify-between">
@@ -334,7 +355,7 @@ export default function PatientApp() {
                 </header>
 
                 {/* Scrollable Content Wrapper */}
-                <div className="flex-1 overflow-y-auto pb-28 md:pb-8 p-4 md:p-8 lg:p-10 w-full max-w-7xl mx-auto">
+                <div className="flex-1 overflow-y-auto pb-36 md:pb-36 p-4 md:p-6 lg:p-8 md:ml-[264px] w-full max-w-7xl">
                     {activeTab === 'home' && (
                         <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             
@@ -574,7 +595,7 @@ export default function PatientApp() {
                         </div>
                     )}
                 </div>
-                <div className="w-full mt-auto">
+                <div className="hidden md:block fixed bottom-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-t border-slate-200">
                     <Footer />
                 </div>
             </main>

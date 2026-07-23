@@ -5,7 +5,7 @@ import { Button } from '../../../components/ui/Button';
 import { ConfirmModal } from '../../../components/ui/ConfirmModal';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Legend, PieChart, Pie, Cell
+  ResponsiveContainer, Legend, PieChart, Pie, Cell, Sector
 } from 'recharts';
 import { Filter, Users, Calendar, Search, Trash2, ShieldAlert, CheckCircle, AlertTriangle } from 'lucide-react';
 import axiosClient from '../../../api/axiosClient';
@@ -45,6 +45,7 @@ export function PatientAnalytics() {
   // Dropdown toggles
   const [showDeptDropdown, setShowDeptDropdown] = useState(false);
   const [showGenderDropdown, setShowGenderDropdown] = useState(false);
+  const [activePieIndex, setActivePieIndex] = useState(0);
 
   const fetchAnalyticsData = useCallback(async () => {
     setLoading(true);
@@ -161,16 +162,6 @@ export function PatientAnalytics() {
 
   return (
     <div className="space-y-6 bg-gray-50 p-6 rounded-2xl border border-gray-200/80 shadow-sm w-full h-full overflow-y-auto">
-      {/* Title */}
-      <div className="border-b border-gray-200 pb-4 flex justify-between items-center">
-        <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="HealTrack Logo" className="w-10 h-10 object-contain rounded-xl shadow-sm" />
-            <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">
-              HealTrack AI - Patient Analytics
-            </h1>
-        </div>
-      </div>
-
       {/* FILTER & KPI ROW */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
         {/* KPI CARDS (Left 1 column) */}
@@ -286,74 +277,163 @@ export function PatientAnalytics() {
         )}
 
         {/* Age/Gender Analysis */}
-        <Card className="p-5 bg-white shadow-sm border border-gray-200">
-          <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 border-b pb-2">Age/Gender Analysis</h3>
+        <Card className="p-5 bg-white shadow-sm border border-gray-200/90 rounded-2xl hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
+            <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+              Age / Gender Analysis
+            </h3>
+            <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Interactive Bins</span>
+          </div>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={ageGenderAnalysis}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f3f5" />
-                <XAxis dataKey="label" label={{ value: 'Age (bins)', position: 'insideBottom', offset: -5, fontSize: 11, fill: '#64748b' }} tick={{ fontSize: 11, fill: '#64748b' }} />
-                <YAxis label={{ value: 'Count of PatientID', angle: -90, position: 'insideLeft', fontSize: 11, fill: '#64748b' }} tick={{ fontSize: 11, fill: '#64748b' }} />
-                <Tooltip />
-                <Legend verticalAlign="top" height={36} />
-                <Bar dataKey="female" name="Female" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="male" name="Male" fill="#1e3a8a" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="preferNotToSay" name="Prefer Not to Say" fill="#10b981" radius={[4, 4, 0, 0]} />
+              <BarChart data={ageGenderAnalysis} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="femaleGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity={1} />
+                    <stop offset="100%" stopColor="#1d4ed8" stopOpacity={0.85} />
+                  </linearGradient>
+                  <linearGradient id="maleGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#6366f1" stopOpacity={1} />
+                    <stop offset="100%" stopColor="#4338ca" stopOpacity={0.85} />
+                  </linearGradient>
+                  <linearGradient id="otherGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity={1} />
+                    <stop offset="100%" stopColor="#047857" stopOpacity={0.85} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="label" label={{ value: 'Age Bins', position: 'insideBottom', offset: -2, fontSize: 10, fill: '#64748b', fontWeight: 600 }} tick={{ fontSize: 10, fill: '#64748b' }} />
+                <YAxis label={{ value: 'Patients', angle: -90, position: 'insideLeft', fontSize: 10, fill: '#64748b', fontWeight: 600 }} tick={{ fontSize: 10, fill: '#64748b' }} />
+                <Tooltip 
+                  content={({ active, payload, label }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="bg-slate-900/95 text-white p-3 rounded-2xl shadow-xl border border-slate-700/60 backdrop-blur-md text-xs">
+                          <p className="font-extrabold text-slate-300 mb-1.5 border-b border-slate-800 pb-1">{label} Age Group</p>
+                          {payload.map((entry, idx) => (
+                            <div key={idx} className="flex items-center justify-between gap-4 py-0.5">
+                              <span className="flex items-center gap-1.5 font-medium text-slate-300">
+                                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }}></span>
+                                {entry.name}:
+                              </span>
+                              <span className="font-extrabold text-white">{entry.value}</span>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Legend verticalAlign="top" height={32} iconType="circle" wrapperStyle={{ fontSize: '11px', fontWeight: 600 }} />
+                <Bar dataKey="female" name="Female" fill="url(#femaleGrad)" radius={[6, 6, 0, 0]} maxBarSize={30} />
+                <Bar dataKey="male" name="Male" fill="url(#maleGrad)" radius={[6, 6, 0, 0]} maxBarSize={30} />
+                <Bar dataKey="preferNotToSay" name="Prefer Not to Say" fill="url(#otherGrad)" radius={[6, 6, 0, 0]} maxBarSize={30} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </Card>
 
         {/* Patient Demographics Donut */}
-        <Card className="p-5 bg-white shadow-sm border border-gray-200 flex flex-col justify-between">
-          <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 border-b pb-2">Patient Demographics</h3>
-          <div className="h-64 flex items-center justify-center">
+        <Card className="p-5 bg-white shadow-sm border border-gray-200/90 rounded-2xl flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
+            <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+              Patient Demographics
+            </h3>
+            <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Hover to inspect</span>
+          </div>
+          <div className="h-72 flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
+                  activeIndex={activePieIndex}
+                  activeShape={(props) => {
+                    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload, value } = props;
+                    const pct = totalPieCount > 0 ? ((value / totalPieCount) * 100).toFixed(1) : 0;
+                    return (
+                      <g>
+                        <text x={cx} y={cy - 8} textAnchor="middle" fill="#1e293b" className="font-black text-xl">
+                          {value}
+                        </text>
+                        <text x={cx} y={cy + 12} textAnchor="middle" fill="#64748b" className="font-bold text-[11px]">
+                          {payload.name} ({pct}%)
+                        </text>
+                        <Sector cx={cx} cy={cy} innerRadius={innerRadius} outerRadius={outerRadius + 6} startAngle={startAngle} endAngle={endAngle} fill={fill} />
+                        <Sector cx={cx} cy={cy} innerRadius={outerRadius + 8} outerRadius={outerRadius + 12} startAngle={startAngle} endAngle={endAngle} fill={fill} opacity={0.35} />
+                      </g>
+                    );
+                  }}
                   data={pieData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={90}
-                  paddingAngle={3}
+                  innerRadius={65}
+                  outerRadius={95}
+                  paddingAngle={4}
                   dataKey="value"
-                  label={({ name, value }) => `${name}: ${value} (${((value / totalPieCount) * 100).toFixed(2)}%)`}
+                  onMouseEnter={(_, index) => setActivePieIndex(index)}
                 >
                   {pieData.map((entry, index) => {
-                    let color = '#94a3b8'; // Default slate-400
+                    let color = '#94a3b8';
                     if (entry.name === 'Female') color = '#3b82f6';
-                    else if (entry.name === 'Male') color = '#1e3a8a';
+                    else if (entry.name === 'Male') color = '#6366f1';
                     else if (entry.name === 'Prefer Not to Say') color = '#10b981';
-                    return <Cell key={`cell-${index}`} fill={color} />;
+                    return <Cell key={`cell-${index}`} fill={color} className="cursor-pointer transition-all duration-300" />;
                   })}
                 </Pie>
-                <Tooltip formatter={(value) => `${value} Patients`} />
-                <Legend verticalAlign="bottom" height={36} />
+                <Tooltip formatter={(value) => [`${value} Patients`, 'Count']} />
+                <Legend verticalAlign="bottom" height={32} iconType="circle" wrapperStyle={{ fontSize: '11px', fontWeight: 600 }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
         </Card>
 
         {/* Disease Distribution (Recharts Bar Chart) */}
-        <Card className="lg:col-span-2 p-5 bg-white shadow-sm border border-gray-200">
-          <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 border-b pb-2">Disease Distribution</h3>
+        <Card className="lg:col-span-2 p-5 bg-white shadow-sm border border-gray-200/90 rounded-2xl hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
+            <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+              Disease & Diagnosis Distribution
+            </h3>
+            <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">OPD Insights</span>
+          </div>
 
           {diseaseDistribution.length === 0 ? (
-            <div className="h-72 flex items-center justify-center text-slate-400">
+            <div className="h-72 flex items-center justify-center text-slate-400 text-xs">
               No disease data matches the current filters.
             </div>
           ) : (
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={diseaseDistribution}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f3f5" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} />
-                  <YAxis label={{ value: 'Diagnoses Count', angle: -90, position: 'insideLeft', fontSize: 11, fill: '#64748b' }} tick={{ fontSize: 11, fill: '#64748b' }} />
-                  <Tooltip formatter={(value) => [`${value} Patients`, 'Diagnoses']} />
-                  <Bar dataKey="value" name="Diagnoses" radius={[4, 4, 0, 0]}>
+                <BarChart data={diseaseDistribution} margin={{ top: 10, right: 10, left: -10, bottom: 25 }}>
+                  <defs>
+                    {MOSAIC_COLORS.map((color, index) => (
+                      <linearGradient key={`disease-grad-${index}`} id={`diseaseGrad-${index}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={color} stopOpacity={1} />
+                        <stop offset="100%" stopColor={color} stopOpacity={0.6} />
+                      </linearGradient>
+                    ))}
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#64748b', fontWeight: 600 }} interval={0} angle={-15} textAnchor="end" />
+                  <YAxis label={{ value: 'Diagnoses Count', angle: -90, position: 'insideLeft', fontSize: 10, fill: '#64748b', fontWeight: 600 }} tick={{ fontSize: 10, fill: '#64748b' }} />
+                  <Tooltip 
+                    content={({ active, payload, label }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="bg-slate-900/95 text-white p-3 rounded-2xl shadow-xl border border-slate-700/60 backdrop-blur-md text-xs">
+                            <p className="font-extrabold text-[#38bdf8] mb-1">{label}</p>
+                            <p className="text-slate-200 font-bold">{payload[0].value} Diagnosed Patients</p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar dataKey="value" name="Diagnoses" radius={[8, 8, 0, 0]} maxBarSize={45}>
                     {diseaseDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={MOSAIC_COLORS[index % MOSAIC_COLORS.length]} />
+                      <Cell key={`cell-${index}`} fill={`url(#diseaseGrad-${index % MOSAIC_COLORS.length})`} className="hover:opacity-80 transition-opacity cursor-pointer" />
                     ))}
                   </Bar>
                 </BarChart>

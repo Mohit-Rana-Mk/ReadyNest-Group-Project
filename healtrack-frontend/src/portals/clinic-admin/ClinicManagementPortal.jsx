@@ -257,7 +257,7 @@ export default function ClinicManagementPortal() {
           </button>
         </div>
 
-        <div className="flex-1 md:ml-[345px] p-4 md:p-6 lg:p-6 mt-4 md:mt-2 max-w-[1400px] flex flex-col">
+        <div className="flex-1 md:ml-[345px] p-4 md:p-6 lg:p-6 pb-36 md:pb-36 mt-4 md:mt-2 max-w-[1400px] flex flex-col">
           <motion.div
             key={activeTab}
             initial={{ opacity: 0, y: 15 }}
