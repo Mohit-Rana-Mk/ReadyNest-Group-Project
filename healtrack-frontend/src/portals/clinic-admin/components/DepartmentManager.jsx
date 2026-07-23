@@ -87,36 +87,41 @@ export function DepartmentManager({ departments, refreshData, clinicId = 1 }) {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-indigo-900">Departments & Services</h2>
-        <Button variant="primary" onClick={openAddModal}>Add Department</Button>
+        <div>
+          <h2 className="text-2xl font-black text-slate-800 tracking-tight">Departments & Services</h2>
+          <p className="text-sm text-slate-500 mt-1">Manage clinic departments and consultation fees.</p>
+        </div>
+        <Button onClick={openAddModal} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-[14px] px-5 py-2.5 font-bold shadow-sm transition-all hover:-translate-y-0.5">
+          + Add Department
+        </Button>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {departments.map((dept) => {
           const Icon = iconMap[dept.name] || Activity;
           return (
-            <Card key={dept.id} className="p-6 border-t-4 hover:shadow-md transition-shadow relative" style={{ borderTopColor: '#3b82f6' }}>
-              <div className="flex justify-between items-start mb-4">
-                <div className="p-3 bg-indigo-50 rounded-lg text-indigo-600">
-                  <Icon className="w-8 h-8" />
+            <div key={dept.id} className="p-6 bg-white rounded-[24px] border border-slate-100 shadow-sm hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 relative group">
+              <div className="flex justify-between items-start mb-5">
+                <div className="w-14 h-14 bg-indigo-50 rounded-[18px] text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <Icon className="w-7 h-7" />
                 </div>
-                <div className="flex space-x-2">
-                  <button onClick={() => openEditModal(dept)} className="text-gray-400 hover:text-indigo-600 transition-colors">
+                <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <button onClick={() => openEditModal(dept)} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors">
                     <Edit2 className="w-4 h-4" />
                   </button>
-                  <button onClick={() => handleDelete(dept.id)} className="text-gray-400 hover:text-red-600 transition-colors">
+                  <button onClick={() => handleDelete(dept.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
-              <h3 className="text-lg font-bold text-gray-900">{dept.name}</h3>
-              <div className="mt-4 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Base Fee:</span>
-                  <span className="font-semibold text-gray-900">₹{dept.consultation_fee}</span>
+              <h3 className="text-lg font-black text-slate-800 tracking-tight">{dept.name}</h3>
+              <div className="mt-4 pt-4 border-t border-slate-100">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Base Fee</span>
+                  <span className="font-black text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg text-sm">₹{dept.consultation_fee}</span>
                 </div>
               </div>
-            </Card>
+            </div>
           );
         })}
       </div>

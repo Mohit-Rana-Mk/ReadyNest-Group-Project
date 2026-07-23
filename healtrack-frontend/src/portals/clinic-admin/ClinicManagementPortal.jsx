@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Grid, Activity, FileText, Settings, LogOut, Menu, X, ShieldAlert, Banknote } from 'lucide-react';
+import { LayoutDashboard, Users, Grid, Activity, FileText, Settings, LogOut, Menu, X, ShieldAlert, Banknote, Search, Bell, ChevronDown, LifeBuoy } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import axiosClient, { SOCKET_URL } from '../../api/axiosClient';
 import { motion } from 'framer-motion';
+import { Footer } from '../../components/ui/Footer';
 
 import { AnalyticsDashboard } from './components/AnalyticsDashboard';
 import { OutbreakAlerts } from './components/OutbreakAlerts';
@@ -137,89 +138,138 @@ export default function ClinicManagementPortal() {
   };
 
   const sidebarContent = (
-    <>
-      <div className="p-4 md:p-6">
+    <div className="flex flex-col h-full">
+      <div className="p-6">
         <div className="flex items-center gap-3 mb-1">
-          <img src="/logo.png" alt="HealTrack Logo" className="w-8 h-8 object-contain rounded-xl shadow-sm" />
-          <h1 className="text-xl md:text-2xl font-bold text-white tracking-wide">HealTrack AI</h1>
-          <Button variant="outline" onClick={() => setSidebarOpen(false)} className="md:hidden ml-auto p-1 text-indigo-300 hover:text-white border-none bg-transparent">
-            <X className="w-5 h-5" />
-          </Button>
-        </div>
-        <p className="text-indigo-300 text-sm pl-11 mt-1">Admin Portal</p>
-        {user?.clinic_name && (
-          <div className="mt-4 px-2 py-2 bg-indigo-800/50 rounded-xl border border-indigo-700/50">
-            <div className="text-[10px] text-indigo-300 font-bold uppercase tracking-wider mb-1">Clinic</div>
-            <div className="text-white text-sm font-semibold">{user.clinic_name}</div>
+          <img src="/logo.png" alt="HealTrack Logo" className="w-10 h-10 object-contain rounded-xl shadow-sm" />
+          <div>
+            <h1 className="text-xl font-black tracking-wide">
+              <span className="text-white">Heal</span>
+              <span className="text-cyan-400">Track</span>
+            </h1>
           </div>
-        )}
+          <button onClick={() => setSidebarOpen(false)} className="md:hidden ml-auto p-1 text-slate-400 hover:text-white bg-transparent outline-none focus:outline-none">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
       </div>
-      <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto">
+
+      <nav className="flex-1 px-4 space-y-1 mt-2 overflow-y-auto">
         {navigation.map((item) => {
           const isActive = activeTab === item.id;
           return (
-            <Button
-              variant="outline"
+            <button
               key={item.id}
               onClick={() => handleTabChange(item.id)}
-              className={`w-full flex !justify-start items-center space-x-3 px-4 py-3 rounded-lg transition-colors border-none bg-transparent ${
-                isActive ? 'bg-indigo-800 text-white' : 'text-indigo-100 hover:bg-indigo-800/50 hover:text-white'
+              className={`w-full flex !justify-start items-center space-x-4 px-5 py-4 rounded-[20px] transition-all transform hover:-translate-y-0.5 active:scale-95 border-none outline-none focus:outline-none focus:ring-0 bg-transparent group ${
+                isActive 
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md' 
+                  : 'text-slate-400 hover:bg-slate-800/50 hover:text-indigo-400'
               }`}
             >
-              <item.icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-indigo-300'}`} />
-              <span className="font-medium">{item.name}</span>
-            </Button>
+              <item.icon className={`w-6 h-6 transition-colors ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-indigo-400'}`} />
+              <span className={`font-semibold text-[15px] ${isActive ? 'text-white' : ''}`}>{item.name}</span>
+            </button>
           );
         })}
       </nav>
-      <div className="p-4 border-t border-indigo-800">
-        <Button variant="outline" onClick={logout} className="w-full flex !justify-start items-center space-x-3 px-4 py-3 rounded-lg text-indigo-100 hover:bg-indigo-800/50 hover:text-white transition-colors border-none bg-transparent">
-          <LogOut className="w-5 h-5" />
-          <span className="font-medium">Sign Out</span>
-        </Button>
+
+      <div className="p-4 mt-auto">
+        <div className="bg-slate-800/50 rounded-[20px] p-5 mb-4 border border-slate-700/50 flex flex-col items-center text-center">
+          <div className="w-10 h-10 rounded-full bg-slate-900 shadow-sm flex items-center justify-center mb-3">
+            <LifeBuoy className="w-5 h-5 text-indigo-400" />
+          </div>
+          <p className="text-sm font-bold text-white">Need help?</p>
+          <p className="text-xs text-slate-400 font-medium mt-1 mb-3">Check our docs or contact support</p>
+          <Button className="w-full bg-slate-700 hover:bg-slate-600 text-white border-none rounded-[14px] shadow-sm text-xs py-2">
+            Support Center
+          </Button>
+        </div>
+        {/* Sign out moved to top bar */}
       </div>
-    </>
+    </div>
   );
 
   return (
-    <div className="h-screen bg-[#F8FAFC] flex overflow-hidden font-sans text-slate-800">
+    <div className="h-screen bg-[#F6F8FC] flex overflow-hidden font-sans text-slate-800">
       {/* MOBILE SIDEBAR OVERLAY */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-40 md:hidden">
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-          <aside className="fixed inset-y-0 left-0 w-72 bg-indigo-900 text-white flex flex-col z-50 shadow-xl">
+        <div className="fixed inset-0 z-[60] md:hidden">
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+          <aside className="fixed inset-y-0 left-0 w-72 bg-gradient-to-b from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a] flex flex-col z-[70] shadow-2xl rounded-r-[28px] border-r border-white/5">
             {sidebarContent}
           </aside>
         </div>
       )}
 
-      {/* DESKTOP SIDEBAR */}
-      <aside className="w-64 bg-indigo-900 text-white flex-shrink-0 hidden md:flex flex-col">
+      {/* DESKTOP FLOATING SIDEBAR */}
+      <aside className="fixed top-6 left-6 bottom-20 w-[300px] rounded-[28px] bg-gradient-to-b from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a] border border-white/5 shadow-[0_10px_40px_rgb(0,0,0,0.4)] hidden md:flex flex-col z-50">
         {sidebarContent}
       </aside>
 
-      <main className="flex-1 overflow-y-auto">
-        {/* MOBILE HEADER */}
-        <div className="md:hidden bg-indigo-900 p-4 text-white flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <Button variant="outline" onClick={() => setSidebarOpen(true)} className="p-1.5 text-indigo-200 hover:text-white border-none bg-transparent">
-              <Menu className="w-5 h-5" />
-            </Button>
-            <h1 className="text-lg font-bold">HealTrack Admin</h1>
+      <main className="flex-1 flex flex-col h-screen overflow-y-auto relative pb-20">
+        {/* FLOATING NAVBAR */}
+        <header className="hidden md:flex ml-[345px] mr-6 mt-6 h-20 rounded-[28px] bg-gradient-to-r from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a] border border-white/5 shadow-[0_8px_30px_rgb(0,0,0,0.3)] items-center justify-between px-6 z-40 sticky top-6 shrink-0">
+          <div className="flex-1">
+            <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+              Welcome back, {user?.name || 'Clinic Admin'} <span className="text-xl">👋</span>
+            </h2>
+            <p className="text-sm text-slate-400 mt-0.5">
+              Here's what's happening at {user?.clinic_name || 'your clinic'} today.
+            </p>
           </div>
-          <Button variant="outline" onClick={logout} className="p-1.5 text-indigo-200 hover:text-white border-none bg-transparent">
-            <LogOut className="w-4 h-4" />
-          </Button>
+          
+          <div className="flex items-center gap-5 pl-6">
+            {/* Clinic Name Box */}
+            {user?.clinic_name && (
+              <div className="hidden lg:flex items-center px-4 py-2 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 rounded-2xl transition-colors cursor-pointer">
+                <span className="text-sm font-bold text-slate-200">{user.clinic_name}</span>
+              </div>
+            )}
+            {/* Profile Info */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center shadow-sm">
+                <span className="text-white text-sm font-semibold tracking-wide">{user?.name ? user.name.substring(0, 2).toUpperCase() : 'CA'}</span>
+              </div>
+              <div className="flex flex-col items-start hidden sm:flex">
+                <span className="text-sm font-bold text-white leading-tight mb-0.5">{user?.name || 'Clinic Admin'}</span>
+                <span className="text-xs font-medium text-slate-400 leading-tight">Administrator</span>
+              </div>
+            </div>
+            <div className="w-px h-8 bg-slate-800 hidden sm:block"></div>
+            {/* Sign Out Button - Rightmost */}
+            <button onClick={logout} className="flex items-center justify-center p-2 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors" title="Sign Out">
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
+        </header>
+
+        {/* MOBILE HEADER */}
+        <div className="md:hidden bg-gradient-to-r from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a] border-b border-white/5 p-4 flex justify-between items-center sticky top-0 z-40">
+          <div className="flex items-center gap-3">
+            <Button variant="outline" onClick={() => setSidebarOpen(true)} className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 border-none bg-transparent rounded-xl">
+              <Menu className="w-6 h-6" />
+            </Button>
+            <h1 className="text-lg font-bold text-white">HealTrack</h1>
+          </div>
+          <button className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center shadow-inner">
+            <span className="text-white text-xs font-bold">{user?.name ? user.name.substring(0, 2).toUpperCase() : 'AD'}</span>
+          </button>
         </div>
-        <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+
+        <div className="flex-1 md:ml-[345px] p-4 md:p-6 lg:p-6 mt-4 md:mt-2 max-w-[1400px] flex flex-col">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="flex-1"
           >
             {renderContent()}
           </motion.div>
+        </div>
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-t border-slate-200">
+          <Footer />
         </div>
       </main>
     </div>

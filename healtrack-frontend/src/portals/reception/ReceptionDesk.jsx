@@ -7,6 +7,7 @@ import { UserPlus, Bell, LogOut, Activity, Clock, Users, CheckCircle, Search, Lo
 import axiosClient, { SOCKET_URL } from '../../api/axiosClient';
 import EmptyState from '../../components/ui/EmptyState';
 import { io } from 'socket.io-client';
+import { Footer } from '../../components/ui/Footer';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -399,9 +400,11 @@ export default function ReceptionDesk() {
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
+        className="flex-1 flex flex-col"
       >
+      <div className="flex-1 min-h-[calc(100vh-4rem)] flex flex-col">
       {/* KPI Metrics Bar */}
-      <div className="px-6 md:px-10 pt-6 pb-2">
+      <div className="px-6 md:px-10 pt-6 pb-2 flex-1 flex flex-col">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {[
             { label: 'Total Walk-ins Today', value: stats.totalWalkIns, icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-50' },
@@ -864,6 +867,10 @@ export default function ReceptionDesk() {
             </div>
           )}
         </div>
+      </div>
+      </div>
+      <div className="w-full px-6 md:px-10 mt-auto bg-white/50 backdrop-blur-md">
+          <Footer />
       </div>
       </motion.div>
 

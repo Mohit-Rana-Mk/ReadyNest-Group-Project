@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '../../../components/ui/Card';
 import { 
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, 
+  BarChart, Bar, LineChart, Line, AreaChart, Area, XAxis, YAxis, 
   CartesianGrid, Tooltip, ResponsiveContainer, Legend 
 } from 'recharts';
 import axiosClient from '../../../api/axiosClient';
@@ -113,92 +113,81 @@ export function AnalyticsDashboard({ clinicId = 1 }) {
   };
 
   return (
-    <div className="space-y-6 bg-gray-50 p-6 rounded-2xl border border-gray-200/80 shadow-sm min-h-screen">
-      {/* Title */}
-      <div className="border-b border-gray-200 pb-4 flex items-center justify-center gap-3">
-        <img src="/logo.png" alt="HealTrack Logo" className="w-10 h-10 object-contain rounded-xl shadow-sm" />
-        <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight text-center">
-          HealTrack AI - Operational Dashboard
-        </h1>
-      </div>
+    <div className="space-y-6">
 
 
       {/* FILTER & KPI CONTAINER */}
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start flex-col-reverse xl:flex-row">
         
         {/* KPI CARDS (Left 3 columns) */}
-        <div className="xl:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="xl:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* No-show Rate */}
-          <Card className="p-6 bg-white border-l-4 border-rose-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between min-h-[120px]">
-            <div className="flex justify-between items-center text-slate-500">
-              <span className="text-xs font-semibold uppercase tracking-wider">No-show Rate</span>
-              <ShieldAlert className="w-5 h-5 text-rose-500" />
+          <div className="bg-white rounded-[24px] p-6 border border-slate-100 shadow-sm hover:-translate-y-1 transition-transform duration-200 flex flex-col justify-between min-h-[140px] group">
+            <div className="flex justify-between items-start">
+              <div className="w-12 h-12 rounded-[18px] bg-rose-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <ShieldAlert className="w-6 h-6 text-rose-500" />
+              </div>
+              <div className="px-2 py-1 bg-rose-50 rounded-full text-rose-600 text-[10px] font-bold">+2.4%</div>
             </div>
-            <div>
-              <h2 className="text-3xl font-bold text-slate-800">
+            <div className="mt-4">
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">No-show Rate</p>
+              <h2 className="text-3xl font-black text-slate-800 tracking-tight">
                 <CountUp end={kpis.noShowRate || 0} duration={2} decimals={1} suffix="%" />
               </h2>
-              <p className="text-[10px] text-slate-400 mt-1">Cancelled Appts Ratio</p>
             </div>
-          </Card>
+          </div>
 
           {/* Appointments */}
-          <Card className="p-6 bg-white border-l-4 border-blue-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between min-h-[120px]">
-            <div className="flex justify-between items-center text-slate-500">
-              <span className="text-xs font-semibold uppercase tracking-wider">Appointments</span>
-              <UserCheck className="w-5 h-5 text-blue-500" />
+          <div className="bg-white rounded-[24px] p-6 border border-slate-100 shadow-sm hover:-translate-y-1 transition-transform duration-200 flex flex-col justify-between min-h-[140px] group">
+            <div className="flex justify-between items-start">
+              <div className="w-12 h-12 rounded-[18px] bg-blue-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <UserCheck className="w-6 h-6 text-blue-500" />
+              </div>
+              <div className="px-2 py-1 bg-emerald-50 rounded-full text-emerald-600 text-[10px] font-bold">+14%</div>
             </div>
-            <div>
-              <h2 className="text-3xl font-bold text-slate-800">
+            <div className="mt-4">
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Appointments</p>
+              <h2 className="text-3xl font-black text-slate-800 tracking-tight">
                 <CountUp end={kpis.totalAppointments || 0} duration={2} />
               </h2>
-              <p className="text-[10px] text-slate-400 mt-1">Total Scheduled Visits</p>
             </div>
-          </Card>
+          </div>
 
           {/* Revenue */}
-          <Card className="p-6 bg-white border-l-4 border-emerald-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between min-h-[120px]">
-            <div className="flex justify-between items-center text-slate-500">
-              <span className="text-xs font-semibold uppercase tracking-wider">Revenue</span>
-              <CreditCard className="w-5 h-5 text-emerald-500" />
+          <div className="bg-white rounded-[24px] p-6 border border-slate-100 shadow-sm hover:-translate-y-1 transition-transform duration-200 flex flex-col justify-between min-h-[140px] group">
+            <div className="flex justify-between items-start">
+              <div className="w-12 h-12 rounded-[18px] bg-emerald-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <CreditCard className="w-6 h-6 text-emerald-500" />
+              </div>
+              <div className="px-2 py-1 bg-emerald-50 rounded-full text-emerald-600 text-[10px] font-bold">+8.1%</div>
             </div>
-            <div>
-              <h2 className="text-3xl font-bold text-slate-800">
+            <div className="mt-4">
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Revenue</p>
+              <h2 className="text-3xl font-black text-slate-800 tracking-tight">
                 <CountUp end={kpis.totalRevenue || 0} duration={2} prefix="₹" separator="," />
               </h2>
-              <p className="text-[10px] text-slate-400 mt-1">Consultation Earnings</p>
             </div>
-          </Card>
+          </div>
 
           {/* Doctors */}
-          <Card className="p-6 bg-white border-l-4 border-indigo-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between min-h-[120px]">
-            <div className="flex justify-between items-center text-slate-500">
-              <span className="text-xs font-semibold uppercase tracking-wider">Doctors</span>
-              <Users className="w-5 h-5 text-indigo-500" />
+          <div className="bg-white rounded-[24px] p-6 border border-slate-100 shadow-sm hover:-translate-y-1 transition-transform duration-200 flex flex-col justify-between min-h-[140px] group">
+            <div className="flex justify-between items-start">
+              <div className="w-12 h-12 rounded-[18px] bg-indigo-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Users className="w-6 h-6 text-indigo-500" />
+              </div>
+              <div className="px-2 py-1 bg-slate-100 rounded-full text-slate-500 text-[10px] font-bold">Stable</div>
             </div>
-            <div>
-              <h2 className="text-3xl font-bold text-slate-800">
+            <div className="mt-4">
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Active Doctors</p>
+              <h2 className="text-3xl font-black text-slate-800 tracking-tight">
                 <CountUp end={kpis.totalDoctors || 0} duration={2} />
               </h2>
-              <p className="text-[10px] text-slate-400 mt-1">Active Physicians</p>
             </div>
-          </Card>
-
-          {/* Repeat Patients */}
-          <Card className="p-6 bg-white border-l-4 border-cyan-500 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between min-h-[120px]">
-            <div className="flex justify-between items-center text-slate-500">
-              <span className="text-xs font-semibold uppercase tracking-wider">Repeat Patients</span>
-              <UserCheck className="w-5 h-5 text-cyan-500" />
-            </div>
-            <div>
-              <h2 className="text-3xl font-bold text-slate-800">{kpis.repeatPatients || 0}</h2>
-              <p className="text-[10px] text-slate-400 mt-1">Multiple Visits</p>
-            </div>
-          </Card>
+          </div>
         </div>
 
-        {/* FILTERS (Right 1 column) */}
-        <div className="xl:col-span-1 bg-white rounded-lg shadow-sm border border-gray-200 p-5 space-y-4 sticky top-4 self-start max-h-[calc(100vh-2rem)] overflow-y-auto">
+      {/* FILTERS (Right 1 column) */}
+        <div className="xl:col-span-1 bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 space-y-5 sticky top-28 self-start max-h-[calc(100vh-8rem)] overflow-y-auto">
           <div className="flex items-center gap-2 text-slate-700 font-bold border-b pb-2">
             <Filter className="w-4 h-4 text-blue-500" />
             <span className="text-sm">Filter Dashboard</span>
@@ -308,73 +297,115 @@ export function AnalyticsDashboard({ clinicId = 1 }) {
         {/* LEFT COLUMN CHARTS (2/3 width) */}
         <div className="lg:col-span-2 space-y-6">
           {/* Doctor Utilization */}
-          <Card className="p-5 bg-white shadow-sm border border-gray-200">
-            <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 border-b pb-2">Doctor Utilization</h3>
+          <div className="p-6 bg-white rounded-[24px] shadow-sm border border-slate-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-shadow duration-300">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Doctor Utilization</h3>
+            </div>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={doctorUtilization}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f3f5" />
-                  <XAxis dataKey="doctor_name" tick={{ fontSize: 10, fill: '#64748b' }} interval={0} angle={-25} textAnchor="end" height={60} />
-                  <YAxis tick={{ fontSize: 10, fill: '#64748b' }} />
-                  <Tooltip cursor={{ fill: '#f8fafc' }} formatter={(val) => [`${val} Appts`, 'Count']} />
-                  <Bar dataKey="count" fill="#1e90ff" radius={[4, 4, 0, 0]} />
+                <BarChart data={doctorUtilization} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorDoctor" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.8} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f8fafc" />
+                  <XAxis dataKey="doctor_name" tick={{ fontSize: 11, fill: '#94a3b8' }} interval={0} angle={-25} textAnchor="end" height={60} />
+                  <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                  <Tooltip 
+                    cursor={{ fill: '#f8fafc' }} 
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    labelStyle={{ fontWeight: 'bold', color: '#1e293b', marginBottom: '4px' }}
+                    itemStyle={{ color: '#3b82f6', fontWeight: 'bold' }}
+                    formatter={(val) => [`${val}`, 'Appointments']} 
+                  />
+                  <Bar dataKey="count" fill="url(#colorDoctor)" radius={[6, 6, 0, 0]} maxBarSize={120} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </Card>
+          </div>
 
           {/* Revenue Overview */}
-          <Card className="p-5 bg-white shadow-sm border border-gray-200">
-            <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 border-b pb-2">Revenue Overview</h3>
+          <div className="p-6 bg-white rounded-[24px] shadow-sm border border-slate-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-shadow duration-300">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Revenue Overview</h3>
+            </div>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={revenueOverview}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f3f5" />
-                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#64748b' }} />
-                  <YAxis tick={{ fontSize: 10, fill: '#64748b' }} formatter={(val) => `₹${val}`} />
-                  <Tooltip formatter={(val) => [`₹${parseFloat(val).toLocaleString()}`, 'Revenue']} />
-                  <Line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={3} dot={{ r: 3 }} />
+                <LineChart data={revenueOverview} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f8fafc" />
+                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                  <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} formatter={(val) => `₹${val}`} />
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    labelStyle={{ fontWeight: 'bold', color: '#1e293b', marginBottom: '4px' }}
+                    itemStyle={{ color: '#3b82f6', fontWeight: 'bold' }}
+                    formatter={(val) => [`₹${parseFloat(val).toLocaleString()}`, 'Revenue']} 
+                  />
+                  <Line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={4} dot={{ r: 4, strokeWidth: 2, fill: '#fff', stroke: '#3b82f6' }} activeDot={{ r: 6, fill: '#3b82f6', stroke: '#fff', strokeWidth: 2 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
-          </Card>
+          </div>
 
           {/* Peak Hours */}
-          <Card className="p-5 bg-white shadow-sm border border-gray-200">
-            <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 border-b pb-2">Peak Hours</h3>
+          <div className="p-6 bg-white rounded-[24px] shadow-sm border border-slate-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-shadow duration-300">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Peak Hours</h3>
+            </div>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={peakHours}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f3f5" />
-                  <XAxis dataKey="hour" tick={{ fontSize: 10, fill: '#64748b' }} />
-                  <YAxis tick={{ fontSize: 10, fill: '#64748b' }} />
-                  <Tooltip formatter={(val) => [`${val} Appointments`, 'Count']} />
-                  <Line type="monotone" dataKey="count" stroke="#10b981" strokeWidth={3} dot={{ r: 3 }} />
+                <LineChart data={peakHours} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f8fafc" />
+                  <XAxis dataKey="hour" tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                  <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    labelStyle={{ fontWeight: 'bold', color: '#1e293b', marginBottom: '4px' }}
+                    itemStyle={{ color: '#10b981', fontWeight: 'bold' }}
+                    formatter={(val) => [`${val}`, 'Appointments']} 
+                  />
+                  <Line type="monotone" dataKey="count" stroke="#10b981" strokeWidth={4} dot={{ r: 4, strokeWidth: 2, fill: '#fff', stroke: '#10b981' }} activeDot={{ r: 6, fill: '#10b981', stroke: '#fff', strokeWidth: 2 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
-          </Card>
+          </div>
         </div>
 
         {/* RIGHT COLUMN CHART (1/3 width) */}
         <div className="lg:col-span-1">
           {/* Appointments Overview (Horizontal Bar Chart) */}
-          <Card className="p-5 bg-white shadow-sm border border-gray-200 h-full flex flex-col justify-between">
+          <div className="p-6 bg-white rounded-[24px] shadow-sm border border-slate-100 h-full flex flex-col justify-between hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-shadow duration-300">
             <div>
-              <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 border-b pb-2">Appointments Overview</h3>
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Appointments Overview</h3>
+              </div>
               <div className="h-[620px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={appointmentsOverview} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f3f5" />
-                    <XAxis type="number" tick={{ fontSize: 10, fill: '#64748b' }} />
-                    <YAxis dataKey="department_name" type="category" tick={{ fontSize: 10, fill: '#64748b' }} width={100} />
-                    <Tooltip formatter={(val) => [`${val} Appts`, 'Count']} />
-                    <Bar dataKey="count" fill="#1e90ff" radius={[0, 4, 4, 0]} />
+                  <BarChart data={appointmentsOverview} layout="vertical" margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorDepts" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.8} />
+                        <stop offset="100%" stopColor="#3b82f6" stopOpacity={1} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f8fafc" />
+                    <XAxis type="number" tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                    <YAxis dataKey="department_name" type="category" tick={{ fontSize: 11, fill: '#94a3b8' }} width={100} />
+                    <Tooltip 
+                      cursor={{ fill: '#f8fafc' }} 
+                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                      labelStyle={{ fontWeight: 'bold', color: '#1e293b', marginBottom: '4px' }}
+                      itemStyle={{ color: '#8b5cf6', fontWeight: 'bold' }}
+                      formatter={(val) => [`${val}`, 'Appointments']} 
+                    />
+                    <Bar dataKey="count" fill="url(#colorDepts)" radius={[0, 6, 6, 0]} maxBarSize={60} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
-          </Card>
+          </div>
         </div>
       </div>
     </div>

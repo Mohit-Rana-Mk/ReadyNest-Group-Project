@@ -350,7 +350,7 @@ export default function ClinicFinancials({ clinicId }) {
                         <p className="mt-2 text-xs">No booking transactions found.</p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
+                    <div className="overflow-hidden">
                         <table className="w-full text-left text-xs border-collapse">
                             <thead>
                                 <tr className="bg-gray-50 border-b border-gray-100 font-bold text-gray-500 uppercase tracking-wider text-[9px]">

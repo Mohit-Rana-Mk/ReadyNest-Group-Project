@@ -4,6 +4,7 @@ import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { ConfirmModal } from '../../../components/ui/ConfirmModal';
 import axiosClient from '../../../api/axiosClient';
+import { CustomDropdown } from '../../../components/ui/CustomDropdown';
 import { Modal } from '../../../components/ui/Modal'; // Assuming Modal exists, if not, we build a simple one inline
 
 export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
@@ -106,12 +107,17 @@ export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-indigo-900">Staff Management</h2>
-        <Button variant="primary" onClick={openAddModal}>Add New Staff</Button>
+        <div>
+          <h2 className="text-2xl font-black text-slate-800 tracking-tight">Staff Management</h2>
+          <p className="text-sm text-slate-500 mt-1">Manage doctors, receptionists, and clinic staff.</p>
+        </div>
+        <Button onClick={openAddModal} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-[14px] px-5 py-2.5 font-bold shadow-sm transition-all hover:-translate-y-0.5">
+          + Add New Staff
+        </Button>
       </div>
       
-      <Card>
-        <div className="overflow-x-auto overflow-y-auto max-h-[500px]">
+      <div className="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100">
+        <div className="overflow-hidden overflow-y-auto max-h-[500px]">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50/90 backdrop-blur-md sticky top-0 z-10 shadow-sm">
               <tr>
@@ -123,9 +129,9 @@ export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {staff.map((member) => (
-                <tr key={member.id} className="hover:bg-indigo-50/60 hover:shadow-sm transition-all duration-200 cursor-pointer relative z-0 hover:z-10">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{member.name}</td>
+              {staff.map((member, idx) => (
+                <tr key={member.id} className={`hover:bg-indigo-50/50 hover:shadow-sm transition-all duration-200 cursor-pointer relative z-0 hover:z-10 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800">{member.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <span className={`px-2 py-1 rounded text-xs font-medium ${
                       member.role === 'Doctor' ? 'bg-purple-100 text-purple-700' :
@@ -139,20 +145,20 @@ export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
                     {member.department || '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${member.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${member.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
                       {member.status}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <Button variant="outline" className="py-1 px-3 text-xs" onClick={() => openEditModal(member)}>Edit</Button>
-                    <Button variant="outline" className="py-1 px-3 text-xs ml-2 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 hover:border-red-300" onClick={() => handleDelete(member)}>Delete</Button>
+                    <Button variant="outline" className="py-1.5 px-3 text-xs rounded-[10px] font-bold text-slate-600" onClick={() => openEditModal(member)}>Edit</Button>
+                    <Button variant="outline" className="py-1.5 px-3 text-xs ml-2 rounded-[10px] font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200 hover:border-rose-300" onClick={() => handleDelete(member)}>Delete</Button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </Card>
+      </div>
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center">
@@ -176,18 +182,21 @@ export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
                       <div className="flex gap-2">
-                        <select
-                          value={formData.country_code}
-                          onChange={e => setFormData({...formData, country_code: e.target.value})}
-                          className="border border-gray-300 rounded-md py-2 px-2 bg-white text-sm outline-none"
-                        >
-                          <option value="+91">🇮🇳 +91</option>
-                          <option value="+1">🇺🇸 +1</option>
-                          <option value="+44">🇬🇧 +44</option>
-                          <option value="+61">🇦🇺 +61</option>
-                          <option value="+971">🇦🇪 +971</option>
-                          <option value="+966">🇸🇦 +966</option>
-                        </select>
+                        <div className="w-28 relative">
+                          <CustomDropdown
+                            value={formData.country_code}
+                            onChange={val => setFormData({...formData, country_code: val})}
+                            className="w-full h-11"
+                            options={[
+                              { value: '+91', label: '🇮🇳 +91' },
+                              { value: '+1', label: '🇺🇸 +1' },
+                              { value: '+44', label: '🇬🇧 +44' },
+                              { value: '+61', label: '🇦🇺 +61' },
+                              { value: '+971', label: '🇦🇪 +971' },
+                              { value: '+966', label: '🇸🇦 +966' }
+                            ]}
+                          />
+                        </div>
                         <input 
                           required 
                           type="text" 
@@ -202,32 +211,46 @@ export function StaffManagement({ staff, refreshData, clinicId = 1 }) {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                  <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3">
-                    <option value="Doctor">Doctor</option>
-                    <option value="ClinicStaff">ClinicStaff</option>
-                    <option value="Medicine">Medicine Staff</option>
-                  </select>
+                  <CustomDropdown 
+                    value={formData.role} 
+                    onChange={val => setFormData({...formData, role: val})} 
+                    options={[
+                      { value: 'Doctor', label: 'Doctor' },
+                      { value: 'ClinicStaff', label: 'ClinicStaff' },
+                      { value: 'Medicine', label: 'Medicine Staff' }
+                    ]}
+                    className="w-full"
+                  />
                 </div>
 
                 {formData.role === 'Doctor' && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Department (Service)</label>
-                    <select required value={formData.service_id} onChange={e => setFormData({...formData, service_id: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3">
-                      <option value="">Select Department...</option>
-                      {departments.map(dept => (
-                        <option key={dept.id} value={dept.id}>{dept.name}</option>
-                      ))}
-                    </select>
+                    <CustomDropdown 
+                      value={formData.service_id} 
+                      onChange={val => setFormData({...formData, service_id: val})} 
+                      placeholder="Select Department..."
+                      options={departments.map(dept => ({
+                        value: dept.id,
+                        label: dept.name
+                      }))}
+                      className="w-full"
+                    />
                   </div>
                 )}
 
                 {editMode && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <select value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})} className="w-full border border-gray-300 rounded-md py-2 px-3">
-                      <option value="Active">Active</option>
-                      <option value="Suspended">Suspended</option>
-                    </select>
+                    <CustomDropdown 
+                      value={formData.status} 
+                      onChange={val => setFormData({...formData, status: val})} 
+                      options={[
+                        { value: 'Active', label: 'Active' },
+                        { value: 'Suspended', label: 'Suspended' }
+                      ]}
+                      className="w-full"
+                    />
                   </div>
                 )}
 
