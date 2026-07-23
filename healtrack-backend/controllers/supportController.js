@@ -1,28 +1,31 @@
-const { getDb } = require('../db/sqlite');
+const db = require('../config/db');
 
-// Initialize support_tickets table in SQLite
+// Initialize support_tickets table in MySQL
 const initSupportTable = async () => {
-    const db = await getDb();
-    await db.exec(`
-        CREATE TABLE IF NOT EXISTS support_tickets (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            user_name TEXT,
-            user_email TEXT,
-            user_role TEXT,
-            portal_used TEXT NOT NULL,
-            subject TEXT NOT NULL,
-            category TEXT NOT NULL,
-            priority TEXT DEFAULT 'Medium',
-            description TEXT NOT NULL,
-            status TEXT DEFAULT 'Open',
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        );
-    `);
+    try {
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS support_tickets (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NULL,
+                user_name VARCHAR(255) NULL,
+                user_email VARCHAR(255) NULL,
+                user_role VARCHAR(100) NULL,
+                portal_used VARCHAR(255) NOT NULL,
+                subject VARCHAR(255) NOT NULL,
+                category VARCHAR(255) NOT NULL,
+                priority VARCHAR(50) DEFAULT 'Medium',
+                description TEXT NOT NULL,
+                status VARCHAR(50) DEFAULT 'Open',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+    } catch (err) {
+        console.error("Error initializing support_tickets table:", err);
+    }
 };
 
-// Ensure table is created on module load
-initSupportTable().catch(err => console.error("Error initializing support_tickets table:", err));
+// Initialize table on module load
+initSupportTable();
 
 exports.createTicket = async (req, res) => {
     try {
@@ -38,8 +41,7 @@ exports.createTicket = async (req, res) => {
         const userRole = req.user?.role || 'User';
         const finalPortal = portalUsed || 'Portal Workstation';
 
-        const db = await getDb();
-        const result = await db.run(
+        const [result] = await db.query(
             `INSERT INTO support_tickets 
                 (user_id, user_name, user_email, user_role, portal_used, subject, category, priority, description, status) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Open')`,
@@ -49,7 +51,7 @@ exports.createTicket = async (req, res) => {
         res.status(201).json({
             success: true,
             message: 'Support ticket raised successfully!',
-            ticketId: result.lastID
+            ticketId: result.insertId
         });
     } catch (err) {
         console.error("Error creating support ticket:", err);
@@ -59,8 +61,7 @@ exports.createTicket = async (req, res) => {
 
 exports.getAllTickets = async (req, res) => {
     try {
-        const db = await getDb();
-        const tickets = await db.all(`SELECT * FROM support_tickets ORDER BY created_at DESC`);
+        const [tickets] = await db.query(`SELECT * FROM support_tickets ORDER BY created_at DESC`);
         res.json({ success: true, data: tickets });
     } catch (err) {
         console.error("Error fetching support tickets:", err);
@@ -77,10 +78,9 @@ exports.updateTicketStatus = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Invalid ticket status.' });
         }
 
-        const db = await getDb();
-        const result = await db.run(`UPDATE support_tickets SET status = ? WHERE id = ?`, [status, id]);
+        const [result] = await db.query(`UPDATE support_tickets SET status = ? WHERE id = ?`, [status, id]);
 
-        if (result.changes === 0) {
+        if (result.affectedRows === 0) {
             return res.status(404).json({ success: false, message: 'Ticket not found.' });
         }
 
