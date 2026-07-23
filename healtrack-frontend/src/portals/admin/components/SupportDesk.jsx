@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LifeBuoy, Search, Filter, AlertCircle, CheckCircle2, Clock, Check, RefreshCw, User, Layout, ArrowUpRight } from 'lucide-react';
 import axiosClient from '../../../api/axiosClient';
 import Skeleton from '../../../components/ui/Skeleton';
+import { CustomDropdown } from '../../../components/ui/CustomDropdown';
 
 export default function SupportDesk() {
   const [tickets, setTickets] = useState([]);
@@ -118,29 +119,23 @@ export default function SupportDesk() {
           {/* Category Filter */}
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Category:</span>
-            <select
+            <CustomDropdown
+              options={categoriesList.map(cat => ({ value: cat, label: cat }))}
               value={selectedCategory}
-              onChange={e => setSelectedCategory(e.target.value)}
-              className="bg-[#f8f9fa] border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 cursor-pointer"
-            >
-              {categoriesList.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
+              onChange={setSelectedCategory}
+              className="min-w-[150px] bg-[#f8f9fa] border border-slate-200 rounded-xl text-xs font-semibold h-9"
+            />
           </div>
 
           {/* Status Filter */}
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status:</span>
-            <select
+            <CustomDropdown
+              options={['All', 'Open', 'In Progress', 'Resolved', 'Closed'].map(st => ({ value: st, label: st }))}
               value={selectedStatus}
-              onChange={e => setSelectedStatus(e.target.value)}
-              className="bg-[#f8f9fa] border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 cursor-pointer"
-            >
-              {['All', 'Open', 'In Progress', 'Resolved', 'Closed'].map(st => (
-                <option key={st} value={st}>{st}</option>
-              ))}
-            </select>
+              onChange={setSelectedStatus}
+              className="min-w-[130px] bg-[#f8f9fa] border border-slate-200 rounded-xl text-xs font-semibold h-9"
+            />
           </div>
         </div>
       </div>
@@ -171,10 +166,10 @@ export default function SupportDesk() {
             };
 
             const statusColors = {
-              'Open': 'bg-blue-500 text-white',
-              'In Progress': 'bg-amber-500 text-white',
-              'Resolved': 'bg-emerald-500 text-white',
-              'Closed': 'bg-slate-500 text-white'
+              'Open': 'bg-blue-500 text-white border-blue-600',
+              'In Progress': 'bg-amber-500 text-white border-amber-600',
+              'Resolved': 'bg-emerald-500 text-white border-emerald-600',
+              'Closed': 'bg-slate-500 text-white border-slate-600'
             };
 
             return (
@@ -201,18 +196,13 @@ export default function SupportDesk() {
                       {new Date(ticket.created_at).toLocaleString()}
                     </span>
                     <div className="h-4 w-px bg-slate-200"></div>
-                    {/* Status Select */}
-                    <select
+                    {/* Custom Status Dropdown */}
+                    <CustomDropdown
+                      options={['Open', 'In Progress', 'Resolved', 'Closed'].map(st => ({ value: st, label: st }))}
                       value={ticket.status}
-                      disabled={statusUpdating === ticket.id}
-                      onChange={e => handleStatusChange(ticket.id, e.target.value)}
-                      className={`px-3 py-1 rounded-xl text-xs font-bold border-none cursor-pointer ${statusColors[ticket.status] || 'bg-slate-700 text-white'}`}
-                    >
-                      <option value="Open" className="bg-white text-slate-800">Open</option>
-                      <option value="In Progress" className="bg-white text-slate-800">In Progress</option>
-                      <option value="Resolved" className="bg-white text-slate-800">Resolved</option>
-                      <option value="Closed" className="bg-white text-slate-800">Closed</option>
-                    </select>
+                      onChange={val => handleStatusChange(ticket.id, val)}
+                      className={`min-w-[130px] rounded-xl text-xs font-bold h-8 border shadow-sm ${statusColors[ticket.status] || 'bg-slate-700 text-white'}`}
+                    />
                   </div>
                 </div>
 
