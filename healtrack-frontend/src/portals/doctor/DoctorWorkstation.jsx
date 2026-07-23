@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import axiosClient, { SOCKET_URL } from '../../api/axiosClient';
 import { ENDPOINTS } from '../../api/endpoints';
 
@@ -226,7 +227,7 @@ export default function DoctorWorkstation() {
     };
 
     return (
-        <div className="h-screen bg-[#f8f9fa] text-slate-700 flex flex-col font-sans antialiased overflow-hidden">
+        <div className="h-screen bg-[#F8FAFC] text-slate-700 flex flex-col font-sans antialiased overflow-hidden">
             {/* TOP BAR */}
             <header className="h-14 bg-white border-b border-[#e9ecef] px-3 md:px-6 flex justify-between items-center shrink-0">
                 <div className="flex items-center gap-2 md:gap-4">
@@ -275,7 +276,12 @@ export default function DoctorWorkstation() {
             </header>
 
             {/* MAIN WORKSPACE */}
-            <main className="flex-1 flex overflow-hidden">
+            <motion.main
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="flex-1 flex overflow-hidden"
+            >
                         {/* COLUMN 1: Daily Queue */}
                         <PatientQueue 
                             appointments={appointments.filter(a => a.patient_name?.toLowerCase().includes(searchQuery.toLowerCase()))} 
@@ -397,7 +403,7 @@ export default function DoctorWorkstation() {
                                 </div>
                             </div>
                         )}
-            </main>
+            </motion.main>
 
             {/* FLOATING NOTIFICATIONS */}
             <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none">

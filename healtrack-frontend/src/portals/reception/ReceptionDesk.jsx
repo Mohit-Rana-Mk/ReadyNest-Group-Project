@@ -11,6 +11,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { CustomDropdown } from '../../components/ui/CustomDropdown';
+import { motion } from 'framer-motion';
 
 import { useLocation } from 'react-router-dom';
 
@@ -394,6 +395,11 @@ export default function ReceptionDesk() {
         </div>
       )}
 
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
       {/* KPI Metrics Bar */}
       <div className="px-6 md:px-10 pt-6 pb-2">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -859,6 +865,7 @@ export default function ReceptionDesk() {
           )}
         </div>
       </div>
+      </motion.div>
 
       {/* PAYMENT MODAL */}
       {paymentModal && (

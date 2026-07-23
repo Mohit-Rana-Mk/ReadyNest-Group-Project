@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { LayoutDashboard, Users, Grid, Activity, FileText, Settings, LogOut, Menu, X, ShieldAlert, Banknote } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import axiosClient, { SOCKET_URL } from '../../api/axiosClient';
+import { motion } from 'framer-motion';
 
 import { AnalyticsDashboard } from './components/AnalyticsDashboard';
 import { OutbreakAlerts } from './components/OutbreakAlerts';
@@ -181,7 +182,7 @@ export default function ClinicManagementPortal() {
   );
 
   return (
-    <div className="h-screen bg-gray-50 flex overflow-hidden">
+    <div className="h-screen bg-[#F8FAFC] flex overflow-hidden font-sans text-slate-800">
       {/* MOBILE SIDEBAR OVERLAY */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
@@ -211,7 +212,14 @@ export default function ClinicManagementPortal() {
           </Button>
         </div>
         <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
-          {renderContent()}
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {renderContent()}
+          </motion.div>
         </div>
       </main>
     </div>
