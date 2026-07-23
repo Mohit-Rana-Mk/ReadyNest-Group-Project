@@ -737,6 +737,7 @@ export default function PatientApp() {
                         </form>
                     </div>
                 </div>
+            )}
             {/* Support Ticket Modal */}
             <RaiseTicketModal
                 isOpen={isTicketModalOpen}
