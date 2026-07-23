@@ -345,7 +345,7 @@ export default function AdminDashboard() {
                     ) : (
                         <>
                             {/* Metrics Ribbon Grid */}
-                            {activeTab !== 'auracare' && activeTab !== 'patient-analytics' && activeTab !== 'payments' && activeTab !== 'pharmacy-accounts' && (
+                            {activeTab !== 'auracare' && activeTab !== 'patient-analytics' && activeTab !== 'payments' && activeTab !== 'pharmacy-accounts' && activeTab !== 'support-desk' && (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                                     <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
                                         <div>

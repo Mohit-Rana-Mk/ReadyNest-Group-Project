@@ -68,21 +68,13 @@ export default function SupportDesk() {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="bg-gradient-to-br from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a] rounded-3xl p-6 md:p-8 text-white border border-white/10 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2.5 mb-1">
-            <div className="w-8 h-8 rounded-xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-cyan-400">
-              <LifeBuoy className="w-4 h-4" />
-            </div>
-            <h2 className="text-lg font-black tracking-tight text-white uppercase">Super Admin Support Desk</h2>
-          </div>
-          <p className="text-xs text-slate-400 font-medium max-w-xl">
-            Centralized support ticket repository. Manage and resolve issues raised across all clinic portals, workstations, and user accounts.
-          </p>
-        </div>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-2">
+        <p className="text-xs sm:text-sm font-semibold text-slate-600 max-w-2xl leading-relaxed">
+          Centralized support ticket repository. Manage and resolve issues raised across all clinic portals, workstations, and user accounts.
+        </p>
         <button
           onClick={fetchTickets}
-          className="px-4 py-2 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-2xl text-xs font-bold transition flex items-center gap-2 border border-white/10 cursor-pointer"
+          className="px-4 py-2 bg-[#0B132B] hover:bg-[#1C2541] text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-sm shrink-0 border-none cursor-pointer"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           Refresh Desk
