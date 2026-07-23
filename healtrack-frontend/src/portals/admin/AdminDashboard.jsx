@@ -15,7 +15,8 @@ import {
     X,
     Users,
     Coins,
-    FlaskConical
+    FlaskConical,
+    LifeBuoy
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import CountUp from 'react-countup';
@@ -29,6 +30,8 @@ import { AuraCareDashboard } from './components/AuraCareDashboard';
 import { PatientAnalytics } from './components/PatientAnalytics';
 import { AdminPaymentsDashboard } from './components/AdminPaymentsDashboard';
 import PharmacyAccounts from './components/PharmacyAccounts';
+import SupportDesk from './components/SupportDesk';
+import RaiseTicketModal from '../../components/ui/RaiseTicketModal';
 import { Button } from '../../components/ui/Button';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
 import Skeleton from '../../components/ui/Skeleton';
@@ -40,6 +43,7 @@ export default function AdminDashboard() {
     const location = useLocation();
     const { logout } = useAuth();
     const [activeTab, setActiveTab] = useState(location.state?.tab || 'onboarding');
+    const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
 
     useEffect(() => {
         if (location.state?.tab) {
@@ -149,7 +153,8 @@ export default function AdminDashboard() {
         { id: 'patient-analytics', name: 'Patient Analytics', icon: Users },
         { id: 'auracare', name: 'AuraCare Predictive AI', icon: Globe },
         { id: 'payments', name: 'Payments & Settlements', icon: Coins },
-        { id: 'pharmacy-accounts', name: 'Pharmacy Accounts', icon: FlaskConical }
+        { id: 'pharmacy-accounts', name: 'Pharmacy Accounts', icon: FlaskConical },
+        { id: 'support-desk', name: 'Support Desk', icon: LifeBuoy }
     ];
 
     const handleTabChange = (tabId) => {
@@ -175,6 +180,8 @@ export default function AdminDashboard() {
                 return <AuraCareDashboard />;
             case 'pharmacy-accounts':
                 return <PharmacyAccounts />;
+            case 'support-desk':
+                return <SupportDesk />;
             default:
                 return <ClinicOnboarding pendingClinics={pendingClinics} onVerify={handleVerifyClinic} onOnboardClinic={handleOnboardClinic} />;
         }
@@ -338,7 +345,7 @@ export default function AdminDashboard() {
                     ) : (
                         <>
                             {/* Metrics Ribbon Grid */}
-                            {activeTab !== 'auracare' && activeTab !== 'patient-analytics' && activeTab !== 'payments' && activeTab !== 'pharmacy-accounts' && (
+                            {activeTab !== 'auracare' && activeTab !== 'patient-analytics' && activeTab !== 'payments' && activeTab !== 'pharmacy-accounts' && activeTab !== 'support-desk' && (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                                     <div className="bg-white border border-[#e9ecef] rounded-2xl p-5 shadow-sm flex items-center justify-between">
                                         <div>
@@ -387,15 +394,25 @@ export default function AdminDashboard() {
                                     </div>
                                 </div>
                             )}
-                            {renderContent()}
+                            {activeTab === 'support-desk' ? (
+                                <SupportDesk />
+                            ) : (
+                                renderContent()
+                            )}
                         </>
                     )}
                     </div>
                     <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-t border-slate-200">
-                        <Footer />
-                    </div>
-                </main>
-            </div>
+                    <Footer />
+                </div>
+            </main>
+
+            <RaiseTicketModal
+                isOpen={isTicketModalOpen}
+                onClose={() => setIsTicketModalOpen(false)}
+                portalUsed="Super Admin Portal"
+            />
         </div>
-    );
+    </div>
+  );
 }

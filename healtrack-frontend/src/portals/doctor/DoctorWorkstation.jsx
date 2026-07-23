@@ -4,8 +4,9 @@ import axiosClient, { SOCKET_URL } from '../../api/axiosClient';
 import { ENDPOINTS } from '../../api/endpoints';
 
 // Import Icons from Lucide
-import { Search, Monitor, CheckCircle2, LogOut, Users, Video, HelpCircle } from 'lucide-react';
+import { Search, Monitor, CheckCircle2, LogOut, Users, Video, HelpCircle, LifeBuoy } from 'lucide-react';
 import { Footer } from '../../components/ui/Footer';
+import RaiseTicketModal from '../../components/ui/RaiseTicketModal';
 import { useAuth } from '../../context/AuthContext';
 import { io } from 'socket.io-client';
 
@@ -32,6 +33,7 @@ import { useLocation } from 'react-router-dom';
 export default function DoctorWorkstation() {
     const location = useLocation();
     const { logout, user } = useAuth();
+    const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
     const [appointments, setAppointments] = useState([]);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const selectedApptRef = React.useRef(selectedAppointment);
@@ -265,7 +267,10 @@ export default function DoctorWorkstation() {
                         <div className="w-7 h-7 rounded-full bg-slate-600 flex items-center justify-center font-bold text-white text-[11px] uppercase">
                             {getInitials(user?.name)}
                         </div>
-                        <span className="text-xs font-semibold text-slate-200 hidden lg:block">{user?.name ? `Dr. ${user.name}` : 'Doctor Portal'}</span>
+                        <span className="text-xs font-semibold text-slate-200 hidden lg:block">
+                            {user?.name ? `Dr. ${user.name}` : 'Doctor Portal'}
+                        </span>
+
                         <Button variant="outline" onClick={logout} className="ml-1 md:ml-2 p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-900/30 rounded-lg transition border-none bg-transparent" title="Logout">
                             <LogOut className="w-4 h-4" />
                         </Button>
@@ -369,8 +374,8 @@ export default function DoctorWorkstation() {
                                     <div className="flex items-center gap-3">
                                         <Button 
                                             variant="outline"
-                                            onClick={() => alert("Need assistance? Please contact your clinic administrator or support.")}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition"
+                                            onClick={() => setIsTicketModalOpen(true)}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition cursor-pointer"
                                         >
                                             <HelpCircle className="w-4 h-4 text-slate-500" />
                                             Need help?
@@ -439,6 +444,13 @@ export default function DoctorWorkstation() {
                     </div>
                 ))}
             </div>
+
+            {/* Support Ticket Modal */}
+            <RaiseTicketModal
+                isOpen={isTicketModalOpen}
+                onClose={() => setIsTicketModalOpen(false)}
+                portalUsed="Doctor Workstation"
+            />
         </div>
     );
 }

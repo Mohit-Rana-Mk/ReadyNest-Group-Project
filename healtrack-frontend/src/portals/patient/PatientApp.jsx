@@ -19,11 +19,13 @@ import LanguageSwitcher from '../../components/LanguageSwitcher';
 import { SOCKET_URL } from '../../api/axiosClient';
 import { Button } from '../../components/ui/Button';
 import { Footer } from '../../components/ui/Footer';
+import RaiseTicketModal from '../../components/ui/RaiseTicketModal';
 
 export default function PatientApp() {
     const location = useLocation();
     const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState(location.state?.tab || 'home');
+    const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
     const [recommendations, setRecommendations] = useState([]);
     const [appointments, setAppointments] = useState([]);
 
@@ -284,7 +286,7 @@ export default function PatientApp() {
                         <p className="text-xs font-bold text-white">Need help?</p>
                         <p className="text-[10px] text-slate-400 font-medium mt-0.5 mb-2.5">Check our docs or contact support</p>
                         <Button 
-                            onClick={() => alert("Redirecting to Support Center...")}
+                            onClick={() => setIsTicketModalOpen(true)}
                             className="w-full bg-slate-700 hover:bg-slate-600 text-white border-none rounded-[12px] shadow-sm text-xs py-1.5 cursor-pointer"
                         >
                             Support Center
@@ -736,6 +738,12 @@ export default function PatientApp() {
                     </div>
                 </div>
             )}
+            {/* Support Ticket Modal */}
+            <RaiseTicketModal
+                isOpen={isTicketModalOpen}
+                onClose={() => setIsTicketModalOpen(false)}
+                portalUsed="Patient Portal"
+            />
         </div>
     );
 }

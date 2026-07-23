@@ -7,6 +7,7 @@ import { Autoplay, Pagination, EffectCoverflow } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/effect-coverflow';
+import { Footer } from '../components/ui/Footer';
 import {
     Activity,
     Calendar,
@@ -162,7 +163,7 @@ export default function Landing() {
                         className="relative lg:h-[600px] flex items-center justify-center"
                     >
                         {/* Abstract Hero Visual */}
-                        <div className="relative w-full max-w-[280px] sm:max-w-[320px] md:max-w-md mx-auto aspect-square rounded-full bg-gradient-to-tr from-blue-100 to-cyan-50 shadow-inner overflow-visible">
+                        <div className="relative w-full max-w-[280px] sm:max-w-[320px] md:max-w-md mx-auto aspect-square rounded-full bg-gradient-to-tr from-blue-100 to-cyan-50 shadow-inner flex items-center justify-center overflow-visible">
                             {/* Floating Appointment Card */}
                             <motion.div 
                                 style={{ y: y1 }}
@@ -210,7 +211,7 @@ export default function Landing() {
                                 </div>
                             </motion.div>
 
-                            <img src="/logo.png" alt="HealTrack" className="absolute inset-0 m-auto w-1/2 h-1/2 object-contain drop-shadow-2xl opacity-90" />
+                            <img src="/HealTrack_Original.png" alt="HealTrack Logo" className="w-48 h-48 object-contain drop-shadow-2xl z-10" />
                         </div>
                     </motion.div>
                 </div>
@@ -292,19 +293,40 @@ export default function Landing() {
                             modifier: 2,
                             slideShadows: true,
                         }}
-                        pagination={true}
-                        autoplay={{ delay: 3000, disableOnInteraction: false }}
+                        pagination={{ clickable: true }}
+                        autoplay={{ delay: 3500, disableOnInteraction: false }}
                         className="w-full py-10"
                     >
-                        {[1,2,3].map((item) => (
-                            <SwiperSlide key={item} className="max-w-4xl">
-                                <div className="aspect-[16/9] bg-slate-800 rounded-2xl border border-slate-700 shadow-2xl flex items-center justify-center overflow-hidden relative">
-                                    {/* Placeholder for actual screenshots */}
-                                    <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 opacity-80" />
-                                    <div className="z-10 text-center">
-                                        <BarChart3 className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                                        <p className="text-slate-400 font-bold tracking-widest uppercase">Dashboard View {item}</p>
-                                        <p className="text-xs text-slate-500 mt-2">(Replace with actual screenshot)</p>
+                        {[
+                            { id: 1, img: '/L1.jpeg', title: 'Doctor Workstation & Patient Queue', desc: 'Real-time patient queue, vitals monitoring, and integrated digital prescription builder.' },
+                            { id: 2, img: '/L2.jpeg', title: 'AI Outbreak Analytics & Epidemiology Map', desc: 'Predictive machine learning algorithms tracking regional disease outbreaks and caseload trends.' },
+                            { id: 3, img: '/L3.jpeg', title: 'Clinic Management & Facility Controls', desc: 'Centralized admin controls for staff management, department metrics, and operations overview.' },
+                            { id: 4, img: '/L4.jpeg', title: 'Pharmacy Suite Workstation', desc: 'Automated prescription fulfillment, medicine inventory tracking, and walk-in billing.' },
+                            { id: 5, img: '/L5.png', title: 'Patient Portal & Telehealth', desc: 'Seamless appointment booking, digital prescriptions, payment billing, and AI health insights.' }
+                        ].map((slide) => (
+                            <SwiperSlide key={slide.id} className="max-w-4xl">
+                                <div className="rounded-3xl border border-slate-800 bg-slate-950 shadow-2xl overflow-hidden group">
+                                    <div className="bg-slate-900/90 px-5 py-3 border-b border-slate-800 flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3 h-3 rounded-full bg-rose-500/80"></div>
+                                            <div className="w-3 h-3 rounded-full bg-amber-500/80"></div>
+                                            <div className="w-3 h-3 rounded-full bg-emerald-500/80"></div>
+                                            <span className="text-xs font-semibold text-slate-400 font-mono ml-2">healtrack.app / {slide.title}</span>
+                                        </div>
+                                        <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest bg-cyan-950/60 border border-cyan-800/60 px-3 py-1 rounded-full">
+                                            Live Portal Preview
+                                        </span>
+                                    </div>
+                                    <div className="relative aspect-[16/9] overflow-hidden bg-slate-900">
+                                        <img 
+                                            src={slide.img} 
+                                            alt={slide.title} 
+                                            className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                                        />
+                                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent p-6 flex flex-col justify-end">
+                                            <h3 className="text-xl font-extrabold text-white tracking-tight">{slide.title}</h3>
+                                            <p className="text-xs md:text-sm text-slate-300 font-medium mt-1">{slide.desc}</p>
+                                        </div>
                                     </div>
                                 </div>
                             </SwiperSlide>
@@ -460,7 +482,7 @@ export default function Landing() {
                         <Link to="/signup" className="w-full sm:w-auto bg-white text-blue-600 px-8 py-4 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1">
                             Start for Free
                         </Link>
-                        <a href="mailto:contact@healtrack.com" className="w-full sm:w-auto bg-blue-700/50 hover:bg-blue-700 border border-blue-500 text-white px-8 py-4 rounded-full font-bold text-lg transition-all">
+                        <a href="mailto:heal0track@gmail.com" className="w-full sm:w-auto bg-blue-700/50 hover:bg-blue-700 border border-blue-500 text-white px-8 py-4 rounded-full font-bold text-lg transition-all">
                             Contact Sales
                         </a>
                     </div>
@@ -468,50 +490,9 @@ export default function Landing() {
             </section>
 
             {/* FOOTER */}
-            <footer className="bg-slate-900 text-slate-400 py-12 px-6">
-                <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-                    <div className="col-span-2 md:col-span-1">
-                        <div className="flex items-center gap-2 mb-4">
-                            <img src="/logo.png" alt="HealTrack" className="w-8 h-8 object-contain rounded-lg opacity-80" />
-                            <span className="text-xl font-extrabold text-white tracking-tight">HealTrack</span>
-                        </div>
-                        <p className="text-sm">Smarter healthcare for a modern world.</p>
-                    </div>
-                    <div>
-                        <h4 className="font-bold text-white mb-4 uppercase tracking-wider text-xs">Product</h4>
-                        <ul className="space-y-2 text-sm">
-                            <li><a href="#features" className="hover:text-white">Features</a></li>
-                            <li><a href="#" className="hover:text-white">Pricing</a></li>
-                            <li><a href="#ai" className="hover:text-white">AI Engine</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 className="font-bold text-white mb-4 uppercase tracking-wider text-xs">Company</h4>
-                        <ul className="space-y-2 text-sm">
-                            <li><a href="#" className="hover:text-white">About Us</a></li>
-                            <li><a href="#" className="hover:text-white">Contact</a></li>
-                            <li><a href="#" className="hover:text-white">Careers</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 className="font-bold text-white mb-4 uppercase tracking-wider text-xs">Legal</h4>
-                        <ul className="space-y-2 text-sm">
-                            <li><a href="#" className="hover:text-white">Privacy Policy</a></li>
-                            <li><a href="#" className="hover:text-white">Terms of Service</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div className="max-w-7xl mx-auto border-t border-slate-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
-                    <p>© 2026 HealTrack. All rights reserved.</p>
-                    <div className="flex gap-4">
-                        <a href="#" className="hover:text-white flex items-center gap-1.5"><MessageSquare className="w-4 h-4" /> Feedback</a>
-                        <a href="#" className="hover:text-white flex items-center gap-1.5"><GithubIcon className="w-4 h-4" /> GitHub</a>
-                    </div>
-                    <div className="text-slate-400 font-medium">
-                        Designed with <span className="text-red-500">♥</span> by team <span className="font-bold text-white">Code Titans</span>
-                    </div>
-                </div>
-            </footer>
+            <div className="bg-[#090D16] border-t border-slate-800/80 text-slate-400">
+                <Footer />
+            </div>
         </div>
     );
 }

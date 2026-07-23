@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import axiosClient, { SOCKET_URL } from '../../api/axiosClient';
 import { motion } from 'framer-motion';
 import { Footer } from '../../components/ui/Footer';
+import RaiseTicketModal from '../../components/ui/RaiseTicketModal';
 
 import { AnalyticsDashboard } from './components/AnalyticsDashboard';
 import { OutbreakAlerts } from './components/OutbreakAlerts';
@@ -24,6 +25,7 @@ export default function ClinicManagementPortal() {
   const [activeTab, setActiveTab] = useState(location.state?.tab || 'dashboard');
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
   const [portalData, setPortalData] = useState({
     analytics: { footfall: [], revenue: [] },
     staff: [],
@@ -181,7 +183,10 @@ export default function ClinicManagementPortal() {
           </div>
           <p className="text-sm font-bold text-white">Need help?</p>
           <p className="text-xs text-slate-400 font-medium mt-1 mb-3">Check our docs or contact support</p>
-          <Button className="w-full bg-slate-700 hover:bg-slate-600 text-white border-none rounded-[14px] shadow-sm text-xs py-2">
+          <Button 
+            onClick={() => setIsTicketModalOpen(true)} 
+            className="w-full bg-slate-700 hover:bg-slate-600 text-white border-none rounded-[14px] shadow-sm text-xs py-2 cursor-pointer"
+          >
             Support Center
           </Button>
         </div>
@@ -272,6 +277,12 @@ export default function ClinicManagementPortal() {
           <Footer />
         </div>
       </main>
+
+      <RaiseTicketModal
+        isOpen={isTicketModalOpen}
+        onClose={() => setIsTicketModalOpen(false)}
+        portalUsed="Clinic Admin Portal"
+      />
     </div>
   );
 }

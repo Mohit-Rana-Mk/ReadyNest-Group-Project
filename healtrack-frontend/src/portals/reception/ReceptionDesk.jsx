@@ -8,6 +8,7 @@ import axiosClient, { SOCKET_URL } from '../../api/axiosClient';
 import EmptyState from '../../components/ui/EmptyState';
 import { io } from 'socket.io-client';
 import { Footer } from '../../components/ui/Footer';
+import RaiseTicketModal from '../../components/ui/RaiseTicketModal';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -18,6 +19,7 @@ import { useLocation } from 'react-router-dom';
 
 export default function ReceptionDesk() {
   const location = useLocation();
+  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
   const { user, logout } = useAuth();
   const [queue, setQueue] = useState([]);
   const [doctors, setDoctors] = useState([]);
@@ -608,7 +610,7 @@ export default function ReceptionDesk() {
             </div>
             <Button
               variant="outline"
-              onClick={() => alert("Redirecting to Support Center...")}
+              onClick={() => setIsTicketModalOpen(true)}
               className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-[11px] font-bold transition-all shrink-0 border border-slate-200/80 cursor-pointer"
             >
               Support Center
@@ -1086,6 +1088,12 @@ export default function ReceptionDesk() {
           </div>
         </div>
       )}
+      {/* Support Ticket Modal */}
+      <RaiseTicketModal
+        isOpen={isTicketModalOpen}
+        onClose={() => setIsTicketModalOpen(false)}
+        portalUsed="Reception Desk"
+      />
     </div>
   );
 }

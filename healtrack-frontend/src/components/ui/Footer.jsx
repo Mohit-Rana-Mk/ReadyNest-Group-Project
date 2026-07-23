@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { MessageSquare } from 'lucide-react';
 
 const GithubIcon = ({ className }) => (
@@ -16,11 +17,16 @@ export function Footer() {
         </div>
         
         <div className="flex items-center gap-6">
-          <a href="#" className="text-sm text-slate-500 hover:text-blue-600 transition-colors flex items-center gap-1.5 font-medium">
+          <Link to="/feedback" className="text-sm text-slate-500 hover:text-blue-600 transition-colors flex items-center gap-1.5 font-medium">
             <MessageSquare className="w-4 h-4" />
             Feedback
-          </a>
-          <a href="#" className="text-sm text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1.5 font-medium">
+          </Link>
+          <a 
+            href="https://github.com/Mohit-Rana-Mk/ReadyNest-Group-Project" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="text-sm text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1.5 font-medium"
+          >
             <GithubIcon className="w-4 h-4" />
             GitHub
           </a>
