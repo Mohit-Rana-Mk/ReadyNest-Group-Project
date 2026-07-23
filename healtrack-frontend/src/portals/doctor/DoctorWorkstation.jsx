@@ -270,16 +270,6 @@ export default function DoctorWorkstation() {
                         <span className="text-xs font-semibold text-slate-200 hidden lg:block">
                             {user?.name ? `Dr. ${user.name}` : 'Doctor Portal'}
                         </span>
-                        
-                        <Button 
-                            variant="outline" 
-                            onClick={() => setIsTicketModalOpen(true)} 
-                            className="px-3 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-600 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-sm ml-1"
-                            title="Raise Support Ticket"
-                        >
-                            <HelpCircle className="w-4 h-4 text-slate-300" />
-                            <span>Need help?</span>
-                        </Button>
 
                         <Button variant="outline" onClick={logout} className="ml-1 md:ml-2 p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-900/30 rounded-lg transition border-none bg-transparent" title="Logout">
                             <LogOut className="w-4 h-4" />
@@ -384,8 +374,8 @@ export default function DoctorWorkstation() {
                                     <div className="flex items-center gap-3">
                                         <Button 
                                             variant="outline"
-                                            onClick={() => alert("Need assistance? Please contact your clinic administrator or support.")}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition"
+                                            onClick={() => setIsTicketModalOpen(true)}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition cursor-pointer"
                                         >
                                             <HelpCircle className="w-4 h-4 text-slate-500" />
                                             Need help?
