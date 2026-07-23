@@ -162,15 +162,56 @@ export default function Landing() {
                         transition={{ duration: 0.8, ease: 'easeOut' }}
                         className="relative lg:h-[600px] flex items-center justify-center"
                     >
-                        {/* Featured Workstation Screenshot Card */}
-                        <div className="relative w-full max-w-lg aspect-[4/3] rounded-3xl shadow-2xl border border-slate-200 overflow-hidden bg-slate-900 group">
-                            <img src="/L1.jpeg" alt="HealTrack Doctor Workstation" className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-6">
-                                <div>
-                                    <span className="px-3 py-1 bg-blue-600 text-white rounded-full text-[10px] font-black uppercase tracking-wider">Doctor Workstation</span>
-                                    <p className="text-sm font-extrabold text-white mt-1">Real-time EHR, Vitals & Digital Prescriptions</p>
+                        {/* Abstract Hero Visual */}
+                        <div className="relative w-full max-w-[280px] sm:max-w-[320px] md:max-w-md mx-auto aspect-square rounded-full bg-gradient-to-tr from-blue-100 to-cyan-50 shadow-inner flex items-center justify-center overflow-visible">
+                            {/* Floating Appointment Card */}
+                            <motion.div 
+                                style={{ y: y1 }}
+                                className="absolute top-4 md:top-10 -left-4 md:-left-10 bg-white/90 backdrop-blur-xl p-3 md:p-4 rounded-2xl shadow-2xl border border-white/50 z-20 flex items-center gap-3 md:gap-4 scale-90 md:scale-100 origin-top-left"
+                            >
+                                <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
+                                    <Calendar className="w-6 h-6" />
                                 </div>
-                            </div>
+                                <div>
+                                    <p className="text-xs font-bold text-slate-400 uppercase">Appointment Confirmed</p>
+                                    <p className="text-sm font-extrabold text-slate-800">Today, 10:30 AM</p>
+                                    <p className="text-xs font-semibold text-slate-500">Dr. Rahul Sharma</p>
+                                </div>
+                            </motion.div>
+
+                            {/* Floating AI Card */}
+                            <motion.div 
+                                style={{ y: y2 }}
+                                className="absolute bottom-10 md:bottom-20 -right-4 md:-right-10 bg-[#0F172A]/90 backdrop-blur-xl p-3 md:p-4 rounded-2xl shadow-2xl border border-white/10 z-20 flex items-center gap-3 md:gap-4 scale-90 md:scale-100 origin-bottom-right"
+                            >
+                                <div className="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center text-cyan-400">
+                                    <Brain className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <p className="text-xs font-bold text-cyan-400 uppercase">AI Prediction</p>
+                                    <p className="text-lg font-extrabold text-white">92% <span className="text-xs font-medium text-slate-400">Confidence</span></p>
+                                </div>
+                            </motion.div>
+                            
+                            {/* Floating Analytics Card */}
+                            <motion.div 
+                                animate={{ y: [0, -15, 0] }}
+                                transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
+                                className="absolute -bottom-4 md:-bottom-6 left-1/2 -translate-x-1/2 md:translate-x-0 md:left-1/4 bg-white/90 backdrop-blur-xl p-3 md:p-4 rounded-2xl shadow-2xl border border-white/50 z-20 flex items-center gap-3 md:gap-4 scale-90 md:scale-100 origin-bottom"
+                            >
+                                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                                    <UserSquare2 className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Today's Patients</p>
+                                    <div className="flex items-end gap-2">
+                                        <p className="text-xl font-extrabold text-slate-800 leading-none">48</p>
+                                        <p className="text-xs font-bold text-green-500">+12%</p>
+                                    </div>
+                                </div>
+                            </motion.div>
+
+                            <img src="/HealTrack_Original.png" alt="HealTrack Logo" className="w-48 h-48 object-contain drop-shadow-2xl z-10" />
                         </div>
                     </motion.div>
                 </div>
