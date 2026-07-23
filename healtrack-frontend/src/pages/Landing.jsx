@@ -461,7 +461,7 @@ export default function Landing() {
                         <Link to="/signup" className="w-full sm:w-auto bg-white text-blue-600 px-8 py-4 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1">
                             Start for Free
                         </Link>
-                        <a href="mailto:contact@healtrack.com" className="w-full sm:w-auto bg-blue-700/50 hover:bg-blue-700 border border-blue-500 text-white px-8 py-4 rounded-full font-bold text-lg transition-all">
+                        <a href="mailto:heal0track@gmail.com" className="w-full sm:w-auto bg-blue-700/50 hover:bg-blue-700 border border-blue-500 text-white px-8 py-4 rounded-full font-bold text-lg transition-all">
                             Contact Sales
                         </a>
                     </div>
