@@ -7,6 +7,7 @@ import {
 import axiosClient from '../../api/axiosClient';
 import { Footer } from '../../components/ui/Footer';
 import { Button } from '../../components/ui/Button';
+import RaiseTicketModal from '../../components/ui/RaiseTicketModal';
 
 import { MedicineDashboard } from './components/MedicineDashboard';
 import { PrescriptionQueue } from './components/PrescriptionQueue';
@@ -31,6 +32,7 @@ export default function MedicinePortal() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(location.state?.tab || 'dashboard');
+  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
 
   useEffect(() => {
       if (location.state?.tab) {
@@ -168,7 +170,7 @@ export default function MedicinePortal() {
           <p className="text-xs font-bold text-white">Need help?</p>
           <p className="text-[10px] text-slate-400 font-medium mt-0.5 mb-2.5">Check our docs or contact support</p>
           <Button 
-            onClick={() => alert("Redirecting to Support Center...")}
+            onClick={() => setIsTicketModalOpen(true)}
             className="w-full bg-slate-700 hover:bg-slate-600 text-white border-none rounded-[12px] shadow-sm text-xs py-1.5 cursor-pointer"
           >
             Support Center
@@ -248,6 +250,12 @@ export default function MedicinePortal() {
           </div>
         </div>
       </div>
+
+      <RaiseTicketModal
+        isOpen={isTicketModalOpen}
+        onClose={() => setIsTicketModalOpen(false)}
+        portalUsed="Pharmacy Suite"
+      />
     </div>
   );
 }
