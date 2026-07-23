@@ -448,6 +448,8 @@ export default function DoctorWorkstation() {
                         </button>
                     </div>
                 ))}
+            </div>
+
             {/* Support Ticket Modal */}
             <RaiseTicketModal
                 isOpen={isTicketModalOpen}
