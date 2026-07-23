@@ -5,6 +5,7 @@ import {
   LayoutDashboard, FileText, ShoppingBag, Package, FileClock, ShieldAlert, LogOut, Activity
 } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
+import { Footer } from '../../components/ui/Footer';
 
 import { MedicineDashboard } from './components/MedicineDashboard';
 import { PrescriptionQueue } from './components/PrescriptionQueue';
@@ -254,8 +255,13 @@ export default function MedicinePortal() {
         </header>
 
         {/* Active Route Wrapper */}
-        <div className="flex-1 overflow-y-auto p-10 bg-[#f8f9fa]">
-          {renderActiveComponent()}
+        <div className="flex-1 overflow-y-auto p-10 bg-[#f8f9fa] flex flex-col">
+          <div className="flex-1 min-h-[calc(100vh-4rem)] flex flex-col">
+            {renderActiveComponent()}
+          </div>
+          <div className="w-full mt-auto pt-10">
+            <Footer />
+          </div>
         </div>
       </main>
     </div>

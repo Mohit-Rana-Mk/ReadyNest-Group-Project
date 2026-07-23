@@ -5,6 +5,7 @@ import { ENDPOINTS } from '../../api/endpoints';
 
 // Import Icons from Lucide
 import { Search, Monitor, CheckCircle2, LogOut, Users, Video } from 'lucide-react';
+import { Footer } from '../../components/ui/Footer';
 import { useAuth } from '../../context/AuthContext';
 import { io } from 'socket.io-client';
 
@@ -404,6 +405,9 @@ export default function DoctorWorkstation() {
                             </div>
                         )}
             </motion.main>
+            <div className="shrink-0 w-full bg-white">
+                <Footer />
+            </div>
 
             {/* FLOATING NOTIFICATIONS */}
             <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none">

@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
 import { SOCKET_URL } from '../../api/axiosClient';
 import { Button } from '../../components/ui/Button';
+import { Footer } from '../../components/ui/Footer';
 
 export default function PatientApp() {
     const location = useLocation();
@@ -572,6 +573,9 @@ export default function PatientApp() {
                             <PatientProfile />
                         </div>
                     )}
+                </div>
+                <div className="w-full mt-auto">
+                    <Footer />
                 </div>
             </main>
 

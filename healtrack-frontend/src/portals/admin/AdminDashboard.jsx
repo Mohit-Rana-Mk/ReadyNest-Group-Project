@@ -32,6 +32,7 @@ import PharmacyAccounts from './components/PharmacyAccounts';
 import { Button } from '../../components/ui/Button';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
 import Skeleton from '../../components/ui/Skeleton';
+import { Footer } from '../../components/ui/Footer';
 
 import { useLocation } from 'react-router-dom';
 
@@ -280,7 +281,8 @@ export default function AdminDashboard() {
                 </header>
 
                 {/* WORKSPACE CONTENT */}
-                <main className="flex-1 overflow-y-auto p-4 lg:p-8 bg-[#f8f9fa]">
+                <main className="flex-1 overflow-y-auto p-4 lg:p-8 bg-[#f8f9fa] flex flex-col">
+                    <div className="flex-1 flex flex-col min-h-[calc(100vh-4rem)]">
                     {actionMessage && activeTab !== 'auracare' && (
                         <div className="mb-4 lg:mb-6 p-3 lg:p-4 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-2">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-700 animate-ping"></span>
@@ -370,6 +372,10 @@ export default function AdminDashboard() {
                             {renderContent()}
                         </>
                     )}
+                    </div>
+                    <div className="w-full pt-8 mt-auto">
+                        <Footer />
+                    </div>
                 </main>
             </div>
         </div>
