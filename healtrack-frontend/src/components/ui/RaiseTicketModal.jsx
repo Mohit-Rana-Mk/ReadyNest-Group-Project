@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, LifeBuoy, Send, CheckCircle2, AlertCircle } from 'lucide-react';
+import { X, LifeBuoy, Send, CheckCircle2, AlertCircle, Check } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
 import { Button } from './Button';
+import { CustomDropdown } from './CustomDropdown';
 
 const CATEGORIES = [
   'Appointment Issue',
@@ -15,6 +16,8 @@ const CATEGORIES = [
   'Technical Support',
   'Other'
 ];
+
+const CATEGORY_OPTIONS = CATEGORIES.map(cat => ({ value: cat, label: cat }));
 
 const PRIORITIES = [
   { id: 'Low', label: 'Low', color: 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200' },
@@ -145,17 +148,18 @@ export default function RaiseTicketModal({ isOpen, onClose, portalUsed = 'Portal
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
                 Issue Category <span className="text-rose-500">*</span>
               </label>
-              <select
+              <CustomDropdown
+                options={CATEGORY_OPTIONS}
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full bg-[#f8f9fa] border border-slate-200 rounded-2xl px-4 py-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition shadow-sm cursor-pointer"
-              >
-                {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+                onChange={setCategory}
+                className="w-full bg-[#f8f9fa] border border-slate-200 rounded-2xl h-11 focus:border-indigo-500 focus:bg-white shadow-sm"
+                renderOption={(option) => (
+                  <div className="flex items-center justify-between py-0.5">
+                    <span>{option.label}</span>
+                    {category === option.value && <Check className="w-3.5 h-3.5 text-indigo-600" />}
+                  </div>
+                )}
+              />
             </div>
 
             {/* Priority Selector */}
