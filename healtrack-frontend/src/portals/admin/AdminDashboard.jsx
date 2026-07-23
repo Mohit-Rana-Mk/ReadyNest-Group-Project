@@ -413,5 +413,6 @@ export default function AdminDashboard() {
                 portalUsed="Super Admin Portal"
             />
         </div>
-    );
+    </div>
+  );
 }
